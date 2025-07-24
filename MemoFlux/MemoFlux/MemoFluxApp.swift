@@ -5,6 +5,7 @@
 //  Created by 马硕 on 2025/7/24.
 //
 
+import SwiftData
 import SwiftUI
 
 @main
@@ -13,5 +14,6 @@ struct MemoFluxApp: App {
         WindowGroup {
             ContentView()
         }
+        .modelContainer(for: MemoItemModel.self)
     }
 }

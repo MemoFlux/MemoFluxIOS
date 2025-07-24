@@ -5,28 +5,48 @@
 //  Created by 马硕 on 2025/7/24.
 //
 
+import SwiftData
 import SwiftUI
 
 struct HomePageView: View {
-    @State private var images: [UIImage] = []
+    // SwiftData查询所有MemoItemModel，创建时间降序排列
+    @Query(sort: \MemoItemModel.createdAt, order: .reverse) private var memoItems: [MemoItemModel]
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
-        ListView(images: $images)
+        ListView(memoItems: memoItems, modelContext: modelContext)
             .onAppear {
                 loadImage()
             }
-            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            .onReceive(
+                NotificationCenter.default.publisher(
+                    for: UIApplication.willEnterForegroundNotification)
+            ) { _ in
                 loadImage()
             }
     }
 
     func loadImage() {
         let fileManager = FileManager.default
-        if let directory = fileManager.containerURL(forSecurityApplicationGroupIdentifier: "group.com.shuoma.memoflux") {
+        if let directory = fileManager.containerURL(
+            forSecurityApplicationGroupIdentifier: "group.com.shuoma.memoflux")
+        {
             let fileURL = directory.appendingPathComponent("imageFromShortcut.png")
             if let imageData = try? Data(contentsOf: fileURL),
-               let newImage = UIImage(data: imageData) {
-                images.append(newImage)
+                let newImage = UIImage(data: imageData)
+            {
+                let newItem = MemoItemModel(image: newImage, source: "快捷指令")
+
+                // 检查是否存在相同item
+                let exists = memoItems.contains { item in
+                    MemoItemModel.areEqual(item, newItem)
+                }
+
+                if !exists {
+                    modelContext.insert(newItem)
+                    try? modelContext.save()
+                    print("新MemoItem添加成功并保存到swiftData，UUID: \(newItem.id)")
+                }
             }
         }
     }
