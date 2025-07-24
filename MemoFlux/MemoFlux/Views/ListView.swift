@@ -19,15 +19,18 @@ struct ListView: View {
             ContentUnavailableView(
                 "没有内容", systemImage: "photo", description: Text("请从快捷指令或其他来源导入内容。"))
         } else {
-            List(memoItems) { item in
-                AdaptiveListCellLayout(
-                    item: item
-                )
-                .onAppear {
-                    if item.recognizedText.isEmpty, let image = item.image {
-                        recognizeText(for: item, image: image)
+            NavigationStack {
+                List(memoItems) { item in
+                    NavigationLink(destination: ListCellDetailView(item: item)) {
+                        AdaptiveListCellLayout(item: item)
+                            .onAppear {
+                                if item.recognizedText.isEmpty, let image = item.image {
+                                    recognizeText(for: item, image: image)
+                                }
+                            }
                     }
                 }
+                .navigationTitle("Today")
             }
         }
     }
@@ -50,7 +53,7 @@ struct ListView: View {
             }
 
             let text = recognizedStrings.joined(separator: "\n")
-
+            
             DispatchQueue.main.async {
                 // 更新对应的MemoItem并保存到swiftData
                 item.recognizedText = text

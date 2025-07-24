@@ -40,6 +40,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		65574A552E31FD4F0052145C /* Exceptions for "MemoFlux" folder in "MemoFlux" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 656AAAF32E314FFF00519789 /* MemoFlux */;
+		};
 		656AAB472E31BAE100519789 /* Exceptions for "ScreenshotIntent" folder in "ScreenshotIntent" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -52,6 +59,9 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		65574A3D2E31D4230052145C /* MemoFlux */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				65574A552E31FD4F0052145C /* Exceptions for "MemoFlux" folder in "MemoFlux" target */,
+			);
 			path = MemoFlux;
 			sourceTree = "<group>";
 		};
@@ -363,6 +373,7 @@
 				DEVELOPMENT_TEAM = 9L7YZP8HTB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MemoFlux/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -392,6 +403,7 @@
 				DEVELOPMENT_TEAM = 9L7YZP8HTB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MemoFlux/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

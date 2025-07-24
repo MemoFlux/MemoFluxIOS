@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSRemindersUsageDescription</key>
+	<string>需要访问提醒事项权限，以访问提醒事项</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>需要访问日历权限，以访问日历</string>
+</dict>
+</plist>

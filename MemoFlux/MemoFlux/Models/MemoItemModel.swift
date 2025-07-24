@@ -13,7 +13,7 @@ import SwiftUI
 @Model
 final class MemoItemModel: Identifiable {
     var id: UUID
-    var imageData: Data?  // 存储图片数据
+    var imageData: Data?  // 存储图片
     var recognizedText: String
     var title: String
     var tags: [String]
@@ -62,10 +62,7 @@ final class MemoItemModel: Identifiable {
             return true
         }
 
-        if let lhsData = lhs.imageData,
-            let rhsData = rhs.imageData,
-            lhsData == rhsData
-        {
+        if lhs.imageData == rhs.imageData {
             return true
         }
 
