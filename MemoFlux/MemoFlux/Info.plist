@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSCameraUsageDescription</key>
+	<string>需要访问相机权限，以访问相机进行拍照</string>
 	<key>NSRemindersUsageDescription</key>
 	<string>需要访问提醒事项权限，以访问提醒事项</string>
 	<key>NSCalendarsUsageDescription</key>

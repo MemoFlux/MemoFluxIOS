@@ -20,36 +20,16 @@ struct AddMemoItemView: View {
   @State private var isHeightAdjusted = false  // 标记高度是否已调整
   @State private var keyboardShown = false
   
+  @State private var selectedImage: UIImage?
+  @State private var selectedPhotoItem: PhotosPickerItem?
+  
   @FocusState private var isTextEditorFocused: Bool
   
-  private let originalHeight: CGFloat = 180 // 原始高度
-  
-  private func calculateTextHeight() -> CGFloat {
-    let lineHeight: CGFloat = 25  // 估计的单行高度
-    let minHeight: CGFloat = lineHeight  // 最小高度为一行
-    
-    if inputText.isEmpty {
-      return minHeight
-    }
-    
-    // 行数
-    let lines = inputText.components(separatedBy: "\n").count
-    // 每行平均字符数
-    let avgCharsPerLine: CGFloat = 30
-    // 额外行数
-    let additionalLines = inputText.count / Int(avgCharsPerLine)
-    
-    // 总行数
-    let totalLines = max(lines, 1) + additionalLines
-    // 限制最大高度
-    let maxHeight: CGFloat = 60 * 3
-    
-    return min(max(CGFloat(totalLines) * lineHeight, minHeight), maxHeight)
-  }
+  private let originalHeight: CGFloat = 180  // 原始高度
   
   var body: some View {
     NavigationStack {
-      VStack(spacing: 15) {
+      VStack(spacing: 10) {
         if !showingTextInput {
           TextInputButton {
             withAnimation {
@@ -59,6 +39,7 @@ struct AddMemoItemView: View {
               }
             }
           }
+          .padding(.bottom, 5)
         } else {
           TextEditorView(
             inputText: $inputText,
@@ -69,6 +50,7 @@ struct AddMemoItemView: View {
             originalHeight: originalHeight,
             calculateTextHeight: calculateTextHeight
           )
+          .padding(.bottom, 5)
         }
         
         ImageActionButtons(
@@ -76,23 +58,69 @@ struct AddMemoItemView: View {
           photoPickerAction: { showingImagePicker = true }
         )
         
+        HStack(alignment: .top) {
+          VStack(alignment: .leading, spacing: 5) {
+            HStack {
+              Text("* 暂时只能拍摄/选择一张照片")
+                .font(.caption)
+                .foregroundStyle(.gray)
+                .padding(.leading, 5)
+                .frame(maxWidth: .infinity, alignment: .leading)
+              
+              NavigationLink(destination: AddShortcutView()) {
+                HStack(spacing: 0) {
+                  Text("推荐使用快捷指令！")
+                  Image(systemName: "chevron.right.circle")
+                }
+              }
+              .font(.caption)
+              .padding(.trailing, 5)
+            }
+            
+            if let image = selectedImage {
+              withAnimation {
+                Image(uiImage: image)
+                  .resizable()
+                  .scaledToFit()
+                  .frame(height: 80)
+                  .cornerRadius(10)
+                  .padding(.leading, 5)
+              }
+            }
+          }
+        }
+        .padding(.horizontal, 6)
+        
         Spacer()
       }
       .padding()
       .navigationTitle("创建Memo")
-      .sheet(isPresented: $showingImagePicker) {
-        // TODO: - 实现图片选择器
-        Text("图片选择界面")
+      .fullScreenCover(isPresented: $showingCamera) {  // 相机调用
+        CameraView(image: $selectedImage, isShown: $showingCamera)
+          .ignoresSafeArea()
       }
-      .sheet(isPresented: $showingCamera) {
-        // TODO: - 实现相机调用
-        Text("相机界面")
+      .photosPicker(  // 相册调用
+        isPresented: $showingImagePicker,
+        selection: $selectedPhotoItem,
+        matching: .images,
+        photoLibrary: .shared()
+      )
+      .onChange(of: selectedPhotoItem) { newItem in
+        Task {
+          if let data = try? await newItem?.loadTransferable(type: Data.self),
+             let uiImage = UIImage(data: data)
+          {
+            withAnimation {
+              selectedImage = uiImage
+            }
+          }
+        }
       }
-      .contentShape(Rectangle()) // 点击背景关闭键盘
+      .contentShape(Rectangle())  // 点击背景关闭键盘
       .onTapGesture {
         isTextEditorFocused = false
       }
-      .onAppear { // 监听键盘显示/隐藏
+      .onAppear {  // 监听键盘显示
         NotificationCenter.default.addObserver(
           forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main
         ) { _ in
@@ -119,8 +147,30 @@ struct AddMemoItemView: View {
       }
     }
   }
+  
+  private func calculateTextHeight() -> CGFloat {
+    let lineHeight: CGFloat = 25  // 估计的单行高度
+    let minHeight: CGFloat = lineHeight  // 最小高度为一行
+    
+    if inputText.isEmpty {
+      return minHeight
+    }
+    
+    // 行数
+    let lines = inputText.components(separatedBy: "\n").count
+    // 每行平均字符数
+    let avgCharsPerLine: CGFloat = 30
+    // 额外行数
+    let additionalLines = inputText.count / Int(avgCharsPerLine)
+    
+    // 总行数
+    let totalLines = max(lines, 1) + additionalLines
+    // 限制最大高度
+    let maxHeight: CGFloat = 60 * 3
+    
+    return min(max(CGFloat(totalLines) * lineHeight, minHeight), maxHeight)
+  }
 }
-
 
 // MARK: - 输入文本按钮
 struct TextInputButton: View {
@@ -235,32 +285,87 @@ struct ImageActionButtons: View {
   var photoPickerAction: () -> Void
   
   var body: some View {
-    HStack(spacing: 10) {
-      Button(action: cameraAction) {
-        HStack {
-          Image(systemName: "camera")
-          Text("拍照")
+    VStack(spacing: 10) {
+      HStack(spacing: 10) {
+        Button(action: cameraAction) {
+          HStack {
+            Image(systemName: "camera")
+            Text("拍照")
+          }
+          .frame(maxWidth: .infinity)
+          .padding(.vertical, 20)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
-      }
-      .foregroundStyle(.white)
-      .background(Color.mainStyleBackgroundColor)
-      .cornerRadius(15)
-      
-      Button(action: photoPickerAction) {
-        HStack {
-          Image(systemName: "photo")
-          Text("从相册选择")
+        .foregroundStyle(.white)
+        .background(Color.mainStyleBackgroundColor)
+        .cornerRadius(15)
+        
+        Button(action: photoPickerAction) {
+          HStack {
+            Image(systemName: "photo")
+            Text("从相册选择")
+          }
+          .frame(maxWidth: .infinity)
+          .padding(.vertical, 20)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
+        .foregroundStyle(.white)
+        .background(Color.mainStyleBackgroundColor)
+        .cornerRadius(15)
       }
-      .foregroundStyle(.white)
-      .background(Color.mainStyleBackgroundColor)
-      .cornerRadius(15)
+      .padding(.horizontal, 5)
     }
-    .padding(.horizontal, 5)
+  }
+}
+
+// MARK: - 相机视图
+struct CameraView: UIViewControllerRepresentable {
+  @Binding var image: UIImage?
+  @Binding var isShown: Bool
+  
+  func makeUIViewController(context: Context) -> UIImagePickerController {
+    let picker = UIImagePickerController()
+    picker.delegate = context.coordinator
+    
+    // 相机可用性检查
+    if UIImagePickerController.isSourceTypeAvailable(.camera) {
+      picker.sourceType = .camera
+    } else {
+      // 若相机不可用，使用照片库
+      picker.sourceType = .photoLibrary
+    }
+    
+    return picker
+  }
+  
+  func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+  
+  func makeCoordinator() -> Coordinator {
+    Coordinator(self)
+  }
+  
+  class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
+    let parent: CameraView
+    
+    init(_ parent: CameraView) {
+      self.parent = parent
+    }
+    
+    func imagePickerController(
+      _ picker: UIImagePickerController,
+      didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
+    ) {
+      if let image = info[.originalImage] as? UIImage {
+        DispatchQueue.main.async {
+          withAnimation {
+            self.parent.image = image
+          }
+        }
+      }
+      parent.isShown = false
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+      parent.isShown = false
+    }
   }
 }
 
