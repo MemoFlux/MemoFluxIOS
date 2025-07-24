@@ -12,18 +12,34 @@ struct HomePageView: View {
   // SwiftData查询所有MemoItemModel，创建时间降序排列
   @Query(sort: \MemoItemModel.createdAt, order: .reverse) private var memoItems: [MemoItemModel]
   @Environment(\.modelContext) private var modelContext
+  @State private var showingAddMemoView = false
   
   var body: some View {
-    ListView(memoItems: memoItems, modelContext: modelContext)
-      .onAppear {
-        loadImage()
-      }
-      .onReceive(
-        NotificationCenter.default.publisher(
-          for: UIApplication.willEnterForegroundNotification)
-      ) { _ in
-        loadImage()
-      }
+    NavigationStack {
+      ListView(memoItems: memoItems, modelContext: modelContext)
+        .onAppear {
+          loadImage()
+        }
+        .onReceive(
+          NotificationCenter.default.publisher(
+            for: UIApplication.willEnterForegroundNotification)
+        ) { _ in
+          loadImage()
+        }
+        .toolbar {
+          ToolbarItem(placement: .navigationBarTrailing) {
+            Button(action: {
+              showingAddMemoView = true
+            }) {
+              Image(systemName: "plus")
+                .font(.system(size: 18, weight: .bold))
+            }
+          }
+        }
+    }
+    .fullScreenCover(isPresented: $showingAddMemoView) {
+      AddMemoItemWithAIView()
+    }
   }
   
   func loadImage() {

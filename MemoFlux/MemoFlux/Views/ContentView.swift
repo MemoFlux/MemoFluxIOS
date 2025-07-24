@@ -16,10 +16,10 @@ struct ContentView: View {
           Image(systemName: "house")
           Text("主页")
         }
-      AddMemoItemView()
+      CategoryView()
         .tabItem {
-          Image(systemName: "plus")
-          Text("添加")
+          Image(systemName: "chart.pie")
+          Text("总结")
         }
       CategoryView()
         .tabItem {
