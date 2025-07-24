@@ -7,15 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		656AAB432E31BAE100519789 /* ScreenshotIntent.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = 656AAB3A2E31BAE100519789 /* ScreenshotIntent.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		658CA4192E321F6800F1C7CC /* ScreenshotIntent.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = 658CA4102E321F6800F1C7CC /* ScreenshotIntent.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		656AAB412E31BAE100519789 /* PBXContainerItemProxy */ = {
+		658CA4172E321F6800F1C7CC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 656AAAEC2E314FFF00519789 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 656AAB392E31BAE100519789;
+			remoteGlobalIDString = 658CA40F2E321F6800F1C7CC;
 			remoteInfo = ScreenshotIntent;
 		};
 /* End PBXContainerItemProxy section */
@@ -27,7 +27,7 @@
 			dstPath = "$(EXTENSIONS_FOLDER_PATH)";
 			dstSubfolderSpec = 16;
 			files = (
-				656AAB432E31BAE100519789 /* ScreenshotIntent.appex in Embed ExtensionKit Extensions */,
+				658CA4192E321F6800F1C7CC /* ScreenshotIntent.appex in Embed ExtensionKit Extensions */,
 			);
 			name = "Embed ExtensionKit Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -36,7 +36,7 @@
 
 /* Begin PBXFileReference section */
 		656AAAF42E314FFF00519789 /* MemoFlux.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MemoFlux.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		656AAB3A2E31BAE100519789 /* ScreenshotIntent.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = ScreenshotIntent.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		658CA4102E321F6800F1C7CC /* ScreenshotIntent.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = ScreenshotIntent.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -47,12 +47,12 @@
 			);
 			target = 656AAAF32E314FFF00519789 /* MemoFlux */;
 		};
-		656AAB472E31BAE100519789 /* Exceptions for "ScreenshotIntent" folder in "ScreenshotIntent" target */ = {
+		658CA41A2E321F6800F1C7CC /* Exceptions for "ScreenshotIntent" folder in "ScreenshotIntent" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 656AAB392E31BAE100519789 /* ScreenshotIntent */;
+			target = 658CA40F2E321F6800F1C7CC /* ScreenshotIntent */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -65,10 +65,10 @@
 			path = MemoFlux;
 			sourceTree = "<group>";
 		};
-		656AAB3B2E31BAE100519789 /* ScreenshotIntent */ = {
+		658CA4112E321F6800F1C7CC /* ScreenshotIntent */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				656AAB472E31BAE100519789 /* Exceptions for "ScreenshotIntent" folder in "ScreenshotIntent" target */,
+				658CA41A2E321F6800F1C7CC /* Exceptions for "ScreenshotIntent" folder in "ScreenshotIntent" target */,
 			);
 			path = ScreenshotIntent;
 			sourceTree = "<group>";
@@ -83,7 +83,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		656AAB372E31BAE100519789 /* Frameworks */ = {
+		658CA40D2E321F6800F1C7CC /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -96,7 +96,7 @@
 		656AAAEB2E314FFF00519789 = {
 			isa = PBXGroup;
 			children = (
-				656AAB3B2E31BAE100519789 /* ScreenshotIntent */,
+				658CA4112E321F6800F1C7CC /* ScreenshotIntent */,
 				656AAAF52E314FFF00519789 /* Products */,
 				65574A3D2E31D4230052145C /* MemoFlux */,
 			);
@@ -106,7 +106,7 @@
 			isa = PBXGroup;
 			children = (
 				656AAAF42E314FFF00519789 /* MemoFlux.app */,
-				656AAB3A2E31BAE100519789 /* ScreenshotIntent.appex */,
+				658CA4102E321F6800F1C7CC /* ScreenshotIntent.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -126,7 +126,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				656AAB422E31BAE100519789 /* PBXTargetDependency */,
+				658CA4182E321F6800F1C7CC /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				65574A3D2E31D4230052145C /* MemoFlux */,
@@ -138,26 +138,26 @@
 			productReference = 656AAAF42E314FFF00519789 /* MemoFlux.app */;
 			productType = "com.apple.product-type.application";
 		};
-		656AAB392E31BAE100519789 /* ScreenshotIntent */ = {
+		658CA40F2E321F6800F1C7CC /* ScreenshotIntent */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 656AAB482E31BAE100519789 /* Build configuration list for PBXNativeTarget "ScreenshotIntent" */;
+			buildConfigurationList = 658CA41B2E321F6800F1C7CC /* Build configuration list for PBXNativeTarget "ScreenshotIntent" */;
 			buildPhases = (
-				656AAB362E31BAE100519789 /* Sources */,
-				656AAB372E31BAE100519789 /* Frameworks */,
-				656AAB382E31BAE100519789 /* Resources */,
+				658CA40C2E321F6800F1C7CC /* Sources */,
+				658CA40D2E321F6800F1C7CC /* Frameworks */,
+				658CA40E2E321F6800F1C7CC /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				656AAB3B2E31BAE100519789 /* ScreenshotIntent */,
+				658CA4112E321F6800F1C7CC /* ScreenshotIntent */,
 			);
 			name = ScreenshotIntent;
 			packageProductDependencies = (
 			);
 			productName = ScreenshotIntent;
-			productReference = 656AAB3A2E31BAE100519789 /* ScreenshotIntent.appex */;
+			productReference = 658CA4102E321F6800F1C7CC /* ScreenshotIntent.appex */;
 			productType = "com.apple.product-type.extensionkit-extension";
 		};
 /* End PBXNativeTarget section */
@@ -173,7 +173,7 @@
 					656AAAF32E314FFF00519789 = {
 						CreatedOnToolsVersion = 16.4;
 					};
-					656AAB392E31BAE100519789 = {
+					658CA40F2E321F6800F1C7CC = {
 						CreatedOnToolsVersion = 16.4;
 					};
 				};
@@ -193,7 +193,7 @@
 			projectRoot = "";
 			targets = (
 				656AAAF32E314FFF00519789 /* MemoFlux */,
-				656AAB392E31BAE100519789 /* ScreenshotIntent */,
+				658CA40F2E321F6800F1C7CC /* ScreenshotIntent */,
 			);
 		};
 /* End PBXProject section */
@@ -206,7 +206,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		656AAB382E31BAE100519789 /* Resources */ = {
+		658CA40E2E321F6800F1C7CC /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -223,7 +223,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		656AAB362E31BAE100519789 /* Sources */ = {
+		658CA40C2E321F6800F1C7CC /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -233,10 +233,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		656AAB422E31BAE100519789 /* PBXTargetDependency */ = {
+		658CA4182E321F6800F1C7CC /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 656AAB392E31BAE100519789 /* ScreenshotIntent */;
-			targetProxy = 656AAB412E31BAE100519789 /* PBXContainerItemProxy */;
+			target = 658CA40F2E321F6800F1C7CC /* ScreenshotIntent */;
+			targetProxy = 658CA4172E321F6800F1C7CC /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -422,7 +422,7 @@
 			};
 			name = Release;
 		};
-		656AAB452E31BAE100519789 /* Debug */ = {
+		658CA41C2E321F6800F1C7CC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ScreenshotIntent/ScreenshotIntent.entitlements;
@@ -448,7 +448,7 @@
 			};
 			name = Debug;
 		};
-		656AAB462E31BAE100519789 /* Release */ = {
+		658CA41D2E321F6800F1C7CC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ScreenshotIntent/ScreenshotIntent.entitlements;
@@ -495,11 +495,11 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		656AAB482E31BAE100519789 /* Build configuration list for PBXNativeTarget "ScreenshotIntent" */ = {
+		658CA41B2E321F6800F1C7CC /* Build configuration list for PBXNativeTarget "ScreenshotIntent" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				656AAB452E31BAE100519789 /* Debug */,
-				656AAB462E31BAE100519789 /* Release */,
+				658CA41C2E321F6800F1C7CC /* Debug */,
+				658CA41D2E321F6800F1C7CC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
