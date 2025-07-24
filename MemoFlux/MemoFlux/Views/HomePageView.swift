@@ -11,23 +11,13 @@ struct HomePageView: View {
     @State private var images: [UIImage] = []
 
     var body: some View {
-        if images.isEmpty {
-            ContentUnavailableView("没有内容", systemImage: "photo", description: Text("请从快捷指令或其他方式导入内容。"))
-                
-        } else {
-            List(images.indices, id: \.self) { index in
-                Image(uiImage: images[index])
-                    .resizable()
-                    .scaledToFit()
-                    .padding()
-            }
+        ListView(images: $images)
             .onAppear {
                 loadImage()
             }
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
                 loadImage()
             }
-        }
     }
 
     func loadImage() {

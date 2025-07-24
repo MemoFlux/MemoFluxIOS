@@ -50,7 +50,7 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		656AAAF62E314FFF00519789 /* MemoFlux */ = {
+		65574A3D2E31D4230052145C /* MemoFlux */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = MemoFlux;
 			sourceTree = "<group>";
@@ -86,9 +86,9 @@
 		656AAAEB2E314FFF00519789 = {
 			isa = PBXGroup;
 			children = (
-				656AAAF62E314FFF00519789 /* MemoFlux */,
 				656AAB3B2E31BAE100519789 /* ScreenshotIntent */,
 				656AAAF52E314FFF00519789 /* Products */,
+				65574A3D2E31D4230052145C /* MemoFlux */,
 			);
 			sourceTree = "<group>";
 		};
@@ -119,7 +119,7 @@
 				656AAB422E31BAE100519789 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				656AAAF62E314FFF00519789 /* MemoFlux */,
+				65574A3D2E31D4230052145C /* MemoFlux */,
 			);
 			name = MemoFlux;
 			packageProductDependencies = (
