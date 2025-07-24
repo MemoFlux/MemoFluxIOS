@@ -6,9 +6,48 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		656AAB432E31BAE100519789 /* ScreenshotIntent.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = 656AAB3A2E31BAE100519789 /* ScreenshotIntent.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		656AAB412E31BAE100519789 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 656AAAEC2E314FFF00519789 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 656AAB392E31BAE100519789;
+			remoteInfo = ScreenshotIntent;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		656AAB442E31BAE100519789 /* Embed ExtensionKit Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(EXTENSIONS_FOLDER_PATH)";
+			dstSubfolderSpec = 16;
+			files = (
+				656AAB432E31BAE100519789 /* ScreenshotIntent.appex in Embed ExtensionKit Extensions */,
+			);
+			name = "Embed ExtensionKit Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		656AAAF42E314FFF00519789 /* MemoFlux.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MemoFlux.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		656AAB3A2E31BAE100519789 /* ScreenshotIntent.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = ScreenshotIntent.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		656AAB472E31BAE100519789 /* Exceptions for "ScreenshotIntent" folder in "ScreenshotIntent" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 656AAB392E31BAE100519789 /* ScreenshotIntent */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		656AAAF62E314FFF00519789 /* MemoFlux */ = {
@@ -16,10 +55,25 @@
 			path = MemoFlux;
 			sourceTree = "<group>";
 		};
+		656AAB3B2E31BAE100519789 /* ScreenshotIntent */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				656AAB472E31BAE100519789 /* Exceptions for "ScreenshotIntent" folder in "ScreenshotIntent" target */,
+			);
+			path = ScreenshotIntent;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		656AAAF12E314FFF00519789 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		656AAB372E31BAE100519789 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +87,7 @@
 			isa = PBXGroup;
 			children = (
 				656AAAF62E314FFF00519789 /* MemoFlux */,
+				656AAB3B2E31BAE100519789 /* ScreenshotIntent */,
 				656AAAF52E314FFF00519789 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +96,7 @@
 			isa = PBXGroup;
 			children = (
 				656AAAF42E314FFF00519789 /* MemoFlux.app */,
+				656AAB3A2E31BAE100519789 /* ScreenshotIntent.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -55,10 +111,12 @@
 				656AAAF02E314FFF00519789 /* Sources */,
 				656AAAF12E314FFF00519789 /* Frameworks */,
 				656AAAF22E314FFF00519789 /* Resources */,
+				656AAB442E31BAE100519789 /* Embed ExtensionKit Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				656AAB422E31BAE100519789 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				656AAAF62E314FFF00519789 /* MemoFlux */,
@@ -69,6 +127,28 @@
 			productName = MemoFlux;
 			productReference = 656AAAF42E314FFF00519789 /* MemoFlux.app */;
 			productType = "com.apple.product-type.application";
+		};
+		656AAB392E31BAE100519789 /* ScreenshotIntent */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 656AAB482E31BAE100519789 /* Build configuration list for PBXNativeTarget "ScreenshotIntent" */;
+			buildPhases = (
+				656AAB362E31BAE100519789 /* Sources */,
+				656AAB372E31BAE100519789 /* Frameworks */,
+				656AAB382E31BAE100519789 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				656AAB3B2E31BAE100519789 /* ScreenshotIntent */,
+			);
+			name = ScreenshotIntent;
+			packageProductDependencies = (
+			);
+			productName = ScreenshotIntent;
+			productReference = 656AAB3A2E31BAE100519789 /* ScreenshotIntent.appex */;
+			productType = "com.apple.product-type.extensionkit-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -81,6 +161,9 @@
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
 					656AAAF32E314FFF00519789 = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					656AAB392E31BAE100519789 = {
 						CreatedOnToolsVersion = 16.4;
 					};
 				};
@@ -100,12 +183,20 @@
 			projectRoot = "";
 			targets = (
 				656AAAF32E314FFF00519789 /* MemoFlux */,
+				656AAB392E31BAE100519789 /* ScreenshotIntent */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		656AAAF22E314FFF00519789 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		656AAB382E31BAE100519789 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +213,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		656AAB362E31BAE100519789 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		656AAB422E31BAE100519789 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 656AAB392E31BAE100519789 /* ScreenshotIntent */;
+			targetProxy = 656AAB412E31BAE100519789 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		656AAAFD2E31500100519789 /* Debug */ = {
@@ -251,6 +357,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MemoFlux/MemoFlux.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9L7YZP8HTB;
@@ -279,6 +386,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MemoFlux/MemoFlux.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9L7YZP8HTB;
@@ -302,6 +410,58 @@
 			};
 			name = Release;
 		};
+		656AAB452E31BAE100519789 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ScreenshotIntent/ScreenshotIntent.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9L7YZP8HTB;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ScreenshotIntent/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ScreenshotIntent;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.shuoma.MemoFlux.ScreenshotIntent;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		656AAB462E31BAE100519789 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ScreenshotIntent/ScreenshotIntent.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9L7YZP8HTB;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ScreenshotIntent/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ScreenshotIntent;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.shuoma.MemoFlux.ScreenshotIntent;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -319,6 +479,15 @@
 			buildConfigurations = (
 				656AAB002E31500100519789 /* Debug */,
 				656AAB012E31500100519789 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		656AAB482E31BAE100519789 /* Build configuration list for PBXNativeTarget "ScreenshotIntent" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				656AAB452E31BAE100519789 /* Debug */,
+				656AAB462E31BAE100519789 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
