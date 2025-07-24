@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct CategoryView: View {
-    var body: some View {
-        Text("Hello, World!")
-    }
+  var body: some View {
+    Text("Hello, World!")
+  }
 }
 
 #Preview {
-    CategoryView()
+  CategoryView()
 }

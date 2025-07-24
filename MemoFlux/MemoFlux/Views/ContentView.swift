@@ -9,27 +9,32 @@ import SwiftUI
 import UIKit
 
 struct ContentView: View {
-    var body: some View {
-        TabView {
-            HomePageView()
-                .tabItem {
-                    Image(systemName: "house")
-                    Text("主页")
-                }
-            CategoryView()
-                .tabItem {
-                    Image(systemName: "list.bullet")
-                    Text("分类")
-                }
-            CategoryView ()
-                .tabItem {
-                    Image(systemName: "gear")
-                    Text("设置")
-                }
+  var body: some View {
+    TabView {
+      HomePageView()
+        .tabItem {
+          Image(systemName: "house")
+          Text("主页")
+        }
+      AddMemoItemView()
+        .tabItem {
+          Image(systemName: "plus")
+          Text("添加")
+        }
+      CategoryView()
+        .tabItem {
+          Image(systemName: "list.bullet")
+          Text("分类")
+        }
+      CategoryView ()
+        .tabItem {
+          Image(systemName: "gear")
+          Text("设置")
         }
     }
+  }
 }
 
 #Preview {
-    ContentView()
+  ContentView()
 }
