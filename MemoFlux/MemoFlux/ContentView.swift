@@ -6,16 +6,27 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        TabView {
+            HomePageView()
+                .tabItem {
+                    Image(systemName: "house")
+                    Text("主页")
+                }
+            CategoryView()
+                .tabItem {
+                    Image(systemName: "list.bullet")
+                    Text("分类")
+                }
+            CategoryView ()
+                .tabItem {
+                    Image(systemName: "gear")
+                    Text("设置")
+                }
         }
-        .padding()
     }
 }
 
