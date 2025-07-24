@@ -8,18 +8,22 @@
 import PhotosUI
 import SwiftUI
 
+// MARK: - 主视图
 struct AddMemoItemView: View {
   @Environment(\.dismiss) private var dismiss
+  
   @State private var showingTextInput = false
   @State private var showingImagePicker = false
   @State private var showingCamera = false
   @State private var inputText = ""
   @State private var textEditorHeight: CGFloat = 60 * 3
   @State private var isHeightAdjusted = false  // 标记高度是否已调整
-  @FocusState private var isTextEditorFocused: Bool
   @State private var keyboardShown = false
   
-  // 计算文本高度的函数
+  @FocusState private var isTextEditorFocused: Bool
+  
+  private let originalHeight: CGFloat = 180 // 原始高度
+  
   private func calculateTextHeight() -> CGFloat {
     let lineHeight: CGFloat = 25  // 估计的单行高度
     let minHeight: CGFloat = lineHeight  // 最小高度为一行
@@ -43,140 +47,34 @@ struct AddMemoItemView: View {
     return min(max(CGFloat(totalLines) * lineHeight, minHeight), maxHeight)
   }
   
-  // 原始高度
-  private let originalHeight: CGFloat = 60 * 3
-  
   var body: some View {
     NavigationStack {
       VStack(spacing: 15) {
         if !showingTextInput {
-          Button {
+          TextInputButton {
             withAnimation {
               showingTextInput = true
-              // 自动聚焦到TextEditor
               DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 isTextEditorFocused = true
               }
             }
-          } label: {
-            HStack {
-              Image(systemName: "text.bubble")
-              Text("输入/粘贴文本内容")
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 20)
           }
-          .background(Color.mainStyleBackgroundColor)
-          .foregroundStyle(.white)
-          .cornerRadius(15)
-          .padding(.horizontal, 5)
         } else {
-          VStack {
-            TextEditor(text: $inputText)
-              .frame(height: textEditorHeight)
-              .padding(10)
-              .padding(.horizontal, 5)
-              .focused($isTextEditorFocused)
-              .onChange(of: isTextEditorFocused) { focused in
-                if focused {
-                  if isHeightAdjusted && !inputText.isEmpty {
-                    withAnimation {
-                      textEditorHeight = originalHeight
-                      isHeightAdjusted = false
-                    }
-                  }
-                } else {  // 当失去焦点时
-                  if inputText.isEmpty {
-                    withAnimation {
-                      showingTextInput = false
-                    }
-                  } else {
-                    withAnimation {
-                      textEditorHeight = calculateTextHeight()
-                      isHeightAdjusted = true  // 标记高度已调整
-                    }
-                  }
-                }
-              }
-            
-            HStack {
-              Button(action: {
-                if let string = UIPasteboard.general.string {
-                  inputText = string
-                  DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    withAnimation {
-                      textEditorHeight = calculateTextHeight()
-                      isHeightAdjusted = true
-                    }
-                  }
-                }
-              }) {
-                HStack {
-                  Image(systemName: "doc.on.clipboard")
-                    .foregroundColor(Color.mainStyleBackgroundColor)
-                    .background(Color.white.opacity(0.8))
-                  Text("从剪贴板粘贴")
-                    .foregroundColor(Color.mainStyleBackgroundColor)
-                    .font(.subheadline)
-                }
-              }
-              
-              Spacer()
-              
-              Text("\(inputText.count)")
-                .font(.caption)
-                .foregroundColor(.gray)
-                .padding(8)
-            }
-            .padding(.horizontal, 15)
-            .padding(.bottom, 5)
-          }
-          .overlay(
-            ZStack {
-              RoundedRectangle(cornerRadius: 15)
-                .stroke(Color.mainStyleBackgroundColor, lineWidth: 2)
-                .padding(.horizontal, 5)
-            }
+          TextEditorView(
+            inputText: $inputText,
+            textEditorHeight: $textEditorHeight,
+            isHeightAdjusted: $isHeightAdjusted,
+            showingTextInput: $showingTextInput,
+            isTextEditorFocused: _isTextEditorFocused,
+            originalHeight: originalHeight,
+            calculateTextHeight: calculateTextHeight
           )
-          // 添加点击手势，点击空白处关闭键盘
-          .onTapGesture { _ in
-            // 只有当点击的是TextEditor外部区域时才关闭键盘
-            if !isTextEditorFocused {
-              isTextEditorFocused = false
-            }
-          }
         }
         
-        HStack(spacing: 10) {
-          Button {
-            showingCamera = true
-          } label: {
-            HStack {
-              Image(systemName: "camera")
-              Text("拍照")
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 20)
-          }
-          .foregroundStyle(.white)
-          .background(Color.mainStyleBackgroundColor)
-          .cornerRadius(15)
-          
-          Button {
-            showingImagePicker = true
-          } label: {
-            HStack {
-              Image(systemName: "photo")
-              Text("从相册选择")
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 20)
-          }
-          .foregroundStyle(.white)
-          .background(Color.mainStyleBackgroundColor)
-          .cornerRadius(15)
-        }
-        .padding(.horizontal, 5)
+        ImageActionButtons(
+          cameraAction: { showingCamera = true },
+          photoPickerAction: { showingImagePicker = true }
+        )
         
         Spacer()
       }
@@ -186,13 +84,15 @@ struct AddMemoItemView: View {
         // TODO: - 实现图片选择器
         Text("图片选择界面")
       }
-      // 点击背景关闭键盘
-      .contentShape(Rectangle())
+      .sheet(isPresented: $showingCamera) {
+        // TODO: - 实现相机调用
+        Text("相机界面")
+      }
+      .contentShape(Rectangle()) // 点击背景关闭键盘
       .onTapGesture {
         isTextEditorFocused = false
       }
-      // 监听键盘显示/隐藏
-      .onAppear {
+      .onAppear { // 监听键盘显示/隐藏
         NotificationCenter.default.addObserver(
           forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main
         ) { _ in
@@ -218,6 +118,149 @@ struct AddMemoItemView: View {
           self, name: UIResponder.keyboardWillHideNotification, object: nil)
       }
     }
+  }
+}
+
+
+// MARK: - 输入文本按钮
+struct TextInputButton: View {
+  var action: () -> Void
+  
+  var body: some View {
+    Button(action: action) {
+      HStack {
+        Image(systemName: "text.bubble")
+        Text("输入/粘贴文本内容")
+      }
+      .frame(maxWidth: .infinity)
+      .padding(.vertical, 20)
+    }
+    .background(Color.mainStyleBackgroundColor)
+    .foregroundStyle(.white)
+    .cornerRadius(15)
+    .padding(.horizontal, 5)
+  }
+}
+
+// MARK: - 文本编辑器
+struct TextEditorView: View {
+  @Binding var inputText: String
+  @Binding var textEditorHeight: CGFloat
+  @Binding var isHeightAdjusted: Bool
+  @Binding var showingTextInput: Bool
+  @FocusState var isTextEditorFocused: Bool
+  let originalHeight: CGFloat
+  var calculateTextHeight: () -> CGFloat
+  
+  var body: some View {
+    VStack {
+      TextEditor(text: $inputText)
+        .frame(height: textEditorHeight)
+        .padding(10)
+        .padding(.horizontal, 5)
+        .focused($isTextEditorFocused)
+        .onChange(of: isTextEditorFocused) { focused in
+          if focused {
+            if isHeightAdjusted && !inputText.isEmpty {
+              withAnimation {
+                textEditorHeight = originalHeight
+                isHeightAdjusted = false
+              }
+            }
+          } else {
+            if inputText.isEmpty {
+              withAnimation {
+                showingTextInput = false
+              }
+            } else {
+              withAnimation {
+                textEditorHeight = calculateTextHeight()
+                isHeightAdjusted = true  // 标记高度已调整
+              }
+            }
+          }
+        }
+      
+      HStack {
+        Button(action: {
+          if let string = UIPasteboard.general.string {
+            inputText = string
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+              withAnimation {
+                textEditorHeight = calculateTextHeight()
+                isHeightAdjusted = true
+              }
+            }
+          }
+        }) {
+          HStack {
+            Image(systemName: "doc.on.clipboard")
+              .foregroundColor(Color.mainStyleBackgroundColor)
+              .background(Color.white.opacity(0.8))
+            Text("从剪贴板粘贴")
+              .foregroundColor(Color.mainStyleBackgroundColor)
+              .font(.subheadline)
+          }
+        }
+        
+        Spacer()
+        
+        Text("\(inputText.count)")
+          .font(.caption)
+          .foregroundColor(.gray)
+          .padding(8)
+      }
+      .padding(.horizontal, 15)
+      .padding(.bottom, 5)
+    }
+    .overlay(
+      ZStack {
+        RoundedRectangle(cornerRadius: 15)
+          .stroke(Color.mainStyleBackgroundColor, lineWidth: 2)
+          .padding(.horizontal, 5)
+      }
+    )
+    .onTapGesture { _ in
+      // 点击TextEditor外部区域关闭键盘
+      if !isTextEditorFocused {
+        isTextEditorFocused = false
+      }
+    }
+  }
+}
+
+// MARK: - 图像操作按钮
+struct ImageActionButtons: View {
+  var cameraAction: () -> Void
+  var photoPickerAction: () -> Void
+  
+  var body: some View {
+    HStack(spacing: 10) {
+      Button(action: cameraAction) {
+        HStack {
+          Image(systemName: "camera")
+          Text("拍照")
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 20)
+      }
+      .foregroundStyle(.white)
+      .background(Color.mainStyleBackgroundColor)
+      .cornerRadius(15)
+      
+      Button(action: photoPickerAction) {
+        HStack {
+          Image(systemName: "photo")
+          Text("从相册选择")
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 20)
+      }
+      .foregroundStyle(.white)
+      .background(Color.mainStyleBackgroundColor)
+      .cornerRadius(15)
+    }
+    .padding(.horizontal, 5)
   }
 }
 
