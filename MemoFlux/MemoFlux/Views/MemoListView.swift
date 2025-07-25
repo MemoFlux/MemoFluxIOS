@@ -191,6 +191,7 @@ struct MemoCardView: View {
   }
   
   // TODO: - 高度计算待优化
+  // MARK: - 文本高度行数计算
   /// 注意：isPortrait表示图片是纵向的，但布局逻辑中：
   /// isPortrait = true 时使用横向布局（图片在左，文本在右）
   /// isPortrait = false 时使用纵向布局（图片在上，文本在下）
@@ -339,8 +340,8 @@ struct FlowLayout: Layout {
       let size = subview.sizeThatFits(ProposedViewSize(width: maxWidth, height: nil))
       sizes.append(size)
       
+      // 换行
       if currentX + size.width > maxWidth, currentX > 0 {
-        // 换行
         currentX = 0
         currentY += lineHeight + spacing
         lineHeight = 0
@@ -379,7 +380,7 @@ private func createTestMemoItems() -> [MemoItemModel] {
   let calendar = Calendar.current
   
   // 创建不同尺寸的测试图片
-  let portraitImage = createTestImage(width: 300, height: 800, color: .systemBlue)
+  let portraitImage = createTestImage(width: 300, height: 400, color: .systemBlue)
   let landscapeImage = createTestImage(width: 400, height: 300, color: .systemGreen)
   let squareImage = createTestImage(width: 300, height: 300, color: .systemOrange)
   
