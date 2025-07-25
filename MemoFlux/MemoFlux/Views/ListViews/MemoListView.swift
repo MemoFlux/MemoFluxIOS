@@ -133,9 +133,39 @@ struct MemoCardView: View {
     .background(Color.white)
     .cornerRadius(16)
     .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+    .contextMenu {
+      // 编辑按钮
+      Button {
+        // TODO: 实现编辑逻辑
+        print("编辑 Memo: \(item.title)")
+      } label: {
+        Label("编辑", systemImage: "pencil")
+      }
+      .tint(.blue)
+      
+      // 删除按钮
+      Button(role: .destructive) {
+        deleteMemo()
+      } label: {
+        Label("删除", systemImage: "trash")
+      }
+    }
     .onAppear {
       if item.recognizedText.isEmpty, let image = item.image {
         recognizeText(for: item, image: image)
+      }
+    }
+  }
+  
+  // MARK: - 删除 Memo
+  private func deleteMemo() {
+    withAnimation {
+      modelContext.delete(item)
+      
+      do {
+        try modelContext.save()
+      } catch {
+        print("删除 Memo 失败: \(error)")
       }
     }
   }
@@ -357,7 +387,6 @@ struct FlowLayout: Layout {
   }
 }
 
-
 // MARK: - 预览相关
 #Preview {
   // 测试用 ModelContext
@@ -472,4 +501,3 @@ private func createTestImage(width: CGFloat, height: CGFloat, color: UIColor) ->
     text.draw(in: textRect, withAttributes: attributes)
   }
 }
-

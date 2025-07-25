@@ -15,7 +15,7 @@ struct ConfirmAddMemoButton: View {
   let tags: Set<String>
   let modelContext: ModelContext
   let onSave: () -> Void
-
+  
   var body: some View {
     Button {
       saveMemo()
@@ -30,11 +30,11 @@ struct ConfirmAddMemoButton: View {
     }
     .padding(.top, 30)
   }
-
+  
   private func saveMemo() {
     // 创建新的 MemoItemModel
     let newMemo: MemoItemModel
-
+    
     if let image = image {
       // 如果有图片，使用图片初始化
       newMemo = MemoItemModel(
@@ -56,10 +56,10 @@ struct ConfirmAddMemoButton: View {
         source: "手动创建"
       )
     }
-
+    
     // 保存到 SwiftData
     modelContext.insert(newMemo)
-
+    
     do {
       try modelContext.save()
       // 保存成功后调用回调
