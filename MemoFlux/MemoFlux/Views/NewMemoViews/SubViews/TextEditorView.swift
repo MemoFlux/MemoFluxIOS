@@ -198,16 +198,18 @@ class TextInputCoordinator: NSObject, UITextFieldDelegate, UITextViewDelegate {
   }
 
   // MARK: - UITextFieldDelegate
-
   func textField(
     _ textField: UITextField,
     shouldChangeCharactersIn range: NSRange,
     replacementString string: String
   ) -> Bool {
-    let newText =
-      (textField.text as NSString?)?.replacingCharacters(in: range, with: string) ?? string
-    parent.text = newText
     return true
+  }
+
+  func textFieldDidChangeSelection(_ textField: UITextField) {
+    if let text = textField.text, text != parent.text {
+      parent.text = text
+    }
   }
 
   func textFieldShouldReturn(_ textField: UITextField) -> Bool {
