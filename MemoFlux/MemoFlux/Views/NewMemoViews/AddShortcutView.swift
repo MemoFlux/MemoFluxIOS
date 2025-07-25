@@ -9,7 +9,11 @@ import SwiftUI
 
 struct AddShortcutView: View {
   var body: some View {
-    Text("Hello, World!")
+    Group {
+      Text("Hello, World!")
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .background(Color.globalStyleBackgroundColor)
   }
 }
 

@@ -97,6 +97,7 @@ struct AddMemoItemView: View {
         .padding()
         .padding(.horizontal, 5)
       }
+      .background(Color.globalStyleBackgroundColor)
       .ignoresSafeArea(.keyboard)
       .navigationTitle("创建Memo")
       .fullScreenCover(isPresented: $showingCamera) {  // 相机调用

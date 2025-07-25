@@ -32,6 +32,7 @@ struct ContentView: View {
           Text("设置")
         }
     }
+    .background(Color.globalStyleBackgroundColor)
   }
 }
 
