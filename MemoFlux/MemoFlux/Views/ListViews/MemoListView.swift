@@ -14,10 +14,19 @@ struct MemoListView: View {
   let memoItems: [MemoItemModel]
   let modelContext: ModelContext
   
+  // 搜索相关状态
   @State private var searchText = ""
-  @State private var isSearching = false
+  @Binding var isSearchActive: Bool
   
-  // MARK: - 过滤后的备忘录
+  // 初始化方法，支持可选的搜索状态绑定
+  init(memoItems: [MemoItemModel], modelContext: ModelContext, isSearchActive: Binding<Bool>? = nil)
+  {
+    self.memoItems = memoItems
+    self.modelContext = modelContext
+    self._isSearchActive = isSearchActive ?? .constant(false)
+  }
+  
+  // 过滤后的备忘录
   private var filteredItems: [MemoItemModel] {
     if searchText.isEmpty {
       return memoItems
@@ -66,52 +75,49 @@ struct MemoListView: View {
       ContentUnavailableView(
         "没有内容", systemImage: "photo", description: Text("请从快捷指令或其他来源导入内容。"))
     } else {
-      NavigationStack {
-        VStack(spacing: 0) {
-          // 搜索结果为空时的提示
-          if !searchText.isEmpty && filteredItems.isEmpty {
-            ContentUnavailableView(
-              "没有找到相关内容",
-              systemImage: "magnifyingglass",
-              description: Text("尝试使用其他关键词搜索")
-            )
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-          } else {
-            ScrollView {
-              LazyVStack(spacing: 16, pinnedViews: [.sectionHeaders]) {
-                ForEach(groupedItems, id: \.0) { section in
-                  Section {
-                    LazyVStack(spacing: 12) {
-                      ForEach(section.1) { item in
-                        NavigationLink(destination: ListCellDetailView(item: item)) {
-                          MemoCardView(
-                            item: item,
-                            modelContext: modelContext,
-                            searchText: searchText
-                          )
-                        }
-                        .buttonStyle(PlainButtonStyle())
+      VStack(spacing: 0) {
+        if !searchText.isEmpty && filteredItems.isEmpty {
+          ContentUnavailableView(
+            "没有找到相关内容",
+            systemImage: "magnifyingglass",
+            description: Text("尝试使用其他关键词搜索")
+          )
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+          ScrollView {
+            LazyVStack(spacing: 16, pinnedViews: [.sectionHeaders]) {
+              ForEach(groupedItems, id: \.0) { section in
+                Section {
+                  LazyVStack(spacing: 12) {
+                    ForEach(section.1) { item in
+                      NavigationLink(destination: ListCellDetailView(item: item)) {
+                        MemoCardView(
+                          item: item,
+                          modelContext: modelContext,
+                          searchText: searchText
+                        )
                       }
+                      .buttonStyle(PlainButtonStyle())
                     }
-                    .padding(.horizontal, 16)
-                  } header: {
-                    SectionHeaderView(title: section.0)
                   }
+                  .padding(.horizontal, 16)
+                } header: {
+                  SectionHeaderView(title: section.0)
                 }
               }
-              .padding(.top, 8)
             }
+            .padding(.top, 8)
           }
         }
-        .navigationTitle("Memo")
-        .background(Color.globalStyleBackgroundColor)
-        .searchable(
-          text: $searchText,
-          isPresented: $isSearching,
-          placement: .navigationBarDrawer(displayMode: .automatic),
-          prompt: "搜索Memo..."
-        )
       }
+      .navigationTitle("Memo")
+      .background(Color.globalStyleBackgroundColor)
+      .searchable(
+        text: $searchText,
+        isPresented: $isSearchActive,
+        placement: .navigationBarDrawer(displayMode: .automatic),
+        prompt: "搜索Memo..."
+      )
     }
   }
 }

@@ -15,30 +15,44 @@ struct HomePageView: View {
   @Environment(\.modelContext) private var modelContext
   
   @State private var showingAddMemoView = false
+  @State private var isSearchActive = false
   
   var body: some View {
     NavigationStack {
-      MemoListView(memoItems: memoItems, modelContext: modelContext)
-        .background(Color.globalStyleBackgroundColor)
-        .onAppear {
-          loadImage()
-        }
-        .onReceive(
-          NotificationCenter.default.publisher(
-            for: UIApplication.willEnterForegroundNotification)
-        ) { _ in
-          loadImage()
-        }
-        .toolbar {
-          ToolbarItem(placement: .navigationBarTrailing) {
-            Button {
-              showingAddMemoView = true
-            } label: {
-              Image(systemName: "plus")
-                .font(.system(size: 18, weight: .bold))
-            }
+      MemoListView(
+        memoItems: memoItems,
+        modelContext: modelContext,
+        isSearchActive: $isSearchActive
+      )
+      .background(Color.globalStyleBackgroundColor)
+      .onAppear {
+        loadImage()
+      }
+      .onReceive(
+        NotificationCenter.default.publisher(
+          for: UIApplication.willEnterForegroundNotification)
+      ) { _ in
+        loadImage()
+      }
+      .toolbar {
+        ToolbarItemGroup(placement: .navigationBarTrailing) {
+          // 搜索按钮
+          Button {
+            isSearchActive = true
+          } label: {
+            Image(systemName: "magnifyingglass")
+              .font(.system(size: 18, weight: .medium))
+          }
+          
+          // 添加按钮
+          Button {
+            showingAddMemoView = true
+          } label: {
+            Image(systemName: "plus")
+              .font(.system(size: 18, weight: .bold))
           }
         }
+      }
     }
     .fullScreenCover(isPresented: $showingAddMemoView) {
       AddMemoItemView()
