@@ -11,18 +11,18 @@ import UIKit
 
 struct AddMemoItemView: View {
   @Environment(\.dismiss) private var dismiss
-  
+
   @State private var showingImagePicker = false
   @State private var showingCamera = false
   @State private var inputTitle = ""
   @State private var inputText = ""
-  @State private var useAIParsing = true // AI解析选项，默认开启
-  
+  @State private var useAIParsing = true  // AI解析选项，默认开启
+
   @State private var selectedImage: UIImage?
   @State private var selectedPhotoItem: PhotosPickerItem?
-  
+
   @FocusState private var isTextEditorFocused: Bool
-  
+
   var body: some View {
     NavigationStack {
       ScrollView {
@@ -34,12 +34,12 @@ struct AddMemoItemView: View {
             useAIParsing: $useAIParsing
           )
           .padding(.bottom, 5)
-          
+
           ImageActionButtonsView(
             cameraAction: { showingCamera = true },
             photoPickerAction: { showingImagePicker = true }
           )
-          
+
           HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 5) {
               HStack {
@@ -47,7 +47,7 @@ struct AddMemoItemView: View {
                   .font(.caption)
                   .foregroundStyle(.gray)
                   .frame(maxWidth: .infinity, alignment: .leading)
-                
+
                 NavigationLink(destination: AddShortcutView()) {
                   HStack(spacing: 0) {
                     Text("推荐使用快捷指令！")
@@ -57,7 +57,7 @@ struct AddMemoItemView: View {
                 .font(.caption)
                 .padding(.trailing, 5)
               }
-              
+
               if let image = selectedImage {
                 withAnimation {
                   Image(uiImage: image)
@@ -84,10 +84,13 @@ struct AddMemoItemView: View {
             .padding(.leading, 5)
           }
           .padding(.horizontal, 6)
-          
+
           AnalysisModuleView()
-            .padding(.top)
-          
+            .padding(.top, 10)
+
+          IntentDetectView()
+            .padding(.top, 10)
+
           // 保证内容不被键盘遮挡
           Spacer(minLength: 100)
         }
@@ -96,7 +99,7 @@ struct AddMemoItemView: View {
       }
       .ignoresSafeArea(.keyboard)
       .navigationTitle("创建Memo")
-      .fullScreenCover(isPresented: $showingCamera) { // 相机调用
+      .fullScreenCover(isPresented: $showingCamera) {  // 相机调用
         CameraView(image: $selectedImage, isShown: $showingCamera)
           .ignoresSafeArea()
       }
@@ -109,7 +112,7 @@ struct AddMemoItemView: View {
       .onChange(of: selectedPhotoItem) { newItem in
         Task {
           if let data = try? await newItem?.loadTransferable(type: Data.self),
-             let uiImage = UIImage(data: data)
+            let uiImage = UIImage(data: data)
           {
             withAnimation {
               selectedImage = uiImage
