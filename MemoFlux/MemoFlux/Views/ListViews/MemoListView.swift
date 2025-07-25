@@ -86,6 +86,12 @@ struct MemoListView: View {
         } else {
           ScrollView {
             LazyVStack(spacing: 16, pinnedViews: [.sectionHeaders]) {
+              if searchText.isEmpty {
+                IntentDiscoveryView()
+                  .padding(.horizontal, 16)
+                  .padding(.bottom, 8)
+              }
+              
               ForEach(groupedItems, id: \.0) { section in
                 Section {
                   LazyVStack(spacing: 12) {
@@ -530,7 +536,7 @@ struct FlowLayout: Layout {
     )
   }
   .modelContainer(container)
-  .preferredColorScheme(.light) // 确保使用浅色模式进行预览
+  .preferredColorScheme(.light)  // 确保使用浅色模式进行预览
 }
 
 // 测试数据辅助函数
