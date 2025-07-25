@@ -11,12 +11,14 @@ import UIKit
 
 struct AddMemoItemView: View {
   @Environment(\.dismiss) private var dismiss
+  @Environment(\.modelContext) private var modelContext
 
   @State private var showingImagePicker = false
   @State private var showingCamera = false
   @State private var inputTitle = ""
   @State private var inputText = ""
   @State private var useAIParsing = true  // AI解析选项，默认开启
+  @State private var selectedTags: Set<String> = ["工作"]  // 添加选中标签状态
 
   @State private var selectedImage: UIImage?
   @State private var selectedPhotoItem: PhotosPickerItem?
@@ -86,10 +88,26 @@ struct AddMemoItemView: View {
           .padding(.horizontal, 6)
 
           if useAIParsing {
-            WithAIParsingView()
-          } else {
-            WithoutAIParsingView()
+            AnalysisModuleView()
+              .padding(.top, 10)
+            
+            IntentDetectView()
+              .padding(.top, 10)
           }
+          
+          TagsSelectView(selectedTags: $selectedTags)
+            .padding(.top, 10)
+          
+          ConfirmAddMemoButton(
+            title: inputTitle,
+            text: inputText,
+            image: selectedImage,
+            tags: selectedTags,
+            modelContext: modelContext,
+            onSave: {
+              dismiss()
+            }
+          )
 
           // 保证内容不被键盘遮挡
           Spacer(minLength: 100)

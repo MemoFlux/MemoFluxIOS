@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct TagsSelectView: View {
-  @State private var selectedTags: Set<String> = ["工作"]
+  @Binding var selectedTags: Set<String>
   @State private var recommendedTags = ["工作", "会议", "笔记", "任务", "日程", "旅行", "美食"]
 
   var body: some View {
@@ -32,12 +32,6 @@ struct TagsSelectView: View {
 
       // 卡片容器
       VStack(alignment: .leading, spacing: 0) {
-        // 描述文本
-        //        Text("基于内容智能推荐的标签，点击选择：")
-        //          .font(.system(size: 12))
-        //          .foregroundColor(.grayTextColor)
-        //          .padding(.bottom, 12)
-
         // 标签芯片布局
         LazyVGrid(
           columns: [
@@ -95,5 +89,15 @@ struct TagChipView: View {
 }
 
 #Preview {
-  TagsSelectView()
+  struct PreviewWrapper: View {
+    @State private var selectedTags: Set<String> = ["工作", "笔记"]
+
+    var body: some View {
+      TagsSelectView(selectedTags: $selectedTags)
+        .padding()
+        .background(Color.globalStyleBackgroundColor)
+    }
+  }
+
+  return PreviewWrapper()
 }
