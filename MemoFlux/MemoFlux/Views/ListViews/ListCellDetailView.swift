@@ -5,134 +5,166 @@
 //  Created by 马硕 on 2025/7/24.
 //
 
-import EventKit
-import EventKitUI
 import SwiftData
 import SwiftUI
+import UIKit
+
+// MARK: - 数据类型枚举
+enum DataType: String, CaseIterable {
+  case knowledge = "知识"
+  case information = "信息"
+  case schedule = "日程"
+}
 
 struct ListCellDetailView: View {
   let item: MemoItemModel
-  @State private var showingCalendarAlert = false
-  @State private var showingReminderAlert = false
-  @State private var calendarStatus = ""
-  @State private var reminderStatus = ""
-  
-  @State private var showingReminderConfirmation = false
-  
+
+  // API 响应数据相关状态
+  @State private var selectedDataType: DataType = .knowledge
+  @State private var apiResponse: APIResponse?
+  @State private var isLoadingData = false
+
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 16) {
+        // 原有的图片和基本信息展示
         if let image = item.image {
           Image(uiImage: image)
             .resizable()
             .scaledToFit()
-            .cornerRadius(12)
+            .cornerRadius(10)
             .shadow(radius: 3)
             .frame(maxWidth: .infinity)
-            .frame(maxHeight: UIScreen.main.bounds.height / 2)  // 限制最大高度为屏幕高度的一半
+            .frame(maxHeight: UIScreen.main.bounds.height / 2)
         }
-        
+
         if !item.title.isEmpty {
           Text(item.title)
             .font(.title)
             .fontWeight(.bold)
             .padding(.horizontal)
         }
-        
+
+        // 基本信息
+        basicInfoSection
+
+        // 标签展示
+        tagsSection
+
+        Divider()
+          .padding(.vertical, 8)
+
+        // API 数据展示部分
+        apiDataSection
+      }
+      .padding(.vertical)
+    }
+    .navigationTitle("详细信息")
+    .navigationBarTitleDisplayMode(.inline)
+    .background(Color(.globalStyleBackgroundColor))
+    .onAppear {
+      loadAPIData()
+    }
+  }
+
+  // MARK: - 基本信息部分
+  private var basicInfoSection: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      HStack {
+        Image(systemName: "calendar")
+        Text("创建时间: \(item.createdAt.formatted(date: .abbreviated, time: .shortened))")
+        Spacer()
+      }
+      .font(.subheadline)
+      .foregroundColor(.secondary)
+      .padding(.horizontal)
+
+      if !item.source.isEmpty {
         HStack {
-          Image(systemName: "calendar")
-          Text("创建时间: \(item.createdAt.formatted(date: .abbreviated, time: .shortened))")
+          Image(systemName: "link")
+          Text("来源: \(item.source)")
           Spacer()
         }
         .font(.subheadline)
         .foregroundColor(.secondary)
         .padding(.horizontal)
-        
-        if !item.source.isEmpty {
+      }
+    }
+  }
+
+  // MARK: - 标签部分
+  private var tagsSection: some View {
+    Group {
+      if !item.tags.isEmpty {
+        ScrollView(.horizontal, showsIndicators: false) {
           HStack {
-            Image(systemName: "link")
-            Text("来源: \(item.source)")
-            Spacer()
+            ForEach(item.tags, id: \.self) { tag in
+              Text(tag)
+                .font(.caption)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.blue.opacity(0.2))
+                .cornerRadius(8)
+            }
           }
-          .font(.subheadline)
-          .foregroundColor(.secondary)
           .padding(.horizontal)
         }
-        
-        HStack(spacing: 16) {
-          Button(action: {
-            addToCalendar()
-          }) {
-            HStack {
-              Image(systemName: "calendar.badge.plus")
-              Text("添加到日历")
-            }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 12)
-            .background(Color.blue.opacity(0.1))
-            .cornerRadius(8)
-          }
-          .alert("日历", isPresented: $showingCalendarAlert) {
-            Button("确定", role: .cancel) {}
-          } message: {
-            Text(calendarStatus)
-          }
-          
-          Button(action: {
-            showingReminderConfirmation = true
-          }) {
-            HStack {
-              Image(systemName: "list.bullet.clipboard")
-              Text("添加到提醒事项")
-            }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 12)
-            .background(Color.orange.opacity(0.1))
-            .cornerRadius(8)
-          }
-          .alert("提醒事项", isPresented: $showingReminderAlert) {
-            Button("确定", role: .cancel) {}
-          } message: {
-            Text(reminderStatus)
-          }
-          .sheet(isPresented: $showingReminderConfirmation) {
-            ReminderConfirmationView(
-              item: item, isPresented: $showingReminderConfirmation,
-              onConfirm: { title, notes, date, hasDate in
-                // 传递修改后的值给addToReminder方法
-                addToReminder(
-                  title: title, notes: notes, date: hasDate ? date : nil)
-              })
-          }
-        }
-        .padding(.horizontal)
-        .padding(.top, 4)
-        
-        if !item.tags.isEmpty {
-          ScrollView(.horizontal, showsIndicators: false) {
-            HStack {
-              ForEach(item.tags, id: \.self) { tag in
-                Text(tag)
-                  .font(.caption)
-                  .padding(.horizontal, 8)
-                  .padding(.vertical, 4)
-                  .background(Color.blue.opacity(0.2))
-                  .cornerRadius(8)
-              }
-            }
-            .padding(.horizontal)
-          }
-        }
-        
-        Divider()
-          .padding(.vertical, 8)
-        
-        VStack(alignment: .leading, spacing: 8) {
-          Text("识别内容")
+      }
+    }
+  }
+
+  // MARK: - API 数据展示部分
+  private var apiDataSection: some View {
+    VStack(alignment: .leading, spacing: 16) {
+      if let response = apiResponse, !response.information.summary.isEmpty {
+        VStack(alignment: .leading, spacing: 10) {
+          Text("摘要")
             .font(.headline)
-            .padding(.horizontal)
-          
+            .padding(.leading, 5)
+
+          Text(response.information.summary)
+            .font(.body)
+            .foregroundColor(.secondary)
+            .padding()
+            .background(Color.blue.opacity(0.1))
+            .cornerRadius(15)
+
+          Text("解析内容")
+            .font(.headline)
+            .padding(.leading, 5)
+        }
+        .padding(.horizontal, 16)
+      }
+
+      // 数据类型选择器
+      Picker("数据类型", selection: $selectedDataType) {
+        ForEach(DataType.allCases, id: \.self) { type in
+          Text(type.rawValue).tag(type)
+        }
+      }
+      .pickerStyle(SegmentedPickerStyle())
+      .padding(.horizontal)
+
+      // 根据选择的类型显示相应数据
+      if isLoadingData {
+        ProgressView("加载中...")
+          .frame(maxWidth: .infinity, alignment: .center)
+          .padding()
+      } else if let response = apiResponse {
+        switch selectedDataType {
+        case .knowledge:
+          KnowledgeView(knowledge: response.knowledge)
+        case .information:
+          InformationView(information: response.information)
+        case .schedule:
+          ScheduleView(schedule: response.schedule)
+        }
+      } else {
+        // 显示原有的识别内容作为后备
+        VStack(alignment: .leading, spacing: 8) {
           if !item.recognizedText.isEmpty {
+            Text("本地识别结果")
+              .bold()
             Text(item.recognizedText)
               .font(.body)
               .padding()
@@ -148,111 +180,261 @@ struct ListCellDetailView: View {
           }
         }
       }
-      .padding(.vertical)
-    }
-    .navigationTitle("详细信息")
-    .navigationBarTitleDisplayMode(.inline)
-    .background(Color.globalStyleBackgroundColor)
-  }
-  
-  // MARK: - 添加到日历
-  private func addToCalendar() {
-    EventManager.shared.requestCalendarAccess { granted, error in
-      if granted && error == nil {
-        let event = EventManager.shared.createCalendarEvent(
-          title: self.item.title,
-          notes: self.item.recognizedText,
-          startDate: self.item.scheduledDate ?? Date()
-        )
-        
-        EventManager.shared.presentCalendarEventEditor(for: event)
-      } else {
-        self.calendarStatus = "无法访问日历: \(error?.localizedDescription ?? "未授权")"
-        self.showingCalendarAlert = true
-      }
     }
   }
-  
-  // MARK: - 添加到提醒事项
-  private func addToReminder(title: String, notes: String, date: Date?) {
-    EventManager.shared.addReminder(title: title, notes: notes, date: date) { success, error in
-      if success {
-        self.reminderStatus = "已成功添加到提醒事项"
+
+  // MARK: - 加载 API 数据
+  private func loadAPIData() {
+    isLoadingData = true
+
+    // 模拟从 response.json 加载数据
+    DispatchQueue.global(qos: .userInitiated).async {
+      if let path = Bundle.main.path(forResource: "response", ofType: "json"),
+        let data = try? Data(contentsOf: URL(fileURLWithPath: path)),
+        let response = try? JSONDecoder().decode(APIResponse.self, from: data)
+      {
+
+        DispatchQueue.main.async {
+          self.apiResponse = response
+          self.isLoadingData = false
+        }
       } else {
-        self.reminderStatus = "添加到提醒事项失败: \(error?.localizedDescription ?? "未知错误")"
+        DispatchQueue.main.async {
+          self.isLoadingData = false
+        }
       }
-      self.showingReminderAlert = true
     }
   }
 }
 
-// MARK: - 添加到提醒事项的二次确认视图
-struct ReminderConfirmationView: View {
-  let item: MemoItemModel
-  @Binding var isPresented: Bool
-  let onConfirm: (String, String, Date, Bool) -> Void  //传递所有提醒事项字段
-  
-  @State private var reminderTitle: String
-  @State private var reminderNotes: String
-  @State private var reminderDate: Date
-  @State private var hasDate: Bool
-  
-  init(
-    item: MemoItemModel, isPresented: Binding<Bool>,
-    onConfirm: @escaping (String, String, Date, Bool) -> Void
-  ) {
-    self.item = item
-    self._isPresented = isPresented
-    self.onConfirm = onConfirm
-    
-    // 初始化状态变量
-    self.reminderTitle = item.title.isEmpty ? "来自Memo" : item.title
-    self.reminderNotes = item.recognizedText
-    self.reminderDate = item.scheduledDate ?? Date()
-    self.hasDate = item.scheduledDate != nil
-  }
-  
+// MARK: - Knowledge 视图
+struct KnowledgeView: View {
+  let knowledge: KnowledgeResponse
+
   var body: some View {
-    NavigationStack {
-      Form {
-        Section(header: Text("提醒事项详情")) {
-          TextField("标题", text: $reminderTitle)
-          
-          Toggle("设置日期", isOn: $hasDate)
-          
-          if hasDate {
-            DatePicker(
-              "日期和时间", selection: $reminderDate,
-              displayedComponents: [.date, .hourAndMinute])
+    VStack(alignment: .leading, spacing: 12) {
+      // 标题
+      Text(knowledge.title)
+        .font(.title2)
+        .fontWeight(.semibold)
+        .padding(.horizontal)
+
+      // 标签
+      if !knowledge.tags.isEmpty {
+        ScrollView(.horizontal, showsIndicators: false) {
+          HStack {
+            ForEach(knowledge.tags, id: \.self) { tag in
+              Text(tag)
+                .font(.caption)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.green.opacity(0.2))
+                .cornerRadius(8)
+            }
           }
-          
-          VStack(alignment: .leading) {
-            Text("备注")
-            TextEditor(text: $reminderNotes)
-              .frame(minHeight: 100)
-              .padding(4)
-              .background(Color(.systemGray6))
-              .cornerRadius(8)
+          .padding(.horizontal)
+        }
+      }
+
+      LazyVStack(alignment: .leading, spacing: 8) {
+        ForEach(knowledge.knowledgeItems) { item in
+          VStack(alignment: .leading, spacing: 8) {
+            Text(item.header)
+              .font(.headline)
+              .bold()
+              .padding(.vertical, 5)
+
+            Text(item.content)
+              .font(.body)
+              .foregroundColor(.secondary)
+          }
+          .padding()
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .background(Color.white)
+          .cornerRadius(15)
+        }
+      }
+      .padding(.horizontal)
+      .listStyle(PlainListStyle())
+    }
+  }
+}
+
+// MARK: - Information 视图
+struct InformationView: View {
+  let information: InformationResponse
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      // 标题
+      Text(information.title)
+        .font(.title2)
+        .fontWeight(.semibold)
+        .padding(.horizontal)
+
+      // 类型
+      HStack {
+        Text("类型:")
+          .font(.subheadline)
+          .fontWeight(.medium)
+        Text(information.postType)
+          .font(.subheadline)
+          .fontWeight(.regular)
+        Spacer()
+      }
+      .padding(.horizontal)
+
+      // 标签
+      if !information.tags.isEmpty {
+        ScrollView(.horizontal, showsIndicators: false) {
+          HStack {
+            ForEach(information.tags, id: \.self) { tag in
+              Text(tag)
+                .font(.caption)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.orange.opacity(0.2))
+                .cornerRadius(8)
+            }
+          }
+          .padding(.horizontal)
+        }
+      }
+
+      // 信息项目
+      LazyVStack(alignment: .leading, spacing: 8) {
+        ForEach(information.informationItems) { item in
+          VStack(alignment: .leading, spacing: 8) {
+            Text(item.header)
+              .font(.headline)
+              .bold()
+              .padding(.vertical, 5)
+
+            Text(item.content)
+              .font(.body)
+              .foregroundColor(.secondary)
+          }
+          .padding()
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .background(Color.white)
+          .cornerRadius(15)
+        }
+      }
+      .padding(.horizontal)
+      .listStyle(PlainListStyle())
+    }
+  }
+}
+
+// MARK: - Schedule 视图
+struct ScheduleView: View {
+  let schedule: ScheduleResponse
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      // 标题
+      Text(schedule.title)
+        .font(.title2)
+        .fontWeight(.semibold)
+        .padding(.horizontal)
+
+      // 分类
+      HStack {
+        Text("分类:")
+          .font(.subheadline)
+          .fontWeight(.medium)
+        Text(schedule.category)
+          .font(.subheadline)
+          .foregroundColor(.secondary)
+        Spacer()
+      }
+      .padding(.horizontal)
+
+      // 任务列表
+      LazyVStack(alignment: .leading, spacing: 8) {
+        ForEach(schedule.tasks) { task in
+          ScheduleTaskCard(task: task)
+        }
+      }
+      .padding(.horizontal)
+    }
+  }
+}
+
+// MARK: - Schedule 任务卡片
+struct ScheduleTaskCard: View {
+  let task: ScheduleTask
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      // 主题和时间
+      HStack {
+        Text(task.theme)
+          .font(.headline)
+          .foregroundColor(.primary)
+        Spacer()
+        if let startDate = task.startDate {
+          Text(startDate.formatted(date: .abbreviated, time: .shortened))
+            .font(.caption)
+            .foregroundColor(.secondary)
+        }
+      }
+
+      // 核心任务
+      if !task.coreTasks.isEmpty {
+        VStack(alignment: .leading, spacing: 4) {
+          Text("核心任务:")
+            .font(.subheadline)
+            .fontWeight(.medium)
+          ForEach(task.coreTasks, id: \.self) { coreTask in
+            HStack {
+              Image(systemName: "checkmark.circle")
+                .foregroundColor(.green)
+              Text(coreTask)
+                .font(.body)
+              Spacer()
+            }
           }
         }
       }
-      .navigationTitle("添加到提醒事项")
-      .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .cancellationAction) {
-          Button("取消") {
-            isPresented = false
+
+      // 建议行动
+      if !task.suggestedActions.isEmpty {
+        VStack(alignment: .leading, spacing: 4) {
+          Text("建议行动:")
+            .font(.subheadline)
+            .fontWeight(.medium)
+          ForEach(task.suggestedActions, id: \.self) { action in
+            HStack {
+              Image(systemName: "lightbulb")
+                .foregroundColor(.yellow)
+              Text(action)
+                .font(.body)
+              Spacer()
+            }
           }
         }
-        
-        ToolbarItem(placement: .confirmationAction) {
-          Button("添加") {
-            onConfirm(reminderTitle, reminderNotes, reminderDate, hasDate)
-            isPresented = false
+      }
+
+      // 标签
+      if !task.tags.isEmpty {
+        ScrollView(.horizontal, showsIndicators: false) {
+          HStack {
+            ForEach(task.tags, id: \.self) { tag in
+              Text(tag)
+                .font(.caption)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(Color.purple.opacity(0.2))
+                .cornerRadius(6)
+            }
           }
         }
       }
     }
+    .padding()
+    .background(Color.white)
+    .cornerRadius(15)
   }
 }
 
@@ -266,7 +448,7 @@ struct ReminderConfirmationView: View {
     createdAt: Date(),
     source: "预览数据"
   )
-  
+
   return NavigationStack {
     ListCellDetailView(item: previewItem)
   }
