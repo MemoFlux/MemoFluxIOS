@@ -10,46 +10,58 @@ import SwiftUI
 struct AnalysisModuleView: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
-      Text("智能解析结果")
-        .font(.headline)
-        .padding(.bottom, 10)
-      
-      VStack(alignment: .leading, spacing: 20) {
-        HStack(alignment: .top, spacing: 0) {
-          Rectangle()
-            .fill(Color.teal)
-            .frame(width: 4)
-            .cornerRadius(2)
-          
-          VStack(alignment: .leading, spacing: 8) {
-            Text("未识别到标题")
-              .font(.system(size: 18, weight: .medium))
-            
-            Text("AI 分析：未识别到有效内容，请输入或上传信息")
-              .font(.subheadline)
-              .foregroundColor(.secondary)
-          }
-          .padding(.leading, 12)
-        }
-        .padding(.horizontal, 15)
-        
-        HStack(spacing: 10) {
-          Image(systemName: "lightbulb.fill")
-            .foregroundColor(.orange)
-          
-          Text("添加更多内容可获得更精准的解析结果")
-            .font(.subheadline)
-            .foregroundColor(.secondary)
-        }
-        .padding(.horizontal, 10)
+      // 标题
+      HStack {
+        Text("智能解析结果")
+          .font(.system(size: 14, weight: .medium))
+          .foregroundColor(.black)
+        Spacer()
       }
-      .padding(.vertical, 15)
-      .frame(maxWidth: .infinity, alignment: .leading)
-      .background(Color(.systemGray5).opacity(0.5))
-      .cornerRadius(15)
-      .fixedSize(horizontal: false, vertical: true)
+      .padding(.bottom, 8)
+      .padding(.leading, 5)
+
+      // 解析结果卡片
+      VStack(alignment: .leading, spacing: 0) {
+        HStack(alignment: .top, spacing: 12) {
+          VStack(alignment: .leading, spacing: 10) {
+            Text("未识别到标题")
+              .font(.system(size: 14, weight: .medium))
+              .foregroundColor(.black)
+
+            Text(
+              "AI 分析：未识别到有效内容，请输入或上传信息"
+            )
+            .font(.system(size: 12))
+            .foregroundColor(Color(red: 100 / 255, green: 116 / 255, blue: 139 / 255))
+          }
+          .padding(.leading, 20)
+          .overlay(
+            Rectangle()
+              .fill(Color.mainStyleBackgroundColor)
+              .frame(width: 4)
+              .cornerRadius(2)
+              .padding(.leading, 3),
+            alignment: .leading
+          )
+
+          Spacer()
+        }
+        .padding(.bottom, 12)
+
+        HStack(spacing: 8) {
+          Image(systemName: "lightbulb.fill")
+            .font(.system(size: 12))
+            .foregroundColor(Color(red: 245 / 255, green: 158 / 255, blue: 11 / 255))
+
+          Text("添加更多内容可获得更精准的解析结果")
+            .font(.system(size: 12))
+            .foregroundColor(.grayTextColor)
+        }
+      }
+      .padding(16)
+      .background(Color.grayBackgroundColor)
+      .cornerRadius(16)
     }
-    .frame(maxWidth: .infinity, alignment: .leading)
   }
 }
 

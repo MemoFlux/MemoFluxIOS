@@ -10,6 +10,14 @@ import SwiftUI
 
 extension Color {
   static let mainStyleBackgroundColor = Color(red: 45 / 255, green: 212 / 255, blue: 191 / 255)
+  
+  static let yellowBackgroundColor = Color(red: 254 / 255, green: 243 / 255, blue: 199 / 255)
+  static let grayBackgroundColor = Color(.systemGray5).opacity(0.5)
+  
+  static let grayTextColor = Color(red: 100 / 255, green: 116 / 255, blue: 139 / 255)
+  
+  static let buttonUnavailableBackgroundColor = Color(Color(red: 248 / 255, green: 250 / 255, blue: 252 / 255))
+  static let buttonUnavailableTextColor = Color(red: 148 / 255, green: 163 / 255, blue: 184 / 255)
 }
 
 extension UIColor {

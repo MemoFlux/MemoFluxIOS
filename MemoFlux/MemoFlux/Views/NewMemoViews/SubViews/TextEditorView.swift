@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct TextEditorView: View {
   @Binding var inputText: String
@@ -20,33 +21,33 @@ struct TextEditorView: View {
   var body: some View {
     VStack(spacing: 0) {
       VStack(spacing: 0) {
-        HStack {
-          TextField("输入标题", text: $inputTitle)
-            .font(.headline)
-            .foregroundColor(.primary)
-            .focused($isTitleFocused)
-            .submitLabel(.next)
-            .onSubmit {
-              isTextEditorFocused = true
-            }
-
-          Spacer()
-        }
-        .padding(.horizontal, 19)
-        .padding(.vertical, 10)
+        // 标题输入框
+        UIKitTextInput(
+          text: $inputTitle,
+          placeholder: "输入标题",
+          inputType: .textField,
+          font: UIFont.preferredFont(forTextStyle: .headline),
+          onNext: {
+            isTextEditorFocused = true
+          }
+        )
         .frame(height: titleHeight)
+        .padding(.horizontal, 19)
 
-        // 分隔线
         Divider()
           .background(Color.mainStyleBackgroundColor.opacity(0.3))
           .padding(.horizontal, 10)
 
-        // 内容输入框
         ZStack(alignment: .topLeading) {
-          UIKitTextEditor(text: $inputText)
-            .frame(height: contentHeight)
-            .padding(10)
-            .padding(.horizontal, 5)
+          UIKitTextInput(
+            text: $inputText,
+            placeholder: "",
+            inputType: .textEditor,
+            font: UIFont.systemFont(ofSize: 16)
+          )
+          .frame(height: contentHeight)
+          .padding(10)
+          .padding(.horizontal, 5)
 
           // textEditor 占位符
           if inputText.isEmpty {
@@ -65,7 +66,6 @@ struct TextEditorView: View {
         }) {
           HStack(spacing: 4) {
             Image(systemName: useAIParsing ? "checkmark.circle" : "circle")
-
             Text("使用AI解析")
           }
           .font(.subheadline)
@@ -94,64 +94,157 @@ struct TextEditorView: View {
   }
 }
 
-// MARK: - UIKit TextEditor 包装器
-/// 键盘工具栏的实现
-struct UIKitTextEditor: UIViewRepresentable {
-  @Binding var text: String
+// MARK: - 统一文本输入包装器
 
-  func makeUIView(context: Context) -> UITextView {
+/// 输入类型枚举
+enum TextInputType {
+  case textField
+  case textEditor
+}
+
+/// 统一 UIKit 文本输入包装器
+struct UIKitTextInput: UIViewRepresentable {
+  @Binding var text: String
+  let placeholder: String
+  let inputType: TextInputType
+  let font: UIFont
+  let onNext: (() -> Void)?
+
+  init(
+    text: Binding<String>,
+    placeholder: String,
+    inputType: TextInputType,
+    font: UIFont,
+    onNext: (() -> Void)? = nil
+  ) {
+    self._text = text
+    self.placeholder = placeholder
+    self.inputType = inputType
+    self.font = font
+    self.onNext = onNext
+  }
+
+  func makeUIView(context: Context) -> UIView {
+    switch inputType {
+    case .textField:
+      return createTextField(context: context)
+    case .textEditor:
+      return createTextView(context: context)
+    }
+  }
+
+  func updateUIView(_ uiView: UIView, context: Context) {
+    switch inputType {
+    case .textField:
+      if let textField = uiView as? UITextField, textField.text != text {
+        textField.text = text
+      }
+    case .textEditor:
+      if let textView = uiView as? UITextView, textView.text != text {
+        textView.text = text
+      }
+    }
+  }
+
+  func makeCoordinator() -> TextInputCoordinator {
+    TextInputCoordinator(self)
+  }
+
+  // MARK: - Private Methods
+
+  private func createTextField(context: Context) -> UITextField {
+    let textField = UITextField()
+    textField.delegate = context.coordinator
+    textField.placeholder = placeholder
+    textField.font = font
+    textField.backgroundColor = UIColor.clear
+    textField.textColor = UIColor.label
+    textField.returnKeyType = .next
+    textField.inputAccessoryView = KeyboardToolbarFactory.createToolbar(
+      coordinator: context.coordinator
+    )
+
+    context.coordinator.textField = textField
+    return textField
+  }
+
+  private func createTextView(context: Context) -> UITextView {
     let textView = UITextView()
     textView.delegate = context.coordinator
-    textView.font = UIFont.systemFont(ofSize: 16)
+    textView.font = font
     textView.backgroundColor = UIColor.clear
     textView.textColor = UIColor.label
     textView.isScrollEnabled = true
     textView.isEditable = true
     textView.isUserInteractionEnabled = true
+    textView.inputAccessoryView = KeyboardToolbarFactory.createToolbar(
+      coordinator: context.coordinator
+    )
 
-    // MARK: - 键盘工具栏
+    context.coordinator.textView = textView
+    return textView
+  }
+}
+
+// MARK: - 协调器
+
+class TextInputCoordinator: NSObject, UITextFieldDelegate, UITextViewDelegate {
+  let parent: UIKitTextInput
+  weak var textField: UITextField?
+  weak var textView: UITextView?
+
+  init(_ parent: UIKitTextInput) {
+    self.parent = parent
+  }
+
+  // MARK: - UITextFieldDelegate
+
+  func textField(
+    _ textField: UITextField,
+    shouldChangeCharactersIn range: NSRange,
+    replacementString string: String
+  ) -> Bool {
+    let newText =
+      (textField.text as NSString?)?.replacingCharacters(in: range, with: string) ?? string
+    parent.text = newText
+    return true
+  }
+
+  func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+    parent.onNext?()
+    return true
+  }
+
+  // MARK: - UITextViewDelegate
+
+  func textViewDidChange(_ textView: UITextView) {
+    parent.text = textView.text
+  }
+
+  // MARK: - Toolbar Actions
+
+  @objc func doneButtonTapped() {
+    textField?.resignFirstResponder()
+    textView?.resignFirstResponder()
+  }
+
+  @objc func pasteButtonTapped() {
+    if let string = UIPasteboard.general.string {
+      parent.text = string
+      textField?.text = string
+      textView?.text = string
+    }
+  }
+}
+
+// MARK: - 键盘工具栏 Factory
+struct KeyboardToolbarFactory {
+  static func createToolbar(coordinator: TextInputCoordinator) -> UIToolbar {
     let toolbar = UIToolbar()
     toolbar.sizeToFit()
 
-    // MARK: - 粘贴按钮
-    let pasteStackView = UIStackView()
-    pasteStackView.axis = .horizontal
-    pasteStackView.alignment = .center
-    pasteStackView.spacing = 4
-
-    let pasteImageView = UIImageView(image: UIImage(systemName: "doc.on.clipboard"))
-    pasteImageView.tintColor = UIColor.mainStyleBackgroundColor
-    pasteImageView.contentMode = .scaleAspectFit
-    pasteImageView.translatesAutoresizingMaskIntoConstraints = false
-    pasteImageView.widthAnchor.constraint(equalToConstant: 16).isActive = true
-    pasteImageView.heightAnchor.constraint(equalToConstant: 16).isActive = true
-
-    let pasteLabel = UILabel()
-    pasteLabel.text = "粘贴自剪切板"
-    pasteLabel.textColor = UIColor.mainStyleBackgroundColor
-    pasteLabel.font = UIFont.systemFont(ofSize: 14)
-
-    pasteStackView.addArrangedSubview(pasteImageView)
-    pasteStackView.addArrangedSubview(pasteLabel)
-
-    // 粘贴点击手势
-    let pasteTapGesture = UITapGestureRecognizer(
-      target: context.coordinator, action: #selector(Coordinator.pasteButtonTapped))
-    pasteStackView.addGestureRecognizer(pasteTapGesture)
-    pasteStackView.isUserInteractionEnabled = true
-
-    let pasteButton = UIBarButtonItem(customView: pasteStackView)
-
-    // MARK: - 收回键盘按钮
-    let doneButton = UIBarButtonItem(
-      title: "完成",
-      style: .done,
-      target: context.coordinator,
-      action: #selector(Coordinator.doneButtonTapped)
-    )
-
-    doneButton.tintColor = UIColor.mainStyleBackgroundColor
-
+    let pasteButton = createPasteButton(coordinator: coordinator)
+    let doneButton = createDoneButton(coordinator: coordinator)
     let flexSpace = UIBarButtonItem(
       barButtonSystemItem: .flexibleSpace,
       target: nil,
@@ -159,47 +252,53 @@ struct UIKitTextEditor: UIViewRepresentable {
     )
 
     toolbar.items = [pasteButton, flexSpace, doneButton]
-
-    textView.inputAccessoryView = toolbar
-
-    context.coordinator.textView = textView
-
-    return textView
+    return toolbar
   }
 
-  func updateUIView(_ uiView: UITextView, context: Context) {
-    if uiView.text != text {
-      uiView.text = text
-    }
+  private static func createPasteButton(coordinator: TextInputCoordinator) -> UIBarButtonItem {
+    let stackView = UIStackView()
+    stackView.axis = .horizontal
+    stackView.alignment = .center
+    stackView.spacing = 4
+
+    let imageView = UIImageView(image: UIImage(systemName: "doc.on.clipboard"))
+    imageView.tintColor = UIColor.mainStyleBackgroundColor
+    imageView.contentMode = .scaleAspectFit
+    imageView.translatesAutoresizingMaskIntoConstraints = false
+    imageView.widthAnchor.constraint(equalToConstant: 16).isActive = true
+    imageView.heightAnchor.constraint(equalToConstant: 16).isActive = true
+
+    let label = UILabel()
+    label.text = "粘贴自剪切板"
+    label.textColor = UIColor.mainStyleBackgroundColor
+    label.font = UIFont.systemFont(ofSize: 14)
+
+    stackView.addArrangedSubview(imageView)
+    stackView.addArrangedSubview(label)
+
+    let tapGesture = UITapGestureRecognizer(
+      target: coordinator,
+      action: #selector(TextInputCoordinator.pasteButtonTapped)
+    )
+    stackView.addGestureRecognizer(tapGesture)
+    stackView.isUserInteractionEnabled = true
+
+    return UIBarButtonItem(customView: stackView)
   }
 
-  func makeCoordinator() -> Coordinator {
-    Coordinator(self)
-  }
-
-  class Coordinator: NSObject, UITextViewDelegate {
-    let parent: UIKitTextEditor
-    weak var textView: UITextView?
-
-    init(_ parent: UIKitTextEditor) {
-      self.parent = parent
-    }
-
-    func textViewDidChange(_ textView: UITextView) {
-      parent.text = textView.text
-    }
-
-    @objc func doneButtonTapped() {
-      textView?.resignFirstResponder()
-    }
-
-    @objc func pasteButtonTapped() {
-      if let string = UIPasteboard.general.string {
-        parent.text = string
-      }
-    }
+  private static func createDoneButton(coordinator: TextInputCoordinator) -> UIBarButtonItem {
+    let button = UIBarButtonItem(
+      title: "完成",
+      style: .done,
+      target: coordinator,
+      action: #selector(TextInputCoordinator.doneButtonTapped)
+    )
+    button.tintColor = UIColor.mainStyleBackgroundColor
+    return button
   }
 }
+
+// MARK: - Preview
 
 struct TextEditorViewPreview: View {
   @State private var inputText = ""
