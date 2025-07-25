@@ -77,7 +77,7 @@ struct IntentDiscoveryView: View {
                 .font(.system(size: 14))
                 .foregroundColor(.orange)
               
-              Text("发现待处理意图")
+              Text("今日待处理意图")
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.primary)
             }
@@ -217,18 +217,12 @@ private struct IntentDiscoveryViewEmpty: View {
                 .font(.system(size: 14))
                 .foregroundColor(.orange)
               
-              Text("发现待处理意图")
+              Text("今日待处理意图")
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.primary)
             }
             
             Spacer()
-            
-            Button("全部处理") {
-              // 空实现
-            }
-            .font(.system(size: 12))
-            .foregroundColor(.grayTextColor)
           }
           .padding(.bottom, 12)
           

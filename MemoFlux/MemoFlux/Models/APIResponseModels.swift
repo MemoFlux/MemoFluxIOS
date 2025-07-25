@@ -43,7 +43,7 @@ struct KnowledgeNode: Codable {
   let relationship: String
   
   enum CodingKeys: String, CodingKey {
-    case targetId = "targert_id" // JSON中是"targert_id"，拼写错误
+    case targetId = "targert_id"  // JSON中是"targert_id"，拼写错误
     case relationship
   }
 }

@@ -5,9 +5,9 @@
 //  Created by 马硕 on 2025/7/24.
 //
 
+import EventKit
 import SwiftData
 import SwiftUI
-import UIKit
 
 // MARK: - 数据类型枚举
 enum DataType: String, CaseIterable {
@@ -18,12 +18,12 @@ enum DataType: String, CaseIterable {
 
 struct ListCellDetailView: View {
   let item: MemoItemModel
-
+  
   // API 响应数据相关状态
   @State private var selectedDataType: DataType = .knowledge
   @State private var apiResponse: APIResponse?
   @State private var isLoadingData = false
-
+  
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 16) {
@@ -37,23 +37,23 @@ struct ListCellDetailView: View {
             .frame(maxWidth: .infinity)
             .frame(maxHeight: UIScreen.main.bounds.height / 2)
         }
-
+        
         if !item.title.isEmpty {
           Text(item.title)
             .font(.title)
             .fontWeight(.bold)
             .padding(.horizontal)
         }
-
+        
         // 基本信息
         basicInfoSection
-
+        
         // 标签展示
         tagsSection
-
+        
         Divider()
           .padding(.vertical, 8)
-
+        
         // API 数据展示部分
         apiDataSection
       }
@@ -66,7 +66,7 @@ struct ListCellDetailView: View {
       loadAPIData()
     }
   }
-
+  
   // MARK: - 基本信息部分
   private var basicInfoSection: some View {
     VStack(alignment: .leading, spacing: 8) {
@@ -78,7 +78,7 @@ struct ListCellDetailView: View {
       .font(.subheadline)
       .foregroundColor(.secondary)
       .padding(.horizontal)
-
+      
       if !item.source.isEmpty {
         HStack {
           Image(systemName: "link")
@@ -91,7 +91,7 @@ struct ListCellDetailView: View {
       }
     }
   }
-
+  
   // MARK: - 标签部分
   private var tagsSection: some View {
     Group {
@@ -112,7 +112,7 @@ struct ListCellDetailView: View {
       }
     }
   }
-
+  
   // MARK: - API 数据展示部分
   private var apiDataSection: some View {
     VStack(alignment: .leading, spacing: 16) {
@@ -121,21 +121,21 @@ struct ListCellDetailView: View {
           Text("摘要")
             .font(.headline)
             .padding(.leading, 5)
-
+          
           Text(response.information.summary)
             .font(.body)
             .foregroundColor(.secondary)
             .padding()
             .background(Color.blue.opacity(0.1))
             .cornerRadius(15)
-
+          
           Text("解析内容")
             .font(.headline)
             .padding(.leading, 5)
         }
         .padding(.horizontal, 16)
       }
-
+      
       // 数据类型选择器
       Picker("数据类型", selection: $selectedDataType) {
         ForEach(DataType.allCases, id: \.self) { type in
@@ -144,7 +144,7 @@ struct ListCellDetailView: View {
       }
       .pickerStyle(SegmentedPickerStyle())
       .padding(.horizontal)
-
+      
       // 根据选择的类型显示相应数据
       if isLoadingData {
         ProgressView("加载中...")
@@ -182,18 +182,18 @@ struct ListCellDetailView: View {
       }
     }
   }
-
+  
   // MARK: - 加载 API 数据
   private func loadAPIData() {
     isLoadingData = true
-
+    
     // 模拟从 response.json 加载数据
     DispatchQueue.global(qos: .userInitiated).async {
       if let path = Bundle.main.path(forResource: "response", ofType: "json"),
-        let data = try? Data(contentsOf: URL(fileURLWithPath: path)),
-        let response = try? JSONDecoder().decode(APIResponse.self, from: data)
+         let data = try? Data(contentsOf: URL(fileURLWithPath: path)),
+         let response = try? JSONDecoder().decode(APIResponse.self, from: data)
       {
-
+        
         DispatchQueue.main.async {
           self.apiResponse = response
           self.isLoadingData = false
@@ -210,7 +210,7 @@ struct ListCellDetailView: View {
 // MARK: - Knowledge 视图
 struct KnowledgeView: View {
   let knowledge: KnowledgeResponse
-
+  
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
       // 标题
@@ -218,7 +218,7 @@ struct KnowledgeView: View {
         .font(.title2)
         .fontWeight(.semibold)
         .padding(.horizontal)
-
+      
       // 标签
       if !knowledge.tags.isEmpty {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -228,14 +228,14 @@ struct KnowledgeView: View {
                 .font(.caption)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(Color.green.opacity(0.2))
+                .background(Color.blue.opacity(0.2))
                 .cornerRadius(8)
             }
           }
           .padding(.horizontal)
         }
       }
-
+      
       LazyVStack(alignment: .leading, spacing: 8) {
         ForEach(knowledge.knowledgeItems) { item in
           VStack(alignment: .leading, spacing: 8) {
@@ -243,7 +243,7 @@ struct KnowledgeView: View {
               .font(.headline)
               .bold()
               .padding(.vertical, 5)
-
+            
             Text(item.content)
               .font(.body)
               .foregroundColor(.secondary)
@@ -263,7 +263,7 @@ struct KnowledgeView: View {
 // MARK: - Information 视图
 struct InformationView: View {
   let information: InformationResponse
-
+  
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
       // 标题
@@ -271,7 +271,7 @@ struct InformationView: View {
         .font(.title2)
         .fontWeight(.semibold)
         .padding(.horizontal)
-
+      
       // 类型
       HStack {
         Text("类型:")
@@ -283,7 +283,7 @@ struct InformationView: View {
         Spacer()
       }
       .padding(.horizontal)
-
+      
       // 标签
       if !information.tags.isEmpty {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -293,14 +293,14 @@ struct InformationView: View {
                 .font(.caption)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(Color.orange.opacity(0.2))
+                .background(Color.blue.opacity(0.2))
                 .cornerRadius(8)
             }
           }
           .padding(.horizontal)
         }
       }
-
+      
       // 信息项目
       LazyVStack(alignment: .leading, spacing: 8) {
         ForEach(information.informationItems) { item in
@@ -309,7 +309,7 @@ struct InformationView: View {
               .font(.headline)
               .bold()
               .padding(.vertical, 5)
-
+            
             Text(item.content)
               .font(.body)
               .foregroundColor(.secondary)
@@ -329,28 +329,25 @@ struct InformationView: View {
 // MARK: - Schedule 视图
 struct ScheduleView: View {
   let schedule: ScheduleResponse
-
+  
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
-      // 标题
       Text(schedule.title)
         .font(.title2)
         .fontWeight(.semibold)
         .padding(.horizontal)
-
-      // 分类
+      
       HStack {
         Text("分类:")
           .font(.subheadline)
           .fontWeight(.medium)
         Text(schedule.category)
           .font(.subheadline)
-          .foregroundColor(.secondary)
+          .fontWeight(.regular)
         Spacer()
       }
       .padding(.horizontal)
-
-      // 任务列表
+      
       LazyVStack(alignment: .leading, spacing: 8) {
         ForEach(schedule.tasks) { task in
           ScheduleTaskCard(task: task)
@@ -364,10 +361,12 @@ struct ScheduleView: View {
 // MARK: - Schedule 任务卡片
 struct ScheduleTaskCard: View {
   let task: ScheduleTask
-
+  
+  // 提醒确认视图状态
+  @State private var showingReminderConfirmation = false
+  
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
-      // 主题和时间
       HStack {
         Text(task.theme)
           .font(.headline)
@@ -379,7 +378,7 @@ struct ScheduleTaskCard: View {
             .foregroundColor(.secondary)
         }
       }
-
+      
       // 核心任务
       if !task.coreTasks.isEmpty {
         VStack(alignment: .leading, spacing: 4) {
@@ -397,8 +396,7 @@ struct ScheduleTaskCard: View {
           }
         }
       }
-
-      // 建议行动
+      
       if !task.suggestedActions.isEmpty {
         VStack(alignment: .leading, spacing: 4) {
           Text("建议行动:")
@@ -415,8 +413,7 @@ struct ScheduleTaskCard: View {
           }
         }
       }
-
-      // 标签
+      
       if !task.tags.isEmpty {
         ScrollView(.horizontal, showsIndicators: false) {
           HStack {
@@ -425,18 +422,140 @@ struct ScheduleTaskCard: View {
                 .font(.caption)
                 .padding(.horizontal, 6)
                 .padding(.vertical, 2)
-                .background(Color.purple.opacity(0.2))
+                .background(Color.blue.opacity(0.2))
                 .cornerRadius(6)
             }
           }
         }
       }
+      
+      // EventKit 操作按钮
+      HStack(spacing: 12) {
+        Button {
+          addToCalendar()
+        } label: {
+          HStack(spacing: 6) {
+            Image(systemName: "calendar")
+              .font(.system(size: 12))
+            
+            Text("添加到日历")
+              .font(.system(size: 12))
+          }
+          .padding(.horizontal, 12)
+          .padding(.vertical, 8)
+          .foregroundStyle(.white)
+          .background(.blue)
+          .cornerRadius(12)
+        }
+        
+        Button {
+          showingReminderConfirmation = true
+        } label: {
+          HStack(spacing: 6) {
+            Image(systemName: "list.bullet")
+              .font(.system(size: 12))
+            
+            Text("添加到提醒事项")
+              .font(.system(size: 12))
+          }
+          .padding(.horizontal, 12)
+          .padding(.vertical, 8)
+          .foregroundStyle(.white)
+          .background(.yellow)
+          .cornerRadius(12)
+        }
+        
+        Spacer()
+        
+      }
+      .padding(.top, 8)
     }
     .padding()
     .background(Color.white)
     .cornerRadius(15)
+    .sheet(isPresented: $showingReminderConfirmation) {
+      ReminderConfirmationView(task: task)
+    }
+  }
+  
+  // MARK: - EventKit 创建
+  private func addToCalendar() {
+    let eventTitle = task.theme
+    let eventNotes = createEventNotes()
+    let eventStartDate = task.startDate ?? Date()
+    
+    EventManager.shared.requestCalendarAccess { granted, error in
+      if granted && error == nil {
+        let event = EventManager.shared.createCalendarEvent(
+          title: eventTitle,
+          notes: eventNotes,
+          startDate: eventStartDate
+        )
+        EventManager.shared.presentCalendarEventEditor(for: event)
+      } else {
+        print("日历访问权限被拒绝或出现错误: \(error?.localizedDescription ?? "未知错误")")
+      }
+    }
+  }
+  
+  private func addToReminders() {
+    let reminderTitle = task.theme
+    let reminderNotes = createReminderNotes()
+    let reminderDate = task.startDate
+    
+    EventManager.shared.addReminder(
+      title: reminderTitle,
+      notes: reminderNotes,
+      date: reminderDate
+    ) { success, error in
+      if success {
+        print("提醒事项创建成功: \(reminderTitle)")
+      } else {
+        print("提醒事项创建失败: \(error?.localizedDescription ?? "未知错误")")
+      }
+    }
+  }
+  
+  // MARK: - 创建事件备注
+  private func createEventNotes() -> String {
+    var notes = ""
+    
+    if !task.coreTasks.isEmpty {
+      notes += "核心任务:\n"
+      for coreTask in task.coreTasks {
+        notes += "• \(coreTask)\n"
+      }
+      notes += "\n"
+    }
+    
+    if !task.suggestedActions.isEmpty {
+      notes += "建议行动:\n"
+      for action in task.suggestedActions {
+        notes += "• \(action)\n"
+      }
+      notes += "\n"
+    }
+    
+    if !task.people.isEmpty {
+      notes += "参与人员: \(task.people.joined(separator: ", "))\n"
+    }
+    
+    if !task.position.isEmpty {
+      notes += "地点: \(task.position.joined(separator: ", "))\n"
+    }
+    
+    if !task.tags.isEmpty {
+      notes += "标签: \(task.tags.joined(separator: ", "))"
+    }
+    
+    return notes.trimmingCharacters(in: .whitespacesAndNewlines)
+  }
+  
+  private func createReminderNotes() -> String {
+    return createEventNotes()
   }
 }
+
 
 #Preview {
   let previewItem = MemoItemModel(
@@ -448,7 +567,7 @@ struct ScheduleTaskCard: View {
     createdAt: Date(),
     source: "预览数据"
   )
-
+  
   return NavigationStack {
     ListCellDetailView(item: previewItem)
   }

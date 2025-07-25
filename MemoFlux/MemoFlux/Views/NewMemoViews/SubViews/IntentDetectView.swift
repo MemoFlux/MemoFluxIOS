@@ -9,7 +9,7 @@ import SwiftUI
 
 struct IntentDetectView: View {
   @State private var hasDetectedIntent = false
-
+  
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
       HStack {
@@ -20,35 +20,35 @@ struct IntentDetectView: View {
       }
       .padding(.bottom, 8)
       .padding(.leading, 5)
-
+      
       VStack(alignment: .leading, spacing: 0) {
         HStack(alignment: .center, spacing: 8) {
           Image(systemName: "brain.head.profile")
             .font(.system(size: 14))
             .foregroundColor(.orange)
-
+          
           Text("等待检测意图")
             .font(.system(size: 14, weight: .medium))
             .foregroundColor(.black)
-
+          
           Spacer()
         }
         .padding(.bottom, 12)
-
+        
         // MARK: - 描述文本
         Text("当AI检测到日程安排、任务提醒等意图时，会在这里提供快捷操作选项。")
           .font(.system(size: 12))
           .foregroundColor(.grayTextColor)
           .lineLimit(nil)
           .padding(.bottom, 12)
-
+        
         // MARK: - 操作按钮
         HStack(spacing: 8) {
           HStack(spacing: 6) {
             Image(systemName: "calendar")
               .font(.system(size: 12))
               .foregroundColor(Color.buttonUnavailableTextColor)
-
+            
             Text("添加到日历")
               .font(.system(size: 12))
               .foregroundColor(Color.buttonUnavailableTextColor)
@@ -57,13 +57,13 @@ struct IntentDetectView: View {
           .padding(.vertical, 8)
           .background(Color.buttonUnavailableBackgroundColor)
           .cornerRadius(12)
-
+          
           HStack(spacing: 6) {
-            Image(systemName: "bell")
+            Image(systemName: "list.bullet")
               .font(.system(size: 12))
               .foregroundColor(Color.buttonUnavailableTextColor)
-
-            Text("创建提醒")
+            
+            Text("添加到提醒事项")
               .font(.system(size: 12))
               .foregroundColor(Color.buttonUnavailableTextColor)
           }
@@ -71,7 +71,7 @@ struct IntentDetectView: View {
           .padding(.vertical, 8)
           .background(Color.buttonUnavailableBackgroundColor)
           .cornerRadius(12)
-
+          
           Spacer()
         }
       }
