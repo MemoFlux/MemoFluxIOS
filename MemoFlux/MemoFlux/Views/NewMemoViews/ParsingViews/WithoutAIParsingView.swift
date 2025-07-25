@@ -9,10 +9,10 @@ import SwiftUI
 
 struct WithoutAIParsingView: View {
     var body: some View {
-      Group {
-        TagsSelectView()
-      }
-      .padding(.top, 10)
+//      Group {
+//        TagsSelectView()
+//      }
+//      .padding(.top, 10)
     }
 }
 

@@ -9,14 +9,14 @@ import SwiftUI
 
 struct WithAIParsingView: View {
     var body: some View {
-      Group {
-        AnalysisModuleView()
-        
-        IntentDetectView()
-        
-        TagsSelectView()
-      }
-      .padding(.top, 10)
+//      Group {
+//        AnalysisModuleView()
+//        
+//        IntentDetectView()
+//        
+//        TagsSelectView()
+//      }
+//      .padding(.top, 10)
     }
     
 }

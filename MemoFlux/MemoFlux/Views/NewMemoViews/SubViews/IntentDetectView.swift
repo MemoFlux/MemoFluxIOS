@@ -27,7 +27,7 @@ struct IntentDetectView: View {
             .font(.system(size: 14))
             .foregroundColor(.orange)
 
-          Text("未检测到明确意图")
+          Text("等待检测意图")
             .font(.system(size: 14, weight: .medium))
             .foregroundColor(.black)
 

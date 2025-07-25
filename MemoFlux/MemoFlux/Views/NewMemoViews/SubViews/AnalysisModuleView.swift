@@ -24,7 +24,7 @@ struct AnalysisModuleView: View {
       VStack(alignment: .leading, spacing: 0) {
         HStack(alignment: .top, spacing: 12) {
           VStack(alignment: .leading, spacing: 10) {
-            Text("未识别到标题")
+            Text("等待解析信息")
               .font(.system(size: 14, weight: .medium))
               .foregroundColor(.black)
 
