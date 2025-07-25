@@ -85,11 +85,11 @@ struct AddMemoItemView: View {
           }
           .padding(.horizontal, 6)
 
-          AnalysisModuleView()
-            .padding(.top, 10)
-
-          IntentDetectView()
-            .padding(.top, 10)
+          if useAIParsing {
+            WithAIParsingView()
+          } else {
+            WithoutAIParsingView()
+          }
 
           // 保证内容不被键盘遮挡
           Spacer(minLength: 100)

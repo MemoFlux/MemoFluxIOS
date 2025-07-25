@@ -26,7 +26,7 @@ struct ContentView: View {
           Image(systemName: "list.bullet")
           Text("分类")
         }
-      CategoryView ()
+      CategoryView()
         .tabItem {
           Image(systemName: "gear")
           Text("设置")

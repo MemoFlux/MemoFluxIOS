@@ -9,6 +9,10 @@ import Foundation
 import SwiftUI
 
 extension Color {
+  // 全局背景色
+  static let globalStyleBackgroundColor = Color(red: 240 / 255, green: 249 / 255, blue: 255 / 255)
+  
+  // 全局主题色
   static let mainStyleBackgroundColor = Color(red: 45 / 255, green: 212 / 255, blue: 191 / 255)
   
   static let yellowBackgroundColor = Color(red: 254 / 255, green: 243 / 255, blue: 199 / 255)
@@ -21,5 +25,7 @@ extension Color {
 }
 
 extension UIColor {
+  static let globalStyleBackgroundColor = UIColor(red: 240 / 255, green: 249 / 255, blue: 255 / 255, alpha: 1.0)
+  
   static let mainStyleBackgroundColor = UIColor(red: 45 / 255, green: 212 / 255, blue: 191 / 255, alpha: 1.0)
 }
