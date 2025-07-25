@@ -18,7 +18,7 @@ struct HomePageView: View {
   
   var body: some View {
     NavigationStack {
-      ListView(memoItems: memoItems, modelContext: modelContext)
+      MemoListView(memoItems: memoItems, modelContext: modelContext)
         .background(Color.globalStyleBackgroundColor)
         .onAppear {
           loadImage()
