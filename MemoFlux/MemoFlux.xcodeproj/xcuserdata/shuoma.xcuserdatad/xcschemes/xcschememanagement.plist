@@ -7,12 +7,12 @@
 		<key>MemoFlux.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>0</integer>
+			<integer>1</integer>
 		</dict>
 		<key>ScreenshotIntent.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>1</integer>
+			<integer>0</integer>
 		</dict>
 		<key>ScreenshotIntentExtension.xcscheme_^#shared#^_</key>
 		<dict>
@@ -28,6 +28,11 @@
 			<true/>
 		</dict>
 		<key>656AAB392E31BAE100519789</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>658CA40F2E321F6800F1C7CC</key>
 		<dict>
 			<key>primary</key>
 			<true/>

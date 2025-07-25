@@ -11,9 +11,10 @@ import SwiftUI
 struct HomePageView: View {
   // SwiftData查询所有MemoItemModel，创建时间降序排列
   @Query(sort: \MemoItemModel.createdAt, order: .reverse) private var memoItems: [MemoItemModel]
+  
   @Environment(\.modelContext) private var modelContext
+  
   @State private var showingAddMemoView = false
-  @State private var showingAddMemoDirectlyView = false
   
   var body: some View {
     NavigationStack {
@@ -29,20 +30,8 @@ struct HomePageView: View {
         }
         .toolbar {
           ToolbarItem(placement: .navigationBarTrailing) {
-            Menu {
-              Section(header: Text("新建Memo")) {
-                Button {
-                  showingAddMemoView = true
-                } label: {
-                  Label("AI解析Memo", systemImage: "brain")
-                }
-                
-                Button {
-                  showingAddMemoDirectlyView = true
-                } label: {
-                  Label("直接添加Memo", systemImage: "square.and.pencil")
-                }
-              }
+            Button {
+              showingAddMemoView = true
             } label: {
               Image(systemName: "plus")
                 .font(.system(size: 18, weight: .bold))
@@ -52,9 +41,6 @@ struct HomePageView: View {
     }
     .fullScreenCover(isPresented: $showingAddMemoView) {
       AddMemoItemView()
-    }
-    .fullScreenCover(isPresented: $showingAddMemoDirectlyView) {
-      AddMemoItemDirectlyView()
     }
   }
   

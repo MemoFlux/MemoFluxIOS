@@ -205,7 +205,7 @@ struct ReminderConfirmationView: View {
         self.onConfirm = onConfirm
 
         // 初始化状态变量
-        self.reminderTitle = item.title.isEmpty ? "备忘录" : item.title
+        self.reminderTitle = item.title.isEmpty ? "来自Memo" : item.title
         self.reminderNotes = item.recognizedText
         self.reminderDate = item.scheduledDate ?? Date()
         self.hasDate = item.scheduledDate != nil
