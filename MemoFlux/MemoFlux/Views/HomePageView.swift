@@ -44,6 +44,7 @@ struct HomePageView: View {
     }
   }
   
+  // MARK: - 图片加载
   func loadImage() {
     let fileManager = FileManager.default
     if let directory = fileManager.containerURL(

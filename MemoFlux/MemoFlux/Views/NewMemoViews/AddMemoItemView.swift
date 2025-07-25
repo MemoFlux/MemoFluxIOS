@@ -14,7 +14,9 @@ struct AddMemoItemView: View {
   
   @State private var showingImagePicker = false
   @State private var showingCamera = false
+  @State private var inputTitle = ""
   @State private var inputText = ""
+  @State private var useAIParsing = true // AI解析选项，默认开启
   
   @State private var selectedImage: UIImage?
   @State private var selectedPhotoItem: PhotosPickerItem?
@@ -25,10 +27,11 @@ struct AddMemoItemView: View {
     NavigationStack {
       ScrollView {
         VStack(spacing: 10) {
-          // 直接显示TextEditorView，不再切换
           TextEditorView(
             inputText: $inputText,
-            isTextEditorFocused: _isTextEditorFocused
+            inputTitle: $inputTitle,
+            isTextEditorFocused: _isTextEditorFocused,
+            useAIParsing: $useAIParsing
           )
           .padding(.bottom, 5)
           
@@ -85,7 +88,7 @@ struct AddMemoItemView: View {
           AnalysisModuleView()
             .padding(.top)
           
-          // 添加底部间距，确保内容不会被键盘遮挡
+          // 保证内容不被键盘遮挡
           Spacer(minLength: 100)
         }
         .padding()
