@@ -519,8 +519,18 @@ struct FlowLayout: Layout {
     context.insert(item)
   }
   
-  return MemoListView(memoItems: testItems, modelContext: context)
-    .modelContainer(container)
+  // 创建搜索状态绑定
+  @State var isSearchActive = false
+  
+  return NavigationStack {
+    MemoListView(
+      memoItems: testItems,
+      modelContext: context,
+      isSearchActive: $isSearchActive
+    )
+  }
+  .modelContainer(container)
+  .preferredColorScheme(.light) // 确保使用浅色模式进行预览
 }
 
 // 测试数据辅助函数
