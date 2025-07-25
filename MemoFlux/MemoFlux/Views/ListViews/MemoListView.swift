@@ -14,10 +14,33 @@ struct MemoListView: View {
   let memoItems: [MemoItemModel]
   let modelContext: ModelContext
   
+  @State private var searchText = ""
+  @State private var isSearching = false
+  
+  // MARK: - 过滤后的备忘录
+  private var filteredItems: [MemoItemModel] {
+    if searchText.isEmpty {
+      return memoItems
+    } else {
+      return memoItems.filter { item in
+        // 搜索标题
+        item.title.localizedCaseInsensitiveContains(searchText)
+        // 搜索识别文本
+        || item.recognizedText.localizedCaseInsensitiveContains(searchText)
+        // 搜索标签
+        || item.tags.contains { tag in
+          tag.localizedCaseInsensitiveContains(searchText)
+        }
+        // 搜索来源
+        || item.source.localizedCaseInsensitiveContains(searchText)
+      }
+    }
+  }
+  
   // 按日期分组
   private var groupedItems: [(String, [MemoItemModel])] {
     let calendar = Calendar.current
-    let grouped = Dictionary(grouping: memoItems) { item in
+    let grouped = Dictionary(grouping: filteredItems) { item in
       if calendar.isDateInToday(item.createdAt) {
         return "今天"
       } else if calendar.isDateInYesterday(item.createdAt) {
@@ -44,28 +67,50 @@ struct MemoListView: View {
         "没有内容", systemImage: "photo", description: Text("请从快捷指令或其他来源导入内容。"))
     } else {
       NavigationStack {
-        ScrollView {
-          LazyVStack(spacing: 16, pinnedViews: [.sectionHeaders]) {
-            ForEach(groupedItems, id: \.0) { section in
-              Section {
-                LazyVStack(spacing: 12) {
-                  ForEach(section.1) { item in
-                    NavigationLink(destination: ListCellDetailView(item: item)) {
-                      MemoCardView(item: item, modelContext: modelContext)
+        VStack(spacing: 0) {
+          // 搜索结果为空时的提示
+          if !searchText.isEmpty && filteredItems.isEmpty {
+            ContentUnavailableView(
+              "没有找到相关内容",
+              systemImage: "magnifyingglass",
+              description: Text("尝试使用其他关键词搜索")
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+          } else {
+            ScrollView {
+              LazyVStack(spacing: 16, pinnedViews: [.sectionHeaders]) {
+                ForEach(groupedItems, id: \.0) { section in
+                  Section {
+                    LazyVStack(spacing: 12) {
+                      ForEach(section.1) { item in
+                        NavigationLink(destination: ListCellDetailView(item: item)) {
+                          MemoCardView(
+                            item: item,
+                            modelContext: modelContext,
+                            searchText: searchText
+                          )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                      }
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    .padding(.horizontal, 16)
+                  } header: {
+                    SectionHeaderView(title: section.0)
                   }
                 }
-                .padding(.horizontal, 16)
-              } header: {
-                SectionHeaderView(title: section.0)
               }
+              .padding(.top, 8)
             }
           }
-          .padding(.top, 8)
         }
         .navigationTitle("Memo")
         .background(Color.globalStyleBackgroundColor)
+        .searchable(
+          text: $searchText,
+          isPresented: $isSearching,
+          placement: .navigationBarDrawer(displayMode: .automatic),
+          prompt: "搜索Memo..."
+        )
       }
     }
   }
@@ -96,9 +141,17 @@ struct SectionHeaderView: View {
 struct MemoCardView: View {
   let item: MemoItemModel
   let modelContext: ModelContext
+  let searchText: String
   
   @State private var textHeight: CGFloat = 0
   @State private var imageHeight: CGFloat = 0
+  
+  // 初始化方法，searchText 参数可选
+  init(item: MemoItemModel, modelContext: ModelContext, searchText: String = "") {
+    self.item = item
+    self.modelContext = modelContext
+    self.searchText = searchText
+  }
   
   private var isPortrait: Bool {
     guard let image = item.image else { return false }
@@ -106,24 +159,39 @@ struct MemoCardView: View {
     return aspectRatio < 0.85
   }
   
+  // 判断是否有图片
+  private var hasImage: Bool {
+    return item.image != nil
+  }
+  
   var body: some View {
     VStack(spacing: 0) {
-      if isPortrait {
-        // 横向布局
-        VStack(spacing: 12) {
-          HStack(alignment: .top, spacing: 16) {
-            imageView
-              .frame(width: 120)
-            contentView
+      if hasImage {
+        // 有图片时的布局
+        if isPortrait {
+          // 横向布局（图片在左，文本在右）
+          VStack(spacing: 12) {
+            HStack(alignment: .top, spacing: 16) {
+              imageView
+                .frame(width: 120)
+              contentView
+            }
+            
+            timeSourceView
           }
-          
-          timeSourceView
+          .padding(16)
+        } else {
+          // 纵向布局（图片在上，文本在下）
+          VStack(alignment: .leading, spacing: 12) {
+            imageView
+            contentView
+            timeSourceView
+          }
+          .padding(16)
         }
-        .padding(16)
       } else {
-        // 纵向布局
+        // 纯文本布局（无图片）
         VStack(alignment: .leading, spacing: 12) {
-          imageView
           contentView
           timeSourceView
         }
@@ -139,9 +207,9 @@ struct MemoCardView: View {
         // TODO: 实现编辑逻辑
         print("编辑 Memo: \(item.title)")
       } label: {
-        Label("编辑", systemImage: "pencil")
+        Label("编辑", systemImage: "pencil.line")
       }
-      .tint(.blue)
+      .tint(.black)
       
       // 删除按钮
       Button(role: .destructive) {
@@ -172,25 +240,34 @@ struct MemoCardView: View {
   
   private var contentView: some View {
     VStack(alignment: .leading, spacing: 8) {
-      Text(item.title.isEmpty ? "默认标题" : item.title)
-        .font(.system(size: 16, weight: .bold))
-        .foregroundColor(.primary)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .lineLimit(2)
+      // 高亮显示搜索结果的标题
+      HighlightedText(
+        text: item.title.isEmpty ? "无标题" : item.title,
+        searchText: searchText
+      )
+      .font(.system(size: 16, weight: .bold))
+      .foregroundColor(.primary)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .lineLimit(2)
       
       if !item.recognizedText.isEmpty {
-        Text(item.recognizedText)
-          .font(.system(size: 14))
-          .foregroundColor(.primary)
-          .frame(maxWidth: .infinity, alignment: .leading)
-          .lineLimit(getTextLineLimit())
-          .background(
-            GeometryReader { geo in
-              Color.clear.onAppear {
-                textHeight = geo.size.height
-              }
-            })
-      } else {
+        // 高亮显示搜索结果的识别文本
+        HighlightedText(
+          text: item.recognizedText,
+          searchText: searchText
+        )
+        .font(.system(size: 14))
+        .foregroundColor(.primary)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .lineLimit(getTextLineLimit())
+        .background(
+          GeometryReader { geo in
+            Color.clear.onAppear {
+              textHeight = geo.size.height
+            }
+          })
+      } else if hasImage {
+        // 只有在有图片时才显示"正在识别文字..."
         Text("正在识别文字...")
           .font(.system(size: 14))
           .foregroundColor(.secondary)
@@ -211,21 +288,16 @@ struct MemoCardView: View {
                 imageHeight = geo.size.height
               }
             })
-      } else {
-        Rectangle()
-          .fill(Color.gray.opacity(0.3))
-          .cornerRadius(12)
-          .overlay(Image(systemName: "photo").foregroundColor(.gray))
       }
     }
   }
   
-  // TODO: - 高度计算待优化
   // MARK: - 文本高度行数计算
-  /// 注意：isPortrait表示图片是纵向的，但布局逻辑中：
-  /// isPortrait = true 时使用横向布局（图片在左，文本在右）
-  /// isPortrait = false 时使用纵向布局（图片在上，文本在下）
   private func getTextLineLimit() -> Int? {
+    // 如果没有图片，使用更多行数显示文本
+    if !hasImage {
+      return 8  // 纯文本 Memo 可以显示更多行
+    }
     
     if !isPortrait {
       // 纵向布局
@@ -263,11 +335,17 @@ struct MemoCardView: View {
         if !item.tags.isEmpty {
           FlowLayout(spacing: 6) {
             ForEach(item.tags, id: \.self) { tag in
-              Text(tag)
+              // 高亮显示搜索结果的标签
+              HighlightedText(text: tag, searchText: searchText)
                 .font(.system(size: 12))
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
-                .background(Color.gray.opacity(0.1))
+                .background(
+                  // 如果标签匹配搜索文本，使用高亮背景色
+                  tag.localizedCaseInsensitiveContains(searchText) && !searchText.isEmpty
+                  ? Color.mainStyleBackgroundColor.opacity(0.2)
+                  : Color.gray.opacity(0.1)
+                )
                 .cornerRadius(5)
                 .foregroundColor(.secondary)
             }
@@ -325,6 +403,41 @@ struct MemoCardView: View {
     } catch {
       print("无法执行文字识别请求: \(error.localizedDescription)")
     }
+  }
+}
+
+// MARK: - 高亮文本组件
+/// 用于高亮显示搜索结果的文本组件
+struct HighlightedText: View {
+  let text: String
+  let searchText: String
+  
+  var body: some View {
+    if searchText.isEmpty {
+      Text(text)
+    } else {
+      let attributedString = createHighlightedAttributedString()
+      Text(AttributedString(attributedString))
+    }
+  }
+  
+  private func createHighlightedAttributedString() -> NSAttributedString {
+    let attributedString = NSMutableAttributedString(string: text)
+    let range = NSRange(location: 0, length: text.count)
+    
+    // 设置默认属性
+    attributedString.addAttribute(.foregroundColor, value: UIColor.label, range: range)
+    
+    // 查找并高亮匹配的文本
+    let searchRange = text.lowercased().range(of: searchText.lowercased())
+    if let searchRange = searchRange {
+      let nsRange = NSRange(searchRange, in: text)
+      attributedString.addAttribute(
+        .backgroundColor, value: UIColor.systemYellow.withAlphaComponent(0.3), range: nsRange)
+      attributedString.addAttribute(.foregroundColor, value: UIColor.label, range: nsRange)
+    }
+    
+    return attributedString
   }
 }
 
