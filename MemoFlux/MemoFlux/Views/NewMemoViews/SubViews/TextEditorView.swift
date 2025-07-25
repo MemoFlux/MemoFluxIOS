@@ -9,52 +9,32 @@ import SwiftUI
 
 struct TextEditorView: View {
   @Binding var inputText: String
-  @Binding var textEditorHeight: CGFloat
-  @Binding var isHeightAdjusted: Bool
-  @Binding var showingTextInput: Bool
   @FocusState var isTextEditorFocused: Bool
-  let originalHeight: CGFloat
-  var calculateTextHeight: () -> CGFloat
+  
+  private let fixedHeight: CGFloat = 180  // 输入框高度
   
   var body: some View {
     VStack {
-      TextEditor(text: $inputText)
-        .frame(height: textEditorHeight)
-        .padding(10)
-        .padding(.horizontal, 5)
-        .focused($isTextEditorFocused)
-        .onChange(of: isTextEditorFocused) { focused in
-          if focused {
-            if isHeightAdjusted && !inputText.isEmpty {
-              withAnimation {
-                textEditorHeight = originalHeight
-                isHeightAdjusted = false
-              }
-            }
-          } else {
-            if inputText.isEmpty {
-              withAnimation {
-                showingTextInput = false
-              }
-            } else {
-              withAnimation {
-                textEditorHeight = calculateTextHeight()
-                isHeightAdjusted = true  // 标记高度已调整
-              }
-            }
-          }
+      ZStack(alignment: .topLeading) {
+        UIKitTextEditor(text: $inputText)
+          .frame(height: fixedHeight)
+          .padding(10)
+          .padding(.horizontal, 5)
+        
+        // 手动添加占位符
+        if inputText.isEmpty {
+          Text("输入或粘贴文本内容")
+            .foregroundColor(.gray)
+            .padding(.horizontal, 22)
+            .padding(.vertical, 18)
+            .allowsHitTesting(false)
         }
+      }
       
       HStack {
         Button(action: {
           if let string = UIPasteboard.general.string {
             inputText = string
-            DispatchQueue.main.asyncAfter(deadline: .now()) {
-              withAnimation {
-                textEditorHeight = calculateTextHeight()
-                isHeightAdjusted = true
-              }
-            }
           }
         }) {
           HStack {
@@ -83,33 +63,89 @@ struct TextEditorView: View {
           .stroke(Color.mainStyleBackgroundColor, lineWidth: 2)
       }
     )
-    .onTapGesture { _ in
-      // 点击TextEditor外部区域关闭键盘
-      if !isTextEditorFocused {
-        isTextEditorFocused = false
-      }
+  }
+}
+
+// MARK: - UIKit TextEditor 包装器
+struct UIKitTextEditor: UIViewRepresentable {
+  @Binding var text: String
+  
+  func makeUIView(context: Context) -> UITextView {
+    let textView = UITextView()
+    textView.delegate = context.coordinator
+    textView.font = UIFont.systemFont(ofSize: 16)
+    textView.backgroundColor = UIColor.clear
+    textView.textColor = UIColor.label
+    textView.isScrollEnabled = true
+    textView.isEditable = true
+    textView.isUserInteractionEnabled = true
+    
+    // 键盘工具栏
+    let toolbar = UIToolbar()
+    toolbar.sizeToFit()
+    
+    // 完成按钮以收回键盘
+    let doneButton = UIBarButtonItem(
+      title: "完成",
+      style: .done,
+      target: context.coordinator,
+      action: #selector(Coordinator.doneButtonTapped)
+    )
+    
+    doneButton.tintColor = UIColor.mainStyleBackgroundColor
+    
+    let flexSpace = UIBarButtonItem(
+      barButtonSystemItem: .flexibleSpace,
+      target: nil,
+      action: nil
+    )
+    
+    // 工具栏item
+    toolbar.items = [flexSpace, doneButton]
+    
+    textView.inputAccessoryView = toolbar
+    
+    context.coordinator.textView = textView
+    
+    return textView
+  }
+  
+  func updateUIView(_ uiView: UITextView, context: Context) {
+    if uiView.text != text {
+      uiView.text = text
+    }
+  }
+  
+  func makeCoordinator() -> Coordinator {
+    Coordinator(self)
+  }
+  
+  class Coordinator: NSObject, UITextViewDelegate {
+    let parent: UIKitTextEditor
+    weak var textView: UITextView?
+    
+    init(_ parent: UIKitTextEditor) {
+      self.parent = parent
+    }
+    
+    func textViewDidChange(_ textView: UITextView) {
+      parent.text = textView.text
+    }
+    
+    @objc func doneButtonTapped() {
+      textView?.resignFirstResponder()
     }
   }
 }
 
-// 由于TextEditorView需要多个绑定参数，无法直接创建预览
-// 如果需要预览，可以创建一个包装视图
 struct TextEditorViewPreview: View {
-  @State private var inputText = "预览文本"
-  @State private var textEditorHeight: CGFloat = 180
-  @State private var isHeightAdjusted = false
-  @State private var showingTextInput = true
+  @State private var inputText = ""
   @FocusState private var isTextEditorFocused: Bool
   
   var body: some View {
     TextEditorView(
       inputText: $inputText,
-      textEditorHeight: $textEditorHeight,
-      isHeightAdjusted: $isHeightAdjusted,
-      showingTextInput: $showingTextInput,
-      isTextEditorFocused: _isTextEditorFocused,
-      originalHeight: 180,
-      calculateTextHeight: { 180 }
+      isTextEditorFocused: _isTextEditorFocused
     )
     .padding()
   }

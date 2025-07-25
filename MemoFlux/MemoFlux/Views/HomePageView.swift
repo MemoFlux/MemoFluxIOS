@@ -38,7 +38,7 @@ struct HomePageView: View {
         }
     }
     .fullScreenCover(isPresented: $showingAddMemoView) {
-      AddMemoItemWithAIView()
+      AddMemoItemView()
     }
   }
   
