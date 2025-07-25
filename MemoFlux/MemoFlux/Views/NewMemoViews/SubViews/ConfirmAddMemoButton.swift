@@ -16,22 +16,34 @@ struct ConfirmAddMemoButton: View {
   let modelContext: ModelContext
   let onSave: () -> Void
   
+  @State private var isSaving = false
+  
   var body: some View {
     Button {
       saveMemo()
     } label: {
-      Text("创建 Memo")
-        .font(.system(size: 14, weight: .medium))
-        .foregroundStyle(.white)
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .background(Color.mainStyleBackgroundColor)
-        .cornerRadius(12)
+      HStack {
+        if isSaving {
+          ProgressView()
+            .scaleEffect(0.8)
+            .foregroundColor(.white)
+        }
+        Text(isSaving ? "创建中..." : "创建 Memo")
+          .font(.system(size: 14, weight: .medium))
+          .foregroundStyle(.white)
+      }
+      .frame(maxWidth: .infinity)
+      .padding(.vertical, 16)
+      .background(isSaving ? Color.gray : Color.mainStyleBackgroundColor)
+      .cornerRadius(12)
     }
+    .disabled(isSaving)
     .padding(.top, 30)
   }
   
   private func saveMemo() {
+    isSaving = true
+    
     // 创建新的 MemoItemModel
     let newMemo: MemoItemModel
     
@@ -62,10 +74,68 @@ struct ConfirmAddMemoButton: View {
     
     do {
       try modelContext.save()
-      // 保存成功后调用回调
-      onSave()
+      print("Memo保存成功，开始发送API请求")
+      
+      // 发送API请求
+      sendAPIRequest(for: newMemo)
+      
     } catch {
       print("保存 Memo 失败: \(error)")
+      isSaving = false
+    }
+  }
+  
+  private func sendAPIRequest(for memoItem: MemoItemModel) {
+    // 标记开始API处理
+    memoItem.startAPIProcessing()
+    
+    // 保存状态更新
+    do {
+      try modelContext.save()
+    } catch {
+      print("更新API处理状态失败: \(error)")
+    }
+    
+    // 获取所有现有标签
+    let allTags = NetworkManager.shared.getAllTags(from: modelContext)
+    
+    // 发送API请求
+    NetworkManager.shared.generateAIResponse(
+      content: memoItem.contentForAPI,
+      tags: allTags,
+      isImage: memoItem.image != nil
+    ) { result in
+      DispatchQueue.main.async {
+        switch result {
+        case .success(let response):
+          print("API请求成功")
+          // 保存API响应到MemoItem
+          memoItem.setAPIResponse(response)
+          
+          // 更新标签（合并API返回的标签）
+          let newTags = Set(memoItem.tags)
+            .union(response.knowledge.tags)
+            .union(response.information.tags)
+            .union(response.schedule.tasks.flatMap { $0.tags })
+          memoItem.tags = Array(newTags)
+          
+        case .failure(let error):
+          print("API请求失败: \(error.localizedDescription)")
+          memoItem.apiProcessingFailed()
+        }
+        
+        // 保存更新
+        do {
+          try modelContext.save()
+          print("API响应保存成功")
+        } catch {
+          print("保存API响应失败: \(error)")
+        }
+        
+        // 完成保存流程
+        isSaving = false
+        onSave()
+      }
     }
   }
 }

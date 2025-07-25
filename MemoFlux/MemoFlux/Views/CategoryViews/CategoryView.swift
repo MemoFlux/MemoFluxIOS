@@ -130,7 +130,7 @@ struct TagMemoListView: View {
       }
     }
     .background(Color.globalStyleBackgroundColor)
-    .navigationTitle("标签：\(tag)")
+    .navigationTitle("标签 - \(tag)")
     .navigationBarTitleDisplayMode(.inline)
   }
 }
@@ -187,13 +187,13 @@ struct TagMemoRowView: View {
                 .padding(.vertical, 2)
                 .background(
                   tag == highlightTag
-                    ? Color.mainStyleBackgroundColor.opacity(0.2)
-                    : Color.grayBackgroundColor
+                  ? Color.mainStyleBackgroundColor.opacity(0.2)
+                  : Color.grayBackgroundColor
                 )
                 .foregroundColor(
                   tag == highlightTag
-                    ? Color.mainStyleBackgroundColor
-                    : Color.gray
+                  ? Color.mainStyleBackgroundColor
+                  : Color.gray
                 )
                 .cornerRadius(4)
             }

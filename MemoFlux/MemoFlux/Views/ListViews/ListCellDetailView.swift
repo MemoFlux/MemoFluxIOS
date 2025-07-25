@@ -19,10 +19,11 @@ enum DataType: String, CaseIterable {
 struct ListCellDetailView: View {
   let item: MemoItemModel
   
+  @Environment(\.modelContext) private var modelContext
+  
   // API 响应数据相关状态
   @State private var selectedDataType: DataType = .knowledge
-  @State private var apiResponse: APIResponse?
-  @State private var isLoadingData = false
+  @State private var isManuallyTriggering = false
   
   var body: some View {
     ScrollView {
@@ -62,9 +63,6 @@ struct ListCellDetailView: View {
     .navigationTitle("详细信息")
     .navigationBarTitleDisplayMode(.inline)
     .background(Color(.globalStyleBackgroundColor))
-    .onAppear {
-      loadAPIData()
-    }
   }
   
   // MARK: - 基本信息部分
@@ -87,6 +85,29 @@ struct ListCellDetailView: View {
         }
         .font(.subheadline)
         .foregroundColor(.secondary)
+        .padding(.horizontal)
+      }
+      
+      // API处理状态
+      if item.isAPIProcessing {
+        HStack {
+          Image(systemName: "brain")
+          Text("AI正在分析中...")
+          ProgressView()
+            .scaleEffect(0.8)
+          Spacer()
+        }
+        .font(.subheadline)
+        .foregroundColor(.blue)
+        .padding(.horizontal)
+      } else if item.hasAPIResponse, let processedAt = item.apiProcessedAt {
+        HStack {
+          Image(systemName: "brain.head.profile")
+          Text("AI分析完成: \(processedAt.formatted(date: .omitted, time: .shortened))")
+          Spacer()
+        }
+        .font(.subheadline)
+        .foregroundColor(.green)
         .padding(.horizontal)
       }
     }
@@ -116,9 +137,10 @@ struct ListCellDetailView: View {
   // MARK: - API 数据展示部分
   private var apiDataSection: some View {
     VStack(alignment: .leading, spacing: 16) {
-      if let response = apiResponse, !response.information.summary.isEmpty {
+      // 显示摘要（如果有API响应）
+      if let response = item.apiResponse, !response.information.summary.isEmpty {
         VStack(alignment: .leading, spacing: 10) {
-          Text("摘要")
+          Text("AI 摘要")
             .font(.headline)
             .padding(.leading, 5)
           
@@ -129,28 +151,40 @@ struct ListCellDetailView: View {
             .background(Color.blue.opacity(0.1))
             .cornerRadius(15)
           
-          Text("解析内容")
+          Text("AI 解析内容")
             .font(.headline)
             .padding(.leading, 5)
         }
         .padding(.horizontal, 16)
       }
       
-      // 数据类型选择器
-      Picker("数据类型", selection: $selectedDataType) {
-        ForEach(DataType.allCases, id: \.self) { type in
-          Text(type.rawValue).tag(type)
+      // 根据API响应状态显示不同内容
+      if item.isAPIProcessing {
+        // 正在处理API请求
+        VStack(spacing: 16) {
+          ProgressView("AI正在分析内容...")
+            .frame(maxWidth: .infinity, alignment: .center)
+          
+          Text("请稍候，AI正在为您分析内容并生成智能解析结果")
+            .font(.caption)
+            .foregroundColor(.secondary)
+            .multilineTextAlignment(.center)
         }
-      }
-      .pickerStyle(SegmentedPickerStyle())
-      .padding(.horizontal)
-      
-      // 根据选择的类型显示相应数据
-      if isLoadingData {
-        ProgressView("加载中...")
-          .frame(maxWidth: .infinity, alignment: .center)
-          .padding()
-      } else if let response = apiResponse {
+        .padding()
+        
+      } else if let response = item.apiResponse {
+        // 有API响应，显示解析结果
+        
+        // 数据类型选择器
+        Picker("数据类型", selection: $selectedDataType) {
+          ForEach(DataType.allCases, id: \.self) { type in
+            Text(type.rawValue).tag(type)
+          }
+        }
+        .pickerStyle(SegmentedPickerStyle())
+        .padding(.horizontal)
+        
+        // 根据选择的类型显示相应数据
         switch selectedDataType {
         case .knowledge:
           KnowledgeView(knowledge: response.knowledge)
@@ -159,18 +193,34 @@ struct ListCellDetailView: View {
         case .schedule:
           ScheduleView(schedule: response.schedule)
         }
+        
       } else {
-        // 显示原有的识别内容作为后备
+        // 没有API响应，显示原有的识别内容
         VStack(alignment: .leading, spacing: 8) {
           if !item.recognizedText.isEmpty {
             Text("本地识别结果")
-              .bold()
+              .font(.headline)
+              .padding(.leading, 5)
+            
             Text(item.recognizedText)
               .font(.body)
               .padding()
               .background(Color.gray.opacity(0.1))
               .cornerRadius(8)
               .padding(.horizontal)
+            
+            // 提供手动触发API分析的按钮
+            Button("使用AI分析内容") {
+              triggerAPIAnalysis()
+            }
+            .font(.system(size: 14, weight: .medium))
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(Color.blue)
+            .cornerRadius(8)
+            .padding(.horizontal)
+            
           } else {
             Text("暂无识别内容")
               .font(.body)
@@ -183,27 +233,43 @@ struct ListCellDetailView: View {
     }
   }
   
-  // MARK: - 加载 API 数据
-  private func loadAPIData() {
-    isLoadingData = true
+  // MARK: - 手动触发API分析
+  private func triggerAPIAnalysis() {
+    isManuallyTriggering = true
     
-    // 模拟从 response.json 加载数据
-    DispatchQueue.global(qos: .userInitiated).async {
-      if let path = Bundle.main.path(forResource: "response", ofType: "json"),
-         let data = try? Data(contentsOf: URL(fileURLWithPath: path)),
-         let response = try? JSONDecoder().decode(APIResponse.self, from: data)
-      {
+    NetworkManager.shared.triggerAPIAnalysis(for: item, modelContext: modelContext) { result in
+      DispatchQueue.main.async {
+        isManuallyTriggering = false
         
-        DispatchQueue.main.async {
-          self.apiResponse = response
-          self.isLoadingData = false
-        }
-      } else {
-        DispatchQueue.main.async {
-          self.isLoadingData = false
+        switch result {
+        case .success:
+          print("手动API分析成功")
+        case .failure(let error):
+          print("手动API分析失败: \(error.localizedDescription)")
         }
       }
     }
+  }
+  
+  // 更新手动分析按钮
+  private var manualAnalysisButton: some View {
+    Button(action: triggerAPIAnalysis) {
+      HStack {
+        if isManuallyTriggering {
+          ProgressView()
+            .scaleEffect(0.8)
+        }
+        Text(isManuallyTriggering ? "AI分析中..." : "使用AI分析内容")
+      }
+    }
+    .font(.system(size: 14, weight: .medium))
+    .foregroundColor(.white)
+    .frame(maxWidth: .infinity)
+    .padding(.vertical, 12)
+    .background(isManuallyTriggering ? Color.gray : Color.blue)
+    .cornerRadius(8)
+    .disabled(isManuallyTriggering || item.isAPIProcessing)
+    .padding(.horizontal)
   }
 }
 
@@ -555,7 +621,6 @@ struct ScheduleTaskCard: View {
     return createEventNotes()
   }
 }
-
 
 #Preview {
   let previewItem = MemoItemModel(

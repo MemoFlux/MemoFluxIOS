@@ -213,6 +213,11 @@ struct MemoCardView: View {
     .background(Color.white)
     .cornerRadius(16)
     .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+    .overlay(
+      // API处理状态指示器
+      apiStatusIndicator,
+      alignment: .topTrailing
+    )
     .contextMenu {
       // 编辑按钮
       Button {
@@ -233,6 +238,31 @@ struct MemoCardView: View {
     .onAppear {
       if item.recognizedText.isEmpty, let image = item.image {
         recognizeText(for: item, image: image)
+      }
+    }
+  }
+  
+  // MARK: - API状态指示器
+  private var apiStatusIndicator: some View {
+    Group {
+      if item.isAPIProcessing {
+        HStack(spacing: 4) {
+          ProgressView()
+            .scaleEffect(0.6)
+          Text("AI分析中")
+            .font(.caption2)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(Color.blue.opacity(0.1))
+        .foregroundColor(.blue)
+        .cornerRadius(12)
+        .padding(8)
+      } else if item.hasAPIResponse {
+        Image(systemName: "brain.head.profile")
+          .font(.caption)
+          .foregroundColor(.green)
+          .padding(8)
       }
     }
   }

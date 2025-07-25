@@ -78,8 +78,72 @@ struct HomePageView: View {
         
         if !exists {
           modelContext.insert(newItem)
-          try? modelContext.save()
-          print("新MemoItem添加成功并保存到swiftData，UUID: \(newItem.id)")
+          
+          do {
+            try modelContext.save()
+            print("新MemoItem添加成功并保存到swiftData，UUID: \(newItem.id)")
+            
+            // 自动发送API请求处理快捷指令传入的图片
+            processShortcutImage(newItem)
+            
+          } catch {
+            print("保存MemoItem失败: \(error)")
+          }
+        }
+      }
+    }
+  }
+  
+  // MARK: - 处理快捷指令图片
+  private func processShortcutImage(_ memoItem: MemoItemModel) {
+    // 标记开始API处理
+    memoItem.startAPIProcessing()
+    
+    // 保存状态更新
+    do {
+      try modelContext.save()
+    } catch {
+      print("更新API处理状态失败: \(error)")
+    }
+    
+    // 获取所有现有标签
+    let allTags = NetworkManager.shared.getAllTags(from: modelContext)
+    
+    // 发送API请求
+    NetworkManager.shared.generateAIResponse(
+      from: memoItem,
+      allTags: allTags
+    ) { result in
+      DispatchQueue.main.async {
+        switch result {
+        case .success(let response):
+          print("快捷指令图片API请求成功")
+          // 保存API响应到MemoItem
+          memoItem.setAPIResponse(response)
+          
+          // 更新标签（合并API返回的标签）
+          let newTags = Set(memoItem.tags)
+            .union(response.knowledge.tags)
+            .union(response.information.tags)
+            .union(response.schedule.tasks.flatMap { $0.tags })
+          memoItem.tags = Array(newTags)
+          
+          // 如果有标题，更新标题
+          if !response.information.title.isEmpty {
+            memoItem.title = response.information.title
+          }
+          
+        case .failure(let error):
+          print("快捷指令图片API请求失败: \(error.localizedDescription)")
+          memoItem.apiProcessingFailed()
+        }
+        
+        // 保存更新
+        do {
+          try modelContext.save()
+          print("快捷指令图片API响应保存成功")
+        } catch {
+          print("保存快捷指令图片API响应失败: \(error)")
         }
       }
     }
