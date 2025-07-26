@@ -21,14 +21,12 @@ struct ListCellDetailView: View {
   
   @Environment(\.modelContext) private var modelContext
   
-  // API 响应数据相关状态
   @State private var selectedDataType: DataType = .knowledge
   @State private var isManuallyTriggering = false
   
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 16) {
-        // 原有的图片和基本信息展示
         if let image = item.image {
           Image(uiImage: image)
             .resizable()
@@ -48,16 +46,13 @@ struct ListCellDetailView: View {
             .padding(.horizontal)
         }
         
-        // 基本信息
         basicInfoSection
         
-        // 标签展示
         tagsSection
         
         Divider()
           .padding(.vertical, 8)
         
-        // API 数据展示部分
         apiDataSection
       }
       .padding(.vertical)
@@ -66,11 +61,9 @@ struct ListCellDetailView: View {
     .navigationBarTitleDisplayMode(.inline)
     .background(Color.globalStyleBackgroundColor)
     .onAppear {
-      // 当视图出现时，根据API响应设置默认的数据类型
       setDefaultDataTypeFromAPIResponse()
     }
     .onChange(of: item.apiResponse) { newResponse in
-      // 当API响应更新时，重新设置默认的数据类型
       setDefaultDataTypeFromAPIResponse()
     }
   }
@@ -373,11 +366,9 @@ struct KnowledgeView: View {
 struct InformationView: View {
   let information: InformationResponse
   
-  // 计算合并后的信息项目
   private var mergedInformationItems: [(header: String, contents: [String])] {
     var mergedItems: [String: [String]] = [:]
     
-    // 按顺序处理每个项目，保持原有顺序
     for item in information.informationItems {
       if mergedItems[item.header] != nil {
         mergedItems[item.header]?.append(item.content)
@@ -385,8 +376,7 @@ struct InformationView: View {
         mergedItems[item.header] = [item.content]
       }
     }
-    
-    // 保持原有顺序：按照第一次出现的顺序返回
+
     var result: [(header: String, contents: [String])] = []
     var processedHeaders: Set<String> = []
     
@@ -402,13 +392,11 @@ struct InformationView: View {
   
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
-      // 标题
       Text(information.title)
         .font(.title2)
         .fontWeight(.semibold)
         .padding(.horizontal)
       
-      // 类型
       HStack {
         Text("类型:")
           .font(.subheadline)
@@ -420,7 +408,6 @@ struct InformationView: View {
       }
       .padding(.horizontal)
       
-      // 标签
       if !information.tags.isEmpty {
         ScrollView(.horizontal, showsIndicators: false) {
           HStack {
@@ -437,7 +424,6 @@ struct InformationView: View {
         }
       }
       
-      // 合并后的信息项目
       LazyVStack(alignment: .leading, spacing: 8) {
         ForEach(Array(mergedInformationItems.enumerated()), id: \.offset) { index, mergedItem in
           VStack(alignment: .leading, spacing: 8) {
@@ -446,13 +432,11 @@ struct InformationView: View {
               .bold()
               .padding(.vertical, 5)
             
-            // 如果只有一个内容，直接显示
             if mergedItem.contents.count == 1 {
               Text(mergedItem.contents[0])
                 .font(.body)
                 .foregroundColor(.secondary)
             } else {
-              // 如果有多个内容，用 bullet 分条显示
               VStack(alignment: .leading, spacing: 4) {
                 ForEach(Array(mergedItem.contents.enumerated()), id: \.offset) {
                   contentIndex, content in
@@ -519,7 +503,6 @@ struct ScheduleView: View {
 struct ScheduleTaskCard: View {
   let task: ScheduleTask
   
-  // 提醒确认视图状态
   @State private var showingReminderConfirmation = false
   
   var body: some View {
@@ -536,7 +519,6 @@ struct ScheduleTaskCard: View {
         }
       }
       
-      // 核心任务
       if !task.coreTasks.isEmpty {
         VStack(alignment: .leading, spacing: 4) {
           Text("核心任务:")
@@ -586,7 +568,7 @@ struct ScheduleTaskCard: View {
         }
       }
       
-      // EventKit 操作按钮 - 使用封装的工具类
+      // EventKit 操作按钮
       ScheduleTaskHelper.actionButtons(
         for: task,
         showingReminderConfirmation: $showingReminderConfirmation

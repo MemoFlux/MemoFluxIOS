@@ -9,62 +9,37 @@ import SwiftUI
 
 /// 发现待处理意图视图
 struct IntentDiscoveryView: View {
-  @State private var pendingIntents: [PendingIntent] = [
-    PendingIntent(
-      id: UUID(),
-      title: "项目会议 10:30",
-      type: .calendar,
-      iconName: "calendar",
-      iconColor: Color(red: 16 / 255, green: 185 / 255, blue: 129 / 255)
-    ),
-    PendingIntent(
-      id: UUID(),
-      title: "提交周报",
-      type: .task,
-      iconName: "calendar",
-      iconColor: Color(.green)
-    ),
-    PendingIntent(
-      id: UUID(),
-      title: "回复客户邮件",
-      type: .task,
-      iconName: "calendar",
-      iconColor: Color(.green)
-    ),
-    PendingIntent(
-      id: UUID(),
-      title: "购买生活用品",
-      type: .reminder,
-      iconName: "calendar",
-      iconColor: Color(.green)
-    ),
-    PendingIntent(
-      id: UUID(),
-      title: "整理会议纪要",
-      type: .note,
-      iconName: "calendar",
-      iconColor: Color(.green)
-    ),
-    PendingIntent(
-      id: UUID(),
-      title: "预约体检",
-      type: .calendar,
-      iconName: "calendar",
-      iconColor: Color(.green)
-    ),
-    PendingIntent(
-      id: UUID(),
-      title: "学习新技术",
-      type: .task,
-      iconName: "calendar",
-      iconColor: Color(.green)
-    ),
+  let memoItems: [MemoItemModel]
+  
+  // 计算今日的日程意图
+  private var todayScheduleIntents: [IntentDiscoveryViewModel] {
+    let calendar = Calendar.current
+    let today = Date()
     
-  ]
+    var intents: [IntentDiscoveryViewModel] = []
+    
+    // 遍历今日的 Memo
+    for memoItem in memoItems {
+      // 只处理今日创建的 Memo
+      guard calendar.isDate(memoItem.createdAt, inSameDayAs: today) else { continue }
+      
+      // 检查是否有 API 响应和日程数据
+      guard let apiResponse = memoItem.apiResponse,
+            !apiResponse.schedule.tasks.isEmpty else { continue }
+      
+      // 为每个日程任务创建意图
+      for task in apiResponse.schedule.tasks {
+        let intent = IntentDiscoveryViewModel(memoItem: memoItem, scheduleTask: task)
+        intents.append(intent)
+      }
+    }
+    
+    return intents
+  }
   
   // 检查是否有待处理意图
   private var hasIntents: Bool {
-    !pendingIntents.isEmpty
+    !todayScheduleIntents.isEmpty
   }
   
   var body: some View {
@@ -89,15 +64,16 @@ struct IntentDiscoveryView: View {
           // 意图项目纵向排列，最多显示5个，可滚动
           ScrollView(.vertical, showsIndicators: false) {
             LazyVStack(spacing: 8) {
-              ForEach(pendingIntents) { intent in
-                IntentRowView(intent: intent) {
-                  handleIntent(intent)
+              ForEach(todayScheduleIntents) { intent in
+                NavigationLink(destination: ListCellDetailView(item: intent.memoItem)) {
+                  TodayScheduleIntentRowView(intent: intent)
                 }
+                .buttonStyle(PlainButtonStyle())
               }
             }
             .padding(.vertical, 1)
           }
-          .frame(maxHeight: min(CGFloat(pendingIntents.count) * 44, 220))
+          .frame(maxHeight: min(CGFloat(todayScheduleIntents.count) * 44, 220))
         }
         .padding(16)
         .background(Color.yellowBackgroundColor)
@@ -106,81 +82,61 @@ struct IntentDiscoveryView: View {
       }
     }
   }
-  
-  private func handleIntent(_ intent: PendingIntent) {
-    // 处理单个意图
-    print("处理意图: \(intent.title)")
-    // TODO: 实现具体的意图处理逻辑
-    withAnimation {
-      pendingIntents.removeAll { $0.id == intent.id }
-    }
-  }
 }
 
-/// 意图 item 行视图
-struct IntentRowView: View {
-  let intent: PendingIntent
-  let onTap: () -> Void
+/// 今日日程意图行视图
+struct TodayScheduleIntentRowView: View {
+  let intent: IntentDiscoveryViewModel
   
   var body: some View {
-    Button(action: onTap) {
-      HStack(spacing: 12) {
-        Image(systemName: intent.iconName)
-          .font(.system(size: 16))
-          .foregroundColor(intent.iconColor)
-          .frame(width: 20, height: 20)
-        
+    HStack(spacing: 12) {
+      Image(systemName: intent.iconName)
+        .font(.system(size: 16))
+        .foregroundColor(intent.iconColor)
+        .frame(width: 20, height: 20)
+      
+      VStack(alignment: .leading, spacing: 2) {
         Text(intent.title)
-          .font(.system(size: 14))
+          .font(.system(size: 14, weight: .medium))
           .foregroundColor(.primary)
           .frame(maxWidth: .infinity, alignment: .leading)
         
-        Image(systemName: "chevron.right")
-          .font(.system(size: 12))
-          .foregroundColor(.secondary)
+        // 显示时间信息（如果有）
+        if let startDate = intent.scheduleTask.startDate {
+          Text(startDate.formatted(date: .omitted, time: .shortened))
+            .font(.system(size: 12))
+            .foregroundColor(.secondary)
+        }
       }
-      .padding(.horizontal, 12)
-      .padding(.vertical, 10)
-      .background(Color.white)
-      .cornerRadius(8)
-      .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+      
+      Spacer()
+      
+      Image(systemName: "chevron.right")
+        .font(.system(size: 12))
+        .foregroundColor(.secondary)
     }
-    .buttonStyle(PlainButtonStyle())
+    .padding(.horizontal, 12)
+    .padding(.vertical, 10)
+    .background(Color.white)
+    .cornerRadius(8)
+    .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
   }
 }
 
-/// 意图 item 胶囊视图
-struct IntentChipView: View {
-  let intent: PendingIntent
-  let onTap: () -> Void
-  
-  var body: some View {
-    Button(action: onTap) {
-      HStack(spacing: 6) {
-        Image(systemName: intent.iconName)
-          .font(.system(size: 12))
-          .foregroundColor(intent.iconColor)
-        
-        Text(intent.title)
-          .font(.system(size: 12))
-          .foregroundColor(.primary)
-      }
-      .padding(.horizontal, 12)
-      .padding(.vertical, 6)
-      .background(Color.white)
-      .cornerRadius(20)
-      .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 1)
-    }
-    .buttonStyle(PlainButtonStyle())
+// MARK: - 向后兼容的空视图（用于没有传入 memoItems 的情况）
+extension IntentDiscoveryView {
+  init() {
+    self.memoItems = []
   }
 }
 
 #Preview {
+  // 创建测试数据
+  let testMemoItems = createTestMemoItemsWithSchedule()
+  
   VStack(spacing: 16) {
     VStack(spacing: 12) {
-      IntentDiscoveryView()
-      
-      IntentDiscoveryViewEmpty()
+      IntentDiscoveryView(memoItems: testMemoItems)
       
       VStack(alignment: .leading, spacing: 12) {
         Text("其他内容卡片")
@@ -199,46 +155,58 @@ struct IntentChipView: View {
   .background(Color.globalStyleBackgroundColor)
 }
 
-// 预览用，空意图视图
-private struct IntentDiscoveryViewEmpty: View {
-  @State private var pendingIntents: [PendingIntent] = []
+// 测试数据辅助函数
+private func createTestMemoItemsWithSchedule() -> [MemoItemModel] {
+  let testItem = MemoItemModel(
+    imageData: nil,
+    recognizedText: "今日会议安排",
+    title: "项目进度会议",
+    tags: ["会议", "项目"],
+    createdAt: Date(),
+    source: "测试数据"
+  )
   
-  private var hasIntents: Bool {
-    !pendingIntents.isEmpty
-  }
+  // 模拟 API 响应数据
+  let scheduleTask = ScheduleTask(
+    startTime: "2024-05-16T10:30:00+08:00",
+    endTime: "2024-05-16T11:30:00+08:00",
+    people: ["张三", "李四"],
+    theme: "项目进度讨论",
+    coreTasks: ["讨论当前进度", "制定下阶段计划"],
+    position: ["会议室A"],
+    tags: ["重要", "项目"],
+    category: "工作会议",
+    suggestedActions: ["准备进度报告", "整理问题清单"],
+    id: 1
+  )
   
-  var body: some View {
-    if hasIntents {
-      VStack(spacing: 0) {
-        VStack(alignment: .leading, spacing: 0) {
-          HStack {
-            HStack(spacing: 8) {
-              Image(systemName: "bell.fill")
-                .font(.system(size: 14))
-                .foregroundColor(.orange)
-              
-              Text("今日待处理意图")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.primary)
-            }
-            
-            Spacer()
-          }
-          .padding(.bottom, 12)
-          
-          ScrollView(.vertical, showsIndicators: false) {
-            LazyVStack(spacing: 8) {
-              // 空内容
-            }
-            .padding(.vertical, 1)
-          }
-          .frame(maxHeight: 220)
-        }
-        .padding(16)
-        .background(Color.yellowBackgroundColor)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
-      }
-    }
-  }
+  let apiResponse = APIResponse(
+    knowledge: KnowledgeResponse(
+      title: "",
+      knowledgeItems: [],
+      relatedItems: [],
+      tags: [],
+      category: ""
+    ),
+    information: InformationResponse(
+      title: "",
+      informationItems: [],
+      postType: "",
+      summary: "",
+      tags: [],
+      category: ""
+    ),
+    schedule: ScheduleResponse(
+      title: "今日日程",
+      category: "工作",
+      tasks: [scheduleTask],
+      id: "test-schedule",
+      text: ""
+    ),
+    mostPossibleCategory: "schedule"
+  )
+  
+  testItem.setAPIResponse(apiResponse)
+  
+  return [testItem]
 }
