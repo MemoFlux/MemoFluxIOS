@@ -14,7 +14,7 @@ extension Color {
   
   // 全局主题色
   // static let mainStyleBackgroundColor = Color(red: 45 / 255, green: 212 / 255, blue: 191 / 255)
-  static let mainStyleBackgroundColor = Color.blue.opacity(0.5)
+  static let mainStyleBackgroundColor = Color.blue.opacity(0.6)
   
   static let yellowBackgroundColor = Color(red: 254 / 255, green: 243 / 255, blue: 199 / 255)
   static let grayBackgroundColor = Color(.systemGray5).opacity(0.5)
@@ -27,7 +27,6 @@ extension Color {
 
 extension UIColor {
   static let globalStyleBackgroundColor = UIColor(red: 240 / 255, green: 249 / 255, blue: 255 / 255, alpha: 1.0)
-  
-  // static let mainStyleBackgroundColor = UIColor(red: 45 / 255, green: 212 / 255, blue: 191 / 255, alpha: 1.0)
-  static let mainStyleBackgroundColor = UIColor(Color.blue.opacity(0.5))
+
+  static let mainStyleBackgroundColor = UIColor(Color.mainStyleBackgroundColor)
 }

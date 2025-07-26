@@ -26,8 +26,8 @@ struct CategoryView: View {
   var body: some View {
     NavigationStack {
       VStack {
+        // 空状态
         if allTags.isEmpty {
-          // 空状态
           VStack(spacing: 16) {
             Image(systemName: "tag.slash")
               .font(.system(size: 48))
@@ -61,7 +61,6 @@ struct CategoryView: View {
                 
                 Spacer()
                 
-                // Memo 数量
                 Text("\(memoCount(for: tag))")
                   .font(.system(size: 14))
                   .foregroundColor(.gray)
@@ -69,11 +68,6 @@ struct CategoryView: View {
                   .padding(.vertical, 4)
                   .background(Color.grayBackgroundColor)
                   .cornerRadius(8)
-                
-                // 箭头
-                Image(systemName: "chevron.right")
-                  .font(.system(size: 12))
-                  .foregroundColor(.gray)
               }
               .padding(.vertical, 4)
             }
@@ -207,7 +201,6 @@ struct TagMemoRowView: View {
           
           Spacer()
           
-          // 创建时间
           Text(memo.createdAt, style: .relative)
             .font(.system(size: 12))
             .foregroundColor(.gray)
