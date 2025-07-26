@@ -8,7 +8,6 @@
 import EventKit
 import SwiftData
 import SwiftUI
-import UIKit
 
 // MARK: - 数据类型枚举
 enum DataType: String, CaseIterable {
@@ -40,8 +39,10 @@ struct ListCellDetailView: View {
             .frame(maxHeight: UIScreen.main.bounds.height / 2)
         }
         
-        if !item.title.isEmpty {
-          Text(item.title)
+        // 显示标题：优先使用item.title，如果为空则使用API响应中最可能类别的标题
+        let displayTitle = getDisplayTitle()
+        if !displayTitle.isEmpty {
+          Text(displayTitle)
             .font(.title)
             .fontWeight(.bold)
             .padding(.horizontal)
@@ -272,6 +273,30 @@ struct ListCellDetailView: View {
     .padding(.horizontal)
   }
   
+  // MARK: - 获取显示标题
+  private func getDisplayTitle() -> String {
+    // 如果有标题，直接使用
+    if !item.title.isEmpty {
+      return item.title
+    }
+    
+    // 如果没有标题但有API响应，使用最可能类别的标题
+    guard let response = item.apiResponse else {
+      return ""
+    }
+    
+    switch response.mostPossibleCategory.lowercased() {
+    case "knowledge":
+      return response.knowledge.title
+    case "information":
+      return response.information.title
+    case "schedule":
+      return response.schedule.title
+    default:
+      return ""
+    }
+  }
+  
   // MARK: - 设置默认数据类型
   private func setDefaultDataTypeFromAPIResponse() {
     guard let response = item.apiResponse else { return }
@@ -348,6 +373,33 @@ struct KnowledgeView: View {
 struct InformationView: View {
   let information: InformationResponse
   
+  // 计算合并后的信息项目
+  private var mergedInformationItems: [(header: String, contents: [String])] {
+    var mergedItems: [String: [String]] = [:]
+    
+    // 按顺序处理每个项目，保持原有顺序
+    for item in information.informationItems {
+      if mergedItems[item.header] != nil {
+        mergedItems[item.header]?.append(item.content)
+      } else {
+        mergedItems[item.header] = [item.content]
+      }
+    }
+    
+    // 保持原有顺序：按照第一次出现的顺序返回
+    var result: [(header: String, contents: [String])] = []
+    var processedHeaders: Set<String> = []
+    
+    for item in information.informationItems {
+      if !processedHeaders.contains(item.header) {
+        result.append((header: item.header, contents: mergedItems[item.header] ?? []))
+        processedHeaders.insert(item.header)
+      }
+    }
+    
+    return result
+  }
+  
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
       // 标题
@@ -385,18 +437,39 @@ struct InformationView: View {
         }
       }
       
-      // 信息项目
+      // 合并后的信息项目
       LazyVStack(alignment: .leading, spacing: 8) {
-        ForEach(information.informationItems) { item in
+        ForEach(Array(mergedInformationItems.enumerated()), id: \.offset) { index, mergedItem in
           VStack(alignment: .leading, spacing: 8) {
-            Text(item.header)
+            Text(mergedItem.header)
               .font(.headline)
               .bold()
               .padding(.vertical, 5)
             
-            Text(item.content)
-              .font(.body)
-              .foregroundColor(.secondary)
+            // 如果只有一个内容，直接显示
+            if mergedItem.contents.count == 1 {
+              Text(mergedItem.contents[0])
+                .font(.body)
+                .foregroundColor(.secondary)
+            } else {
+              // 如果有多个内容，用 bullet 分条显示
+              VStack(alignment: .leading, spacing: 4) {
+                ForEach(Array(mergedItem.contents.enumerated()), id: \.offset) {
+                  contentIndex, content in
+                  HStack(alignment: .top, spacing: 8) {
+                    Text("•")
+                      .font(.body)
+                      .foregroundColor(.secondary)
+                      .padding(.top, 1)
+                    
+                    Text(content)
+                      .font(.body)
+                      .foregroundColor(.secondary)
+                      .frame(maxWidth: .infinity, alignment: .leading)
+                  }
+                }
+              }
+            }
           }
           .padding()
           .frame(maxWidth: .infinity, alignment: .leading)

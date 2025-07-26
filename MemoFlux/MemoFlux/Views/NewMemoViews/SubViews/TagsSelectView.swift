@@ -262,7 +262,7 @@ struct TagChipView: View {
 
 #Preview {
   struct PreviewWrapper: View {
-    @State private var selectedTags: Set<String> = ["工作", "笔记"]
+    @State private var selectedTags = Set<String>()
 
     var body: some View {
       VStack(spacing: 20) {

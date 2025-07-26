@@ -123,6 +123,7 @@ struct AddMemoItemView: View {
             image: selectedImage,
             tags: selectedTags,
             modelContext: modelContext,
+            apiResponse: apiResponse,  // 传递API解析结果
             onSave: {
               dismiss()
             }
@@ -207,7 +208,10 @@ struct AddMemoItemView: View {
       .foregroundColor(.white)
       .frame(maxWidth: .infinity)
       .padding(.vertical, 16)
-      .background(isParsingInProgress || getContentForParsing().isEmpty ? Color.gray.opacity(0.7) : Color.mainStyleBackgroundColor)
+      .background(
+        isParsingInProgress || getContentForParsing().isEmpty
+        ? Color.gray.opacity(0.7) : Color.mainStyleBackgroundColor
+      )
       .cornerRadius(15)
       .disabled(isParsingInProgress || getContentForParsing().isEmpty)
     }

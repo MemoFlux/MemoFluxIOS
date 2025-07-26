@@ -18,6 +18,9 @@ struct MemoListView: View {
   @State private var searchText = ""
   @Binding var isSearchActive: Bool
   
+  // 添加状态来跟踪删除操作
+  @State private var deletingItems: Set<UUID> = []
+  
   // 初始化方法，支持可选的搜索状态绑定
   init(memoItems: [MemoItemModel], modelContext: ModelContext, isSearchActive: Binding<Bool>? = nil)
   {
@@ -26,12 +29,14 @@ struct MemoListView: View {
     self._isSearchActive = isSearchActive ?? .constant(false)
   }
   
-  // 过滤后的备忘录
+  // 过滤后的备忘录 - 排除正在删除的项目
   private var filteredItems: [MemoItemModel] {
+    let baseItems = memoItems.filter { !deletingItems.contains($0.id) }
+    
     if searchText.isEmpty {
-      return memoItems
+      return baseItems
     } else {
-      return memoItems.filter { item in
+      return baseItems.filter { item in
         // 搜索标题
         item.title.localizedCaseInsensitiveContains(searchText)
         // 搜索识别文本
@@ -46,7 +51,7 @@ struct MemoListView: View {
     }
   }
   
-  // 按日期分组
+  // 按日期分组 - 过滤掉空分组
   private var groupedItems: [(String, [MemoItemModel])] {
     let calendar = Calendar.current
     let grouped = Dictionary(grouping: filteredItems) { item in
@@ -61,13 +66,16 @@ struct MemoListView: View {
       }
     }
     
-    return grouped.sorted { first, second in
-      if first.key == "今天" { return true }
-      if second.key == "今天" { return false }
-      if first.key == "昨天" { return true }
-      if second.key == "昨天" { return false }
-      return first.key > second.key
-    }
+    // 过滤掉空分组，并排序
+    return grouped
+      .filter { !$0.value.isEmpty }  // 关键修复：过滤掉空分组
+      .sorted { first, second in
+        if first.key == "今天" { return true }
+        if second.key == "今天" { return false }
+        if first.key == "昨天" { return true }
+        if second.key == "昨天" { return false }
+        return first.key > second.key
+      }
   }
   
   var body: some View {
@@ -100,7 +108,8 @@ struct MemoListView: View {
                         MemoCardView(
                           item: item,
                           modelContext: modelContext,
-                          searchText: searchText
+                          searchText: searchText,
+                          onDelete: { deleteMemo(item) }  // 传递删除回调
                         )
                       }
                       .buttonStyle(PlainButtonStyle())
@@ -124,6 +133,30 @@ struct MemoListView: View {
         placement: .navigationBarDrawer(displayMode: .automatic),
         prompt: "搜索Memo..."
       )
+    }
+  }
+  
+  // MARK: - 删除方法
+  private func deleteMemo(_ item: MemoItemModel) {
+    // 立即标记为删除状态，更新UI
+    deletingItems.insert(item.id)
+    
+    withAnimation(.easeInOut(duration: 0.3)) {
+      modelContext.delete(item)
+      
+      do {
+        try modelContext.save()
+        
+        // 删除成功后，从删除状态中移除
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+          deletingItems.remove(item.id)
+        }
+      } catch {
+        print("删除 Memo 失败: \(error)")
+        // 删除失败，恢复状态
+        deletingItems.remove(item.id)
+        modelContext.rollback()
+      }
     }
   }
 }
@@ -154,15 +187,17 @@ struct MemoCardView: View {
   let item: MemoItemModel
   let modelContext: ModelContext
   let searchText: String
+  let onDelete: (() -> Void)?  // 添加删除回调
   
   @State private var textHeight: CGFloat = 0
   @State private var imageHeight: CGFloat = 0
   
   // 初始化方法，searchText 参数可选
-  init(item: MemoItemModel, modelContext: ModelContext, searchText: String = "") {
+  init(item: MemoItemModel, modelContext: ModelContext, searchText: String = "", onDelete: (() -> Void)? = nil) {
     self.item = item
     self.modelContext = modelContext
     self.searchText = searchText
+    self.onDelete = onDelete
   }
   
   private var isPortrait: Bool {
@@ -230,7 +265,11 @@ struct MemoCardView: View {
       
       // 删除按钮
       Button(role: .destructive) {
-        deleteMemo()
+        if let onDelete = onDelete {
+          onDelete()  // 使用传入的删除回调
+        } else {
+          deleteMemo()  // 保持向后兼容
+        }
       } label: {
         Label("删除", systemImage: "trash")
       }
@@ -284,7 +323,7 @@ struct MemoCardView: View {
     VStack(alignment: .leading, spacing: 8) {
       // 高亮显示搜索结果的标题
       HighlightedText(
-        text: item.title.isEmpty ? "无标题" : item.title,
+        text: getDisplayTitle(),
         searchText: searchText
       )
       .font(.system(size: 16, weight: .bold))
@@ -292,8 +331,31 @@ struct MemoCardView: View {
       .frame(maxWidth: .infinity, alignment: .leading)
       .lineLimit(2)
       
-      if !item.recognizedText.isEmpty {
-        // 高亮显示搜索结果的识别文本
+      // 根据AI解析状态显示不同内容
+      if item.isAPIProcessing {
+        // AI解析未完成，显示加载中
+        Text("加载中...")
+          .font(.system(size: 14))
+          .foregroundColor(.secondary)
+          .frame(maxWidth: .infinity, alignment: .leading)
+      } else if item.hasAPIResponse, let apiResponse = item.apiResponse, !apiResponse.information.summary.isEmpty {
+        // AI解析已完成，显示AI摘要
+        HighlightedText(
+          text: apiResponse.information.summary,
+          searchText: searchText
+        )
+        .font(.system(size: 14))
+        .foregroundColor(.primary)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .lineLimit(getTextLineLimit())
+        .background(
+          GeometryReader { geo in
+            Color.clear.onAppear {
+              textHeight = geo.size.height
+            }
+          })
+      } else if !item.recognizedText.isEmpty {
+        // 手动创建或无AI解析，显示识别文本
         HighlightedText(
           text: item.recognizedText,
           searchText: searchText
@@ -315,6 +377,31 @@ struct MemoCardView: View {
           .foregroundColor(.secondary)
       }
     }
+  }
+  
+  // MARK: - 获取显示标题
+  private func getDisplayTitle() -> String {
+    // 如果有标题，直接返回
+    if !item.title.isEmpty {
+      return item.title
+    }
+    
+    // 如果没有标题但有API解析结果，使用most_possible_category对应的标题
+    if item.hasAPIResponse, let apiResponse = item.apiResponse {
+      switch apiResponse.mostPossibleCategory.lowercased() {
+      case "knowledge":
+        return apiResponse.knowledge.title.isEmpty ? "无标题" : apiResponse.knowledge.title
+      case "information":
+        return apiResponse.information.title.isEmpty ? "无标题" : apiResponse.information.title
+      case "schedule":
+        return apiResponse.schedule.title.isEmpty ? "无标题" : apiResponse.schedule.title
+      default:
+        return "无标题"
+      }
+    }
+    
+    // 默认返回"无标题"
+    return "无标题"
   }
   
   private var imageView: some View {
