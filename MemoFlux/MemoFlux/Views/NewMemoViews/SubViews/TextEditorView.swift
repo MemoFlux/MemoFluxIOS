@@ -51,7 +51,7 @@ struct TextEditorView: View {
 
           // textEditor 占位符
           if inputText.isEmpty {
-            Text("输入或粘贴文本内容")
+            Text("在这里输入文字\n或点击下方按钮，上传图片")
               .foregroundColor(Color(UIColor.lightGray))
               .padding(.horizontal, 19)
               .padding(.vertical, 18)

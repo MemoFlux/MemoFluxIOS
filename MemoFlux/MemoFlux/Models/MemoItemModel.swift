@@ -15,6 +15,7 @@ final class MemoItemModel: Identifiable {
   var id: UUID
   var imageData: Data?  // 存储图片
   var recognizedText: String
+  var userInputText: String = ""  // 新增：用户手动输入的原文
   var title: String
   var tags: [String]
   var createdAt: Date
@@ -57,7 +58,8 @@ final class MemoItemModel: Identifiable {
   
   // 初始化，用于swiftData
   init(
-    id: UUID = UUID(), imageData: Data? = nil, recognizedText: String = "", title: String = "",
+    id: UUID = UUID(), imageData: Data? = nil, recognizedText: String = "", 
+    userInputText: String = "", title: String = "",
     tags: [String] = [], createdAt: Date = Date(), scheduledDate: Date? = nil,
     source: String = "", apiResponseData: Data? = nil, isAPIProcessing: Bool = false,
     apiProcessedAt: Date? = nil, hasAPIResponse: Bool = false
@@ -65,6 +67,7 @@ final class MemoItemModel: Identifiable {
     self.id = id
     self.imageData = imageData
     self.recognizedText = recognizedText
+    self.userInputText = userInputText
     self.title = title
     self.tags = tags
     self.createdAt = createdAt

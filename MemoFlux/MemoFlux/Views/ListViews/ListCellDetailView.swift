@@ -140,6 +140,22 @@ struct ListCellDetailView: View {
   // MARK: - API 数据展示部分
   private var apiDataSection: some View {
     VStack(alignment: .leading, spacing: 16) {
+      // 显示用户输入的原文（如果有）
+      if !item.userInputText.isEmpty {
+        VStack(alignment: .leading, spacing: 10) {
+          Text("用户原文")
+            .font(.headline)
+            .padding(.leading, 5)
+          
+          Text(item.userInputText)
+            .font(.body)
+            .padding()
+            .background(Color.orange.opacity(0.1))
+            .cornerRadius(15)
+        }
+        .padding(.horizontal, 16)
+      }
+      
       // 显示摘要（如果有API响应）
       if let response = item.apiResponse, !response.information.summary.isEmpty {
         VStack(alignment: .leading, spacing: 10) {
@@ -201,16 +217,19 @@ struct ListCellDetailView: View {
         // 没有API响应，显示原有的识别内容
         VStack(alignment: .leading, spacing: 8) {
           if !item.recognizedText.isEmpty {
-            Text("本地识别结果")
-              .font(.headline)
-              .padding(.leading, 5)
-            
-            Text(item.recognizedText)
-              .font(.body)
-              .padding()
-              .background(Color.gray.opacity(0.1))
-              .cornerRadius(8)
-              .padding(.horizontal)
+            VStack(alignment: .leading, spacing: 10) {
+              Text("本地文本")
+                .font(.headline)
+                .padding(.leading, 5)
+              
+              Text(item.recognizedText)
+                .font(.body)
+                .padding()
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(15)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.horizontal, 16)
             
             // 提供手动触发API分析的按钮
             manualAnalysisButton
@@ -253,17 +272,17 @@ struct ListCellDetailView: View {
           ProgressView()
             .scaleEffect(0.8)
         }
-        Text(isManuallyTriggering ? "AI分析中..." : "使用AI分析内容")
+        Text(isManuallyTriggering ? "AI分析中..." : "重新使用AI解析")
       }
     }
     .font(.system(size: 14, weight: .medium))
     .foregroundColor(.white)
     .frame(maxWidth: .infinity)
-    .padding(.vertical, 12)
-    .background(isManuallyTriggering ? Color.gray : Color.blue)
-    .cornerRadius(8)
+    .padding(.vertical, 16)
+    .background(isManuallyTriggering ? Color.gray : Color.mainStyleBackgroundColor)
+    .cornerRadius(15)
     .disabled(isManuallyTriggering || item.isAPIProcessing)
-    .padding(.horizontal)
+    .padding()
   }
   
   // MARK: - 获取显示标题
@@ -376,7 +395,7 @@ struct InformationView: View {
         mergedItems[item.header] = [item.content]
       }
     }
-
+    
     var result: [(header: String, contents: [String])] = []
     var processedHeaders: Set<String> = []
     

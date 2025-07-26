@@ -56,7 +56,9 @@ struct ConfirmAddMemoButton: View {
         source: "手动创建"
       )
       
-      newMemo.recognizedText = text
+      // 如果有图片，将用户输入的文本保存为用户原文，OCR识别结果保存为recognizedText
+      newMemo.userInputText = text
+      // recognizedText 在 AddMemoItemView 中通过 OCR 自动设置
     } else {
       newMemo = MemoItemModel(
         imageData: nil,

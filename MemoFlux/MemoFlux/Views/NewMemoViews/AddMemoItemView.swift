@@ -331,7 +331,7 @@ struct AddMemoItemView: View {
   
   // MARK: - 执行AI解析
   private func performAIParsing() {
-    // 优先使用图片内容，其次使用文本内容
+    // 如果同时有图片和文字，优先解析图片
     if hasImageContent() {
       // 使用图片进行解析
       guard let image = selectedImage else { return }
@@ -353,7 +353,7 @@ struct AddMemoItemView: View {
         }
       }
     } else {
-      // 使用文本进行解析
+      // 没有图片时，使用文本进行解析
       let content = getContentForParsing()
       guard !content.isEmpty else { return }
       
