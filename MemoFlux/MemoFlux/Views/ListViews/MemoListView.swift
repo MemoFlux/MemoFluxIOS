@@ -13,45 +13,45 @@ import VisionKit
 struct MemoListView: View {
   let memoItems: [MemoItemModel]
   let modelContext: ModelContext
-
-  // 搜索相关状态
+  
+  // 搜索相关
   @State private var searchText = ""
   @Binding var isSearchActive: Bool
-
-  // 添加状态来跟踪删除操作
+  
+  // 删除操作跟踪
   @State private var deletingItems: Set<UUID> = []
-
-  // 初始化方法，支持可选的搜索状态绑定
+  
+  // 支持 optional 搜索状态绑定
   init(memoItems: [MemoItemModel], modelContext: ModelContext, isSearchActive: Binding<Bool>? = nil)
   {
     self.memoItems = memoItems
     self.modelContext = modelContext
     self._isSearchActive = isSearchActive ?? .constant(false)
   }
-
-  // 过滤后的备忘录 - 排除正在删除的项目
+  
+  // 过滤后的备忘录：排除正在删除的项目
   private var filteredItems: [MemoItemModel] {
     let baseItems = memoItems.filter { !deletingItems.contains($0.id) }
-
+    
     if searchText.isEmpty {
       return baseItems
     } else {
       return baseItems.filter { item in
         // 搜索标题
         item.title.localizedCaseInsensitiveContains(searchText)
-          // 搜索识别文本
-          || item.recognizedText.localizedCaseInsensitiveContains(searchText)
-          // 搜索标签
-          || item.tags.contains { tag in
-            tag.localizedCaseInsensitiveContains(searchText)
-          }
-          // 搜索来源
-          || item.source.localizedCaseInsensitiveContains(searchText)
+        // 搜索识别文本
+        || item.recognizedText.localizedCaseInsensitiveContains(searchText)
+        // 搜索标签
+        || item.tags.contains { tag in
+          tag.localizedCaseInsensitiveContains(searchText)
+        }
+        // 搜索来源
+        || item.source.localizedCaseInsensitiveContains(searchText)
       }
     }
   }
-
-  // 按日期分组 - 过滤掉空分组
+  
+  // 按日期分组
   private var groupedItems: [(String, [MemoItemModel])] {
     let calendar = Calendar.current
     let grouped = Dictionary(grouping: filteredItems) { item in
@@ -65,10 +65,10 @@ struct MemoListView: View {
         return formatter.string(from: item.createdAt)
       }
     }
-
-    // 过滤掉空分组，并排序
+    
+    // 过滤空分组并排序
     return
-      grouped
+    grouped
       .filter { !$0.value.isEmpty }  // 关键修复：过滤掉空分组
       .sorted { first, second in
         if first.key == "今天" { return true }
@@ -78,7 +78,7 @@ struct MemoListView: View {
         return first.key > second.key
       }
   }
-
+  
   var body: some View {
     if memoItems.isEmpty {
       ContentUnavailableView(
@@ -100,7 +100,7 @@ struct MemoListView: View {
                   .padding(.horizontal, 16)
                   .padding(.bottom, 8)
               }
-
+              
               ForEach(groupedItems, id: \.0) { section in
                 Section {
                   LazyVStack(spacing: 12) {
@@ -136,26 +136,35 @@ struct MemoListView: View {
       )
     }
   }
-
+  
   // MARK: - 删除方法
+  
   private func deleteMemo(_ item: MemoItemModel) {
-    // 立即标记为删除状态，更新UI
-    deletingItems.insert(item.id)
-
-    withAnimation(.easeInOut(duration: 0.3)) {
-      modelContext.delete(item)
-
+    let itemTitle = item.title.isEmpty ? "无标题" : item.title
+    let itemId = item.id
+    
+    // 立即标记为删除状态，并更新UI
+    deletingItems.insert(itemId)
+    
+    // 处理异步删除操作
+    Task { @MainActor in
       do {
+        // 在主线程上执行删除操作
+        modelContext.delete(item)
+        
         try modelContext.save()
-
-        // 删除成功后，从删除状态中移除
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-          deletingItems.remove(item.id)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+          deletingItems.remove(itemId)
         }
+        
+        print("✅ 成功删除 Memo: \(itemTitle)")
+        
       } catch {
-        print("删除 Memo 失败: \(error)")
-        // 删除失败，恢复状态
-        deletingItems.remove(item.id)
+        print("❌ 删除 Memo 失败: \(error)")
+        
+        // 删除失败，恢复状态并回滚
+        deletingItems.remove(itemId)
         modelContext.rollback()
       }
     }
@@ -165,14 +174,14 @@ struct MemoListView: View {
 /// 分组标题视图
 struct SectionHeaderView: View {
   let title: String
-
+  
   var body: some View {
     HStack {
       Text(title)
         .font(.system(size: 14, weight: .medium))
         .foregroundColor(.primary)
         .padding(.leading, 21)
-
+      
       Rectangle()
         .fill(Color.gray.opacity(0.3))
         .frame(height: 1)
@@ -189,10 +198,10 @@ struct MemoCardView: View {
   let modelContext: ModelContext
   let searchText: String
   let onDelete: (() -> Void)?  // 添加删除回调
-
+  
   @State private var textHeight: CGFloat = 0
   @State private var imageHeight: CGFloat = 0
-
+  
   // 初始化方法，searchText 参数可选
   init(
     item: MemoItemModel, modelContext: ModelContext, searchText: String = "",
@@ -203,18 +212,17 @@ struct MemoCardView: View {
     self.searchText = searchText
     self.onDelete = onDelete
   }
-
+  
   private var isPortrait: Bool {
     guard let image = item.image else { return false }
     let aspectRatio = image.size.width / image.size.height
     return aspectRatio < 0.85
   }
-
-  // 判断是否有图片
+  
   private var hasImage: Bool {
     return item.image != nil
   }
-
+  
   var body: some View {
     VStack(spacing: 0) {
       if hasImage {
@@ -227,7 +235,7 @@ struct MemoCardView: View {
                 .frame(width: 120)
               contentView
             }
-
+            
             timeSourceView
           }
           .padding(16)
@@ -241,7 +249,7 @@ struct MemoCardView: View {
           .padding(16)
         }
       } else {
-        // 纯文本布局（无图片）
+        // 纯文本布局
         VStack(alignment: .leading, spacing: 12) {
           contentView
           timeSourceView
@@ -258,7 +266,6 @@ struct MemoCardView: View {
       alignment: .topTrailing
     )
     .contextMenu {
-      // 编辑按钮
       Button {
         // TODO: 实现编辑逻辑
         print("编辑 Memo: \(item.title)")
@@ -266,13 +273,12 @@ struct MemoCardView: View {
         Label("编辑", systemImage: "pencil.line")
       }
       .tint(.black)
-
-      // 删除按钮
+      
       Button(role: .destructive) {
         if let onDelete = onDelete {
-          onDelete()  // 使用传入的删除回调
+          onDelete()
         } else {
-          deleteMemo()  // 保持向后兼容
+          deleteMemo()
         }
       } label: {
         Label("删除", systemImage: "trash")
@@ -284,7 +290,7 @@ struct MemoCardView: View {
       }
     }
   }
-
+  
   // MARK: - API状态指示器
   private var apiStatusIndicator: some View {
     Group {
@@ -309,23 +315,36 @@ struct MemoCardView: View {
       }
     }
   }
-
+  
   // MARK: - 删除 Memo
   private func deleteMemo() {
-    withAnimation {
-      modelContext.delete(item)
-
+#if DEBUG
+    // 保存要删除的项目信息用于日志（在删除前保存）
+    let itemTitle = item.title.isEmpty ? "无标题" : item.title
+    let itemId = item.id
+#endif
+    
+    // 强制在主线程上执行删除操作
+    Task { @MainActor in
       do {
+        modelContext.delete(item)
         try modelContext.save()
+        
+#if DEBUG
+        print("✅ 成功删除 Memo (CardView): \(itemTitle)")
+        print("\(itemId)")
+#endif
+        
       } catch {
-        print("删除 Memo 失败: \(error)")
+        print("❌ 删除 Memo 失败 (CardView): \(error)")
+        modelContext.rollback()
       }
     }
   }
-
+  
   private var contentView: some View {
     VStack(alignment: .leading, spacing: 8) {
-      // 高亮显示搜索结果的标题
+      // 高亮显示搜索结果
       HighlightedText(
         text: getDisplayTitle(),
         searchText: searchText
@@ -334,18 +353,15 @@ struct MemoCardView: View {
       .foregroundColor(.primary)
       .frame(maxWidth: .infinity, alignment: .leading)
       .lineLimit(2)
-
-      // 根据AI解析状态显示不同内容
+      
       if item.isAPIProcessing {
-        // AI解析未完成，显示加载中
         Text("加载中...")
           .font(.system(size: 14))
           .foregroundColor(.secondary)
           .frame(maxWidth: .infinity, alignment: .leading)
       } else if item.hasAPIResponse, let apiResponse = item.apiResponse,
-        !apiResponse.information.summary.isEmpty
+                !apiResponse.information.summary.isEmpty
       {
-        // AI解析已完成，显示AI摘要
         HighlightedText(
           text: apiResponse.information.summary,
           searchText: searchText
@@ -361,7 +377,6 @@ struct MemoCardView: View {
             }
           })
       } else if !item.recognizedText.isEmpty {
-        // 手动创建或无AI解析，显示识别文本
         HighlightedText(
           text: item.recognizedText,
           searchText: searchText
@@ -377,21 +392,19 @@ struct MemoCardView: View {
             }
           })
       } else if hasImage {
-        // 只有在有图片时才显示"正在识别文字..."
         Text("正在识别文字...")
           .font(.system(size: 14))
           .foregroundColor(.secondary)
       }
     }
   }
-
+  
   // MARK: - 获取显示标题
   private func getDisplayTitle() -> String {
-    // 如果有标题，直接返回
     if !item.title.isEmpty {
       return item.title
     }
-
+    
     // 如果没有标题但有API解析结果，使用most_possible_category对应的标题
     if item.hasAPIResponse, let apiResponse = item.apiResponse {
       switch apiResponse.mostPossibleCategory.lowercased() {
@@ -405,11 +418,10 @@ struct MemoCardView: View {
         return "无标题"
       }
     }
-
-    // 默认返回"无标题"
+    
     return "无标题"
   }
-
+  
   private var imageView: some View {
     Group {
       if let image = item.image {
@@ -426,14 +438,14 @@ struct MemoCardView: View {
       }
     }
   }
-
+  
   // MARK: - 文本高度行数计算
   private func getTextLineLimit() -> Int? {
     // 如果没有图片，使用更多行数显示文本
     if !hasImage {
-      return 8  // 纯文本 Memo 可以显示更多行
+      return 8
     }
-
+    
     if !isPortrait {
       // 纵向布局
       return 5
@@ -442,27 +454,27 @@ struct MemoCardView: View {
       if imageHeight == 0 {
         return 5
       }
-
+      
       // 标题高度估算
       let titleLineHeight: CGFloat = 20  // 16pt字体的行高约20pt
       let estimatedTitleHeight: CGFloat = item.title.isEmpty ? 0 : (titleLineHeight * 2 + 8)  // 2行标题 + 8pt间距
-
+      
       let textLineHeight: CGFloat = 18  // 14pt字体的行高约18pt
-
+      
       // 计算可用于文本内容的高度
       let bottomAreaHeight: CGFloat = 40
       let totalSpacing: CGFloat = 8
-
+      
       // 图片高度 - 标题高度 - 底部标签和时间区域高度 - 各种间距
       let availableTextHeight = imageHeight - estimatedTitleHeight - bottomAreaHeight - totalSpacing
-
+      
       // 最大行数
       let maxLines = max(5, Int(availableTextHeight / textLineHeight))
-
+      
       return min(maxLines + 2, 20)
     }
   }
-
+  
   // MARK: - 底部信息视图
   private var timeSourceView: some View {
     HStack(alignment: .bottom) {
@@ -470,16 +482,14 @@ struct MemoCardView: View {
         if !item.tags.isEmpty {
           FlowLayout(spacing: 6) {
             ForEach(item.tags, id: \.self) { tag in
-              // 高亮显示搜索结果的标签
               HighlightedText(text: tag, searchText: searchText)
                 .font(.system(size: 12))
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
                 .background(
-                  // 如果标签匹配搜索文本，使用高亮背景色
                   tag.localizedCaseInsensitiveContains(searchText) && !searchText.isEmpty
-                    ? Color.mainStyleBackgroundColor.opacity(0.2)
-                    : Color.gray.opacity(0.1)
+                  ? Color.mainStyleBackgroundColor.opacity(0.2)
+                  : Color.gray.opacity(0.1)
                 )
                 .cornerRadius(5)
                 .foregroundColor(.secondary)
@@ -487,22 +497,22 @@ struct MemoCardView: View {
           }
         }
       }
-
+      
       Spacer()
-
+      
       Text(timeString(from: item.createdAt))
         .font(.system(size: 12))
         .foregroundColor(.secondary)
     }
   }
-
+  
   // MARK: - 时间格式化Str
   private func timeString(from date: Date) -> String {
     let formatter = DateFormatter()
     formatter.dateFormat = "HH:mm"
     return formatter.string(from: date)
   }
-
+  
   // MARK: - 文字识别
   private func recognizeText(for item: MemoItemModel, image: UIImage) {
     let request = VNRecognizeTextRequest { (request, error) in
@@ -510,128 +520,127 @@ struct MemoCardView: View {
         print("文字识别错误: \(error!.localizedDescription)")
         return
       }
-
+      
       guard let observations = request.results as? [VNRecognizedTextObservation] else {
         return
       }
-
+      
       let recognizedStrings = observations.compactMap { observation in
         return observation.topCandidates(1).first?.string
       }
-
+      
       let text = recognizedStrings.joined(separator: "\n")
-
+      
       DispatchQueue.main.async {
         item.recognizedText = text
         try? modelContext.save()
       }
     }
-
+    
     request.recognitionLanguages = ["zh-CN", "en-US"]
     request.recognitionLevel = .accurate
-
+    
     guard let cgImage = image.cgImage else { return }
     let requestHandler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-
+    
     do {
       try requestHandler.perform([request])
     } catch {
       print("无法执行文字识别请求: \(error.localizedDescription)")
     }
   }
-}
-
-// MARK: - 高亮文本组件
-/// 用于高亮显示搜索结果的文本组件
-struct HighlightedText: View {
-  let text: String
-  let searchText: String
-
-  var body: some View {
-    if searchText.isEmpty {
-      Text(text)
-    } else {
-      let attributedString = createHighlightedAttributedString()
-      Text(AttributedString(attributedString))
-    }
-  }
-
-  private func createHighlightedAttributedString() -> NSAttributedString {
-    let attributedString = NSMutableAttributedString(string: text)
-    let range = NSRange(location: 0, length: text.count)
-
-    // 设置默认属性
-    attributedString.addAttribute(.foregroundColor, value: UIColor.label, range: range)
-
-    // 查找并高亮匹配的文本
-    let searchRange = text.lowercased().range(of: searchText.lowercased())
-    if let searchRange = searchRange {
-      let nsRange = NSRange(searchRange, in: text)
-      attributedString.addAttribute(
-        .backgroundColor, value: UIColor.systemYellow.withAlphaComponent(0.3), range: nsRange)
-      attributedString.addAttribute(.foregroundColor, value: UIColor.label, range: nsRange)
-    }
-
-    return attributedString
-  }
-}
-
-// MARK: - Tag多行显示
-/// 流式布局容器，实现 Tag 多行显示
-struct FlowLayout: Layout {
-  var spacing: CGFloat
-
-  init(spacing: CGFloat = 8) {
-    self.spacing = spacing
-  }
-
-  func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout Void) -> CGSize {
-    let result = arrangeSubviews(proposal: proposal, subviews: subviews)
-    return result.size
-  }
-
-  func placeSubviews(
-    in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout Void
-  ) {
-    let result = arrangeSubviews(proposal: proposal, subviews: subviews)
-
-    for (index, position) in result.positions.enumerated() {
-      let point = CGPoint(x: position.x + bounds.minX, y: position.y + bounds.minY)
-      subviews[index].place(at: point, proposal: ProposedViewSize(result.sizes[index]))
-    }
-  }
-
-  private func arrangeSubviews(proposal: ProposedViewSize, subviews: Subviews) -> (
-    positions: [CGPoint], sizes: [CGSize], size: CGSize
-  ) {
-    guard !subviews.isEmpty else { return ([], [], .zero) }
-
-    let maxWidth = proposal.width ?? .infinity
-    var positions: [CGPoint] = []
-    var sizes: [CGSize] = []
-
-    var currentX: CGFloat = 0
-    var currentY: CGFloat = 0
-    var lineHeight: CGFloat = 0
-
-    for subview in subviews {
-      let size = subview.sizeThatFits(ProposedViewSize(width: maxWidth, height: nil))
-      sizes.append(size)
-
-      // 换行
-      if currentX + size.width > maxWidth, currentX > 0 {
-        currentX = 0
-        currentY += lineHeight + spacing
-        lineHeight = 0
+  
+  // MARK: - 高亮文本组件
+  /// 用于高亮显示搜索结果的文本组件
+  struct HighlightedText: View {
+    let text: String
+    let searchText: String
+    
+    var body: some View {
+      if searchText.isEmpty {
+        Text(text)
+      } else {
+        let attributedString = createHighlightedAttributedString()
+        Text(AttributedString(attributedString))
       }
-
-      positions.append(CGPoint(x: currentX, y: currentY))
-      lineHeight = max(lineHeight, size.height)
-      currentX += size.width + spacing
     }
-
-    let totalHeight = currentY + lineHeight
-    return (positions, sizes, CGSize(width: maxWidth, height: totalHeight))
+    
+    private func createHighlightedAttributedString() -> NSAttributedString {
+      let attributedString = NSMutableAttributedString(string: text)
+      let range = NSRange(location: 0, length: text.count)
+      
+      // 设置默认属性
+      attributedString.addAttribute(.foregroundColor, value: UIColor.label, range: range)
+      
+      let searchRange = text.lowercased().range(of: searchText.lowercased())
+      if let searchRange = searchRange {
+        let nsRange = NSRange(searchRange, in: text)
+        attributedString.addAttribute(
+          .backgroundColor, value: UIColor.systemYellow.withAlphaComponent(0.3), range: nsRange)
+        attributedString.addAttribute(.foregroundColor, value: UIColor.label, range: nsRange)
+      }
+      
+      return attributedString
+    }
+  }
+  
+  // MARK: - Tag多行显示
+  /// 流式布局容器，实现 Tag 多行显示
+  struct FlowLayout: Layout {
+    var spacing: CGFloat
+    
+    init(spacing: CGFloat = 8) {
+      self.spacing = spacing
+    }
+    
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout Void) -> CGSize {
+      let result = arrangeSubviews(proposal: proposal, subviews: subviews)
+      return result.size
+    }
+    
+    func placeSubviews(
+      in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout Void
+    ) {
+      let result = arrangeSubviews(proposal: proposal, subviews: subviews)
+      
+      for (index, position) in result.positions.enumerated() {
+        let point = CGPoint(x: position.x + bounds.minX, y: position.y + bounds.minY)
+        subviews[index].place(at: point, proposal: ProposedViewSize(result.sizes[index]))
+      }
+    }
+    
+    private func arrangeSubviews(proposal: ProposedViewSize, subviews: Subviews) -> (
+      positions: [CGPoint], sizes: [CGSize], size: CGSize
+    ) {
+      guard !subviews.isEmpty else { return ([], [], .zero) }
+      
+      let maxWidth = proposal.width ?? .infinity
+      var positions: [CGPoint] = []
+      var sizes: [CGSize] = []
+      
+      var currentX: CGFloat = 0
+      var currentY: CGFloat = 0
+      var lineHeight: CGFloat = 0
+      
+      for subview in subviews {
+        let size = subview.sizeThatFits(ProposedViewSize(width: maxWidth, height: nil))
+        sizes.append(size)
+        
+        // 换行
+        if currentX + size.width > maxWidth, currentX > 0 {
+          currentX = 0
+          currentY += lineHeight + spacing
+          lineHeight = 0
+        }
+        
+        positions.append(CGPoint(x: currentX, y: currentY))
+        lineHeight = max(lineHeight, size.height)
+        currentX += size.width + spacing
+      }
+      
+      let totalHeight = currentY + lineHeight
+      return (positions, sizes, CGSize(width: maxWidth, height: totalHeight))
+    }
   }
 }
 
@@ -641,16 +650,16 @@ struct FlowLayout: Layout {
   let config = ModelConfiguration(isStoredInMemoryOnly: true)
   let container = try! ModelContainer(for: MemoItemModel.self, configurations: config)
   let context = container.mainContext
-
+  
   let testItems = createTestMemoItems()
-
+  
   for item in testItems {
     context.insert(item)
   }
-
+  
   // 创建搜索状态绑定
   @State var isSearchActive = false
-
+  
   return NavigationStack {
     MemoListView(
       memoItems: testItems,
@@ -659,18 +668,17 @@ struct FlowLayout: Layout {
     )
   }
   .modelContainer(container)
-  .preferredColorScheme(.light)  // 确保使用浅色模式进行预览
+  .preferredColorScheme(.light)
 }
 
 // 测试数据辅助函数
 private func createTestMemoItems() -> [MemoItemModel] {
   let calendar = Calendar.current
-
-  // 创建不同尺寸的测试图片
+  
   let portraitImage = createTestImage(width: 300, height: 400, color: .systemBlue)
   let landscapeImage = createTestImage(width: 400, height: 300, color: .systemGreen)
   let squareImage = createTestImage(width: 300, height: 300, color: .systemOrange)
-
+  
   return [
     // 今天
     MemoItemModel(
@@ -681,7 +689,7 @@ private func createTestMemoItems() -> [MemoItemModel] {
       createdAt: Date(),
       source: "备忘录"
     ),
-
+    
     MemoItemModel(
       imageData: landscapeImage.pngData(),
       recognizedText: "用户调研数据分析结果\n\n根据最新一轮用户调研，80%的用户对新增的智能分类功能表示满意，但对搜索体验仍有改进需求。建议优化搜索算法。",
@@ -690,7 +698,7 @@ private func createTestMemoItems() -> [MemoItemModel] {
       createdAt: calendar.date(byAdding: .hour, value: -2, to: Date()) ?? Date(),
       source: "邮件"
     ),
-
+    
     MemoItemModel(
       imageData: squareImage.pngData(),
       recognizedText: "短文本测试",
@@ -699,7 +707,7 @@ private func createTestMemoItems() -> [MemoItemModel] {
       createdAt: calendar.date(byAdding: .hour, value: -4, to: Date()) ?? Date(),
       source: "快捷指令"
     ),
-
+    
     // 昨天
     MemoItemModel(
       imageData: portraitImage.pngData(),
@@ -710,7 +718,7 @@ private func createTestMemoItems() -> [MemoItemModel] {
       createdAt: calendar.date(byAdding: .day, value: -1, to: Date()) ?? Date(),
       source: "文档"
     ),
-
+    
     MemoItemModel(
       imageData: landscapeImage.pngData(),
       recognizedText: "项目进度更新：信息流优化\n\n信息流算法优化已完成70%，预计下周可以进入内测阶段。重点解决了信息重复和相关性排序问题。",
@@ -719,7 +727,7 @@ private func createTestMemoItems() -> [MemoItemModel] {
       createdAt: calendar.date(byAdding: .day, value: -1, to: Date()) ?? Date(),
       source: "工作群"
     ),
-
+    
     // 更早
     MemoItemModel(
       imageData: squareImage.pngData(),
@@ -737,17 +745,17 @@ private func createTestMemoItems() -> [MemoItemModel] {
 private func createTestImage(width: CGFloat, height: CGFloat, color: UIColor) -> UIImage {
   let size = CGSize(width: width, height: height)
   let renderer = UIGraphicsImageRenderer(size: size)
-
+  
   return renderer.image { context in
     color.setFill()
     context.fill(CGRect(origin: .zero, size: size))
-
+    
     let text = "测试图片\n\(Int(width))×\(Int(height))"
     let attributes: [NSAttributedString.Key: Any] = [
       .font: UIFont.systemFont(ofSize: 16, weight: .medium),
       .foregroundColor: UIColor.white,
     ]
-
+    
     let textSize = text.size(withAttributes: attributes)
     let textRect = CGRect(
       x: (width - textSize.width) / 2,
@@ -755,7 +763,7 @@ private func createTestImage(width: CGFloat, height: CGFloat, color: UIColor) ->
       width: textSize.width,
       height: textSize.height
     )
-
+    
     text.draw(in: textRect, withAttributes: attributes)
   }
 }

@@ -375,6 +375,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MemoFlux/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MemoFlux;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "需要访问日历权限，以访问日历";
 				INFOPLIST_KEY_NSCameraUsageDescription = "需要访问相机权限，以访问相机进行拍照";
 				INFOPLIST_KEY_NSRemindersUsageDescription = "需要访问提醒事项权限，以访问提醒事项";
@@ -388,7 +390,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.shuoma.MemoFlux;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -410,6 +412,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MemoFlux/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MemoFlux;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "需要访问日历权限，以访问日历";
 				INFOPLIST_KEY_NSCameraUsageDescription = "需要访问相机权限，以访问相机进行拍照";
 				INFOPLIST_KEY_NSRemindersUsageDescription = "需要访问提醒事项权限，以访问提醒事项";
@@ -423,7 +427,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.shuoma.MemoFlux;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

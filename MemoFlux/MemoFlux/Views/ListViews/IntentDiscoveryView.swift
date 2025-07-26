@@ -11,23 +11,19 @@ import SwiftUI
 struct IntentDiscoveryView: View {
   let memoItems: [MemoItemModel]
   
-  // 计算今日的日程意图
   private var todayScheduleIntents: [IntentDiscoveryViewModel] {
     let calendar = Calendar.current
     let today = Date()
     
     var intents: [IntentDiscoveryViewModel] = []
     
-    // 遍历今日的 Memo
     for memoItem in memoItems {
-      // 只处理今日创建的 Memo
       guard calendar.isDate(memoItem.createdAt, inSameDayAs: today) else { continue }
       
-      // 检查是否有 API 响应和日程数据
       guard let apiResponse = memoItem.apiResponse,
-            !apiResponse.schedule.tasks.isEmpty else { continue }
+            !apiResponse.schedule.tasks.isEmpty
+      else { continue }
       
-      // 为每个日程任务创建意图
       for task in apiResponse.schedule.tasks {
         let intent = IntentDiscoveryViewModel(memoItem: memoItem, scheduleTask: task)
         intents.append(intent)
@@ -37,7 +33,6 @@ struct IntentDiscoveryView: View {
     return intents
   }
   
-  // 检查是否有待处理意图
   private var hasIntents: Bool {
     !todayScheduleIntents.isEmpty
   }
@@ -61,7 +56,6 @@ struct IntentDiscoveryView: View {
           }
           .padding(.bottom, 12)
           
-          // 意图项目纵向排列，最多显示5个，可滚动
           ScrollView(.vertical, showsIndicators: false) {
             LazyVStack(spacing: 8) {
               ForEach(todayScheduleIntents) { intent in
@@ -73,7 +67,7 @@ struct IntentDiscoveryView: View {
             }
             .padding(.vertical, 1)
           }
-          .frame(maxHeight: min(CGFloat(todayScheduleIntents.count) * 44, 220))
+          .frame(maxHeight: min(todayScheduleIntents.count == 1 ? 60 : CGFloat(todayScheduleIntents.count) * 44, 220))
         }
         .padding(16)
         .background(Color.yellowBackgroundColor)
@@ -101,7 +95,6 @@ struct TodayScheduleIntentRowView: View {
           .foregroundColor(.primary)
           .frame(maxWidth: .infinity, alignment: .leading)
         
-        // 显示时间信息（如果有）
         if let startDate = intent.scheduleTask.startDate {
           Text(startDate.formatted(date: .omitted, time: .shortened))
             .font(.system(size: 12))
@@ -123,15 +116,15 @@ struct TodayScheduleIntentRowView: View {
   }
 }
 
-// MARK: - 向后兼容的空视图（用于没有传入 memoItems 的情况）
+// MARK: - 向后兼容的空视图
 extension IntentDiscoveryView {
   init() {
     self.memoItems = []
   }
 }
 
+// MARK: - 预览
 #Preview {
-  // 创建测试数据
   let testMemoItems = createTestMemoItemsWithSchedule()
   
   VStack(spacing: 16) {
@@ -166,7 +159,7 @@ private func createTestMemoItemsWithSchedule() -> [MemoItemModel] {
     source: "测试数据"
   )
   
-  // 模拟 API 响应数据
+  // 模拟 API 响应
   let scheduleTask = ScheduleTask(
     startTime: "2024-05-16T10:30:00+08:00",
     endTime: "2024-05-16T11:30:00+08:00",

@@ -59,7 +59,7 @@ struct HomePageView: View {
     }
   }
   
-  // MARK: - 图片加载
+  // MARK: - 图片加载（防止重复创建）
   func loadImage() {
     let fileManager = FileManager.default
     if let directory = fileManager.containerURL(
@@ -81,14 +81,21 @@ struct HomePageView: View {
           
           do {
             try modelContext.save()
-            print("新MemoItem添加成功并保存到swiftData，UUID: \(newItem.id)")
+            print("✅ 新MemoItem添加成功并保存到swiftData，UUID: \(newItem.id)")
+            
+            // 删除快捷指令图片文件，防止重复处理
+            try? fileManager.removeItem(at: fileURL)
             
             // 自动发送API请求处理快捷指令传入的图片
             processShortcutImage(newItem)
             
           } catch {
-            print("保存MemoItem失败: \(error)")
+            print("❌ 保存MemoItem失败: \(error)")
           }
+        } else {
+          // 如果已存在相同项目，也删除图片文件
+          try? fileManager.removeItem(at: fileURL)
+          print("⚠️ 快捷指令图片已存在，跳过创建")
         }
       }
     }
