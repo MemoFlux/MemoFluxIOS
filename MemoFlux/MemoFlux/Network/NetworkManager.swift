@@ -53,6 +53,8 @@ class NetworkManager: ObservableObject {
     performRequest(url: url, requestBody: request, completion: completion)
   }
   
+  // MARK: - AI生成请求
+  
   /// 从MemoItemModel生成AI响应
   /// - Parameters:
   ///   - memoItem: Memo item
@@ -63,31 +65,25 @@ class NetworkManager: ObservableObject {
     allTags: [String] = [],
     completion: @escaping (Result<APIResponse, NetworkError>) -> Void
   ) {
-    // 使用 contentForAPI 计算属性获取内容
-    let content = memoItem.contentForAPI
-    
-    // 如果内容为空，延迟一段时间等待OCR识别完成
-    if content.isEmpty && memoItem.image != nil {
-      // 等待OCR识别完成后再发送请求
-      DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-        self.generateAIResponse(from: memoItem, allTags: allTags, completion: completion)
-      }
+    // 如果有图片，使用Base64编码发送
+    if let image = memoItem.image {
+      generateFromImageBase64(image: image, completion: completion)
       return
     }
     
-    // 如果内容仍然为空，返回错误
+    // 无图片时使用文本内容
+    let content = memoItem.contentForAPI
+    
+    // 如果内容为空，返回错误
     guard !content.isEmpty else {
       completion(.failure(.networkError(NSError(domain: "ContentEmpty", code: -1, userInfo: [NSLocalizedDescriptionKey: "内容为空，无法发送请求"]))))
       return
     }
     
-    // 修复：无论是否有图片，都发送文本内容，isImage 设置为 false
-    let isImage = false
-    
     generateAIResponse(
       content: content,
       tags: allTags,
-      isImage: isImage,
+      isImage: false,
       completion: completion
     )
   }
