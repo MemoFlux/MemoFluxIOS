@@ -59,6 +59,15 @@ struct ListCellDetailView: View {
     }
     .navigationTitle("详细信息")
     .navigationBarTitleDisplayMode(.inline)
+    .toolbar {
+      ToolbarItem(placement: .navigationBarTrailing) {
+        Button(action: {
+          // 暂时不实现编辑功能
+        }) {
+          Image(systemName: "square.and.pencil")
+        }
+      }
+    }
     .background(Color.globalStyleBackgroundColor)
     .onAppear {
       setDefaultDataTypeFromAPIResponse()

@@ -67,7 +67,12 @@ struct IntentDiscoveryView: View {
             }
             .padding(.vertical, 1)
           }
-          .frame(maxHeight: min(todayScheduleIntents.count == 1 ? 60 : CGFloat(todayScheduleIntents.count) * 44, 220))
+          .frame(
+            height: todayScheduleIntents.count <= 3
+            ? CGFloat(todayScheduleIntents.count) * 60
+            : min(CGFloat(todayScheduleIntents.count) * 60, 220)
+          )
+          .scrollDisabled(todayScheduleIntents.count <= 3)
         }
         .padding(16)
         .background(Color.yellowBackgroundColor)

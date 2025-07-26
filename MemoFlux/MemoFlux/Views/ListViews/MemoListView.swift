@@ -270,7 +270,7 @@ struct MemoCardView: View {
         // TODO: 实现编辑逻辑
         print("编辑 Memo: \(item.title)")
       } label: {
-        Label("编辑", systemImage: "pencil.line")
+        Label("编辑", systemImage: "square.and.pencil")
       }
       .tint(.black)
       

@@ -10,7 +10,7 @@ import SwiftUI
 
 struct SummaryView: View {
   @Environment(\.dismiss) private var dismiss
-  
+
   @State private var selectedDate = Date()
   @State private var showDatePicker = false
   @StateObject private var intentManager = IntentCompletionManager()  // 添加意图管理器
@@ -85,7 +85,7 @@ struct SummaryView: View {
             Image(systemName: "calendar")
           }
         }
-        
+
         ToolbarItem(placement: .navigationBarTrailing) {
           Button(action: {
             dismiss()
