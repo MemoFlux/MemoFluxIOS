@@ -35,11 +35,6 @@ struct ContentView: View {
           Image(systemName: "house")
           Text("主页")
         }
-      SummaryView()
-        .tabItem {
-          Image(systemName: "chart.pie")
-          Text("总结")
-        }
       CategoryView()
         .tabItem {
           Image(systemName: "list.bullet")

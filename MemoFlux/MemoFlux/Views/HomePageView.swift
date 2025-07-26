@@ -14,6 +14,7 @@ struct HomePageView: View {
   
   @Environment(\.modelContext) private var modelContext
   
+  @State private var showingSummaryView = false
   @State private var showingAddMemoView = false
   @State private var isSearchActive = false
   
@@ -35,7 +36,16 @@ struct HomePageView: View {
         loadImage()
       }
       .toolbar {
-        ToolbarItemGroup(placement: .navigationBarTrailing) {
+        ToolbarItem(placement: .topBarLeading) {
+          // 每日总结按钮
+          Button {
+            showingSummaryView = true
+          } label: {
+            Image(systemName: "chart.pie")
+              .font(.system(size: 18, weight: .medium))
+          }
+        }
+        ToolbarItemGroup(placement: .topBarTrailing) {
           // 搜索按钮
           Button {
             isSearchActive = true
@@ -49,13 +59,16 @@ struct HomePageView: View {
             showingAddMemoView = true
           } label: {
             Image(systemName: "plus")
-              .font(.system(size: 18, weight: .bold))
+              .font(.system(size: 18, weight: .medium))
           }
         }
       }
     }
     .fullScreenCover(isPresented: $showingAddMemoView) {
       AddMemoItemView()
+    }
+    .fullScreenCover(isPresented: $showingSummaryView) {
+      SummaryView()
     }
   }
   
