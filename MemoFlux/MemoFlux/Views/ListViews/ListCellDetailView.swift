@@ -8,6 +8,7 @@
 import EventKit
 import SwiftData
 import SwiftUI
+import UIKit
 
 // MARK: - 数据类型枚举
 enum DataType: String, CaseIterable {
@@ -218,16 +219,7 @@ struct ListCellDetailView: View {
               .padding(.horizontal)
             
             // 提供手动触发API分析的按钮
-            Button("使用AI分析内容") {
-              triggerAPIAnalysis()
-            }
-            .font(.system(size: 14, weight: .medium))
-            .foregroundColor(.white)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(Color.blue)
-            .cornerRadius(8)
-            .padding(.horizontal)
+            manualAnalysisButton
             
           } else {
             Text("暂无识别内容")
@@ -521,45 +513,11 @@ struct ScheduleTaskCard: View {
         }
       }
       
-      // EventKit 操作按钮
-      HStack(spacing: 12) {
-        Button {
-          addToCalendar()
-        } label: {
-          HStack(spacing: 6) {
-            Image(systemName: "calendar")
-              .font(.system(size: 12))
-            
-            Text("添加到日历")
-              .font(.system(size: 12))
-          }
-          .padding(.horizontal, 12)
-          .padding(.vertical, 8)
-          .foregroundStyle(.white)
-          .background(.blue)
-          .cornerRadius(12)
-        }
-        
-        Button {
-          showingReminderConfirmation = true
-        } label: {
-          HStack(spacing: 6) {
-            Image(systemName: "list.bullet")
-              .font(.system(size: 12))
-            
-            Text("添加到提醒事项")
-              .font(.system(size: 12))
-          }
-          .padding(.horizontal, 12)
-          .padding(.vertical, 8)
-          .foregroundStyle(.white)
-          .background(.yellow)
-          .cornerRadius(12)
-        }
-        
-        Spacer()
-        
-      }
+      // EventKit 操作按钮 - 使用封装的工具类
+      ScheduleTaskHelper.actionButtons(
+        for: task,
+        showingReminderConfirmation: $showingReminderConfirmation
+      )
       .padding(.top, 8)
     }
     .padding()
@@ -568,83 +526,6 @@ struct ScheduleTaskCard: View {
     .sheet(isPresented: $showingReminderConfirmation) {
       ReminderConfirmationView(task: task)
     }
-  }
-  
-  // MARK: - EventKit 创建
-  private func addToCalendar() {
-    let eventTitle = task.theme
-    let eventNotes = createEventNotes()
-    let eventStartDate = task.startDate ?? Date()
-    
-    EventManager.shared.requestCalendarAccess { granted, error in
-      if granted && error == nil {
-        let event = EventManager.shared.createCalendarEvent(
-          title: eventTitle,
-          notes: eventNotes,
-          startDate: eventStartDate
-        )
-        EventManager.shared.presentCalendarEventEditor(for: event)
-      } else {
-        print("日历访问权限被拒绝或出现错误: \(error?.localizedDescription ?? "未知错误")")
-      }
-    }
-  }
-  
-  private func addToReminders() {
-    let reminderTitle = task.theme
-    let reminderNotes = createReminderNotes()
-    let reminderDate = task.startDate
-    
-    EventManager.shared.addReminder(
-      title: reminderTitle,
-      notes: reminderNotes,
-      date: reminderDate
-    ) { success, error in
-      if success {
-        print("提醒事项创建成功: \(reminderTitle)")
-      } else {
-        print("提醒事项创建失败: \(error?.localizedDescription ?? "未知错误")")
-      }
-    }
-  }
-  
-  // MARK: - 创建事件备注
-  private func createEventNotes() -> String {
-    var notes = ""
-    
-    if !task.coreTasks.isEmpty {
-      notes += "核心任务:\n"
-      for coreTask in task.coreTasks {
-        notes += "• \(coreTask)\n"
-      }
-      notes += "\n"
-    }
-    
-    if !task.suggestedActions.isEmpty {
-      notes += "建议行动:\n"
-      for action in task.suggestedActions {
-        notes += "• \(action)\n"
-      }
-      notes += "\n"
-    }
-    
-    if !task.people.isEmpty {
-      notes += "参与人员: \(task.people.joined(separator: ", "))\n"
-    }
-    
-    if !task.position.isEmpty {
-      notes += "地点: \(task.position.joined(separator: ", "))\n"
-    }
-    
-    if !task.tags.isEmpty {
-      notes += "标签: \(task.tags.joined(separator: ", "))"
-    }
-    
-    return notes.trimmingCharacters(in: .whitespacesAndNewlines)
-  }
-  
-  private func createReminderNotes() -> String {
-    return createEventNotes()
   }
 }
 

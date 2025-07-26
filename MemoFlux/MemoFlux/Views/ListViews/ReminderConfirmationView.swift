@@ -21,13 +21,9 @@ struct ReminderConfirmationView: View {
   var body: some View {
     NavigationView {
       Form {
-        Section("基本信息") {
-          HStack {
-            Text("标题")
-            Spacer()
-            TextField("输入提醒标题", text: $reminderTitle)
-              .multilineTextAlignment(.trailing)
-          }
+        Section("标题") {
+          TextField("输入提醒标题", text: $reminderTitle)
+            .multilineTextAlignment(.leading)
         }
         
         Section("时间设置") {
