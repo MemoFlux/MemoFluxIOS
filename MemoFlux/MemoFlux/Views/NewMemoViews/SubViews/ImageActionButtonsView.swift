@@ -20,7 +20,7 @@ struct ImageActionButtonsView: View {
             Text("拍照")
           }
           .frame(maxWidth: .infinity)
-          .padding(.vertical, 20)
+          .padding(.vertical, 16)
         }
         .foregroundStyle(.white)
         .background(Color.mainStyleBackgroundColor)
@@ -32,7 +32,7 @@ struct ImageActionButtonsView: View {
             Text("从相册选择")
           }
           .frame(maxWidth: .infinity)
-          .padding(.vertical, 20)
+          .padding(.vertical, 16)
         }
         .foregroundStyle(.white)
         .background(Color.mainStyleBackgroundColor)

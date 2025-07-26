@@ -62,7 +62,15 @@ struct ListCellDetailView: View {
     }
     .navigationTitle("详细信息")
     .navigationBarTitleDisplayMode(.inline)
-    .background(Color(.globalStyleBackgroundColor))
+    .background(Color.globalStyleBackgroundColor)
+    .onAppear {
+      // 当视图出现时，根据API响应设置默认的数据类型
+      setDefaultDataTypeFromAPIResponse()
+    }
+    .onChange(of: item.apiResponse) { newResponse in
+      // 当API响应更新时，重新设置默认的数据类型
+      setDefaultDataTypeFromAPIResponse()
+    }
   }
   
   // MARK: - 基本信息部分
@@ -270,6 +278,24 @@ struct ListCellDetailView: View {
     .cornerRadius(8)
     .disabled(isManuallyTriggering || item.isAPIProcessing)
     .padding(.horizontal)
+  }
+  
+  // MARK: - 设置默认数据类型
+  private func setDefaultDataTypeFromAPIResponse() {
+    guard let response = item.apiResponse else { return }
+    
+    // 根据mostPossibleCategory字段设置默认选项
+    switch response.mostPossibleCategory.lowercased() {
+    case "knowledge":
+      selectedDataType = .knowledge
+    case "information":
+      selectedDataType = .information
+    case "schedule":
+      selectedDataType = .schedule
+    default:
+      // 如果字段值不匹配，保持默认值 .knowledge
+      selectedDataType = .knowledge
+    }
   }
 }
 

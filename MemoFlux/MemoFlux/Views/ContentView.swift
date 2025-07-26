@@ -33,7 +33,7 @@ struct ContentView: View {
           Image(systemName: "house")
           Text("主页")
         }
-      CategoryView()
+      SummaryView()
         .tabItem {
           Image(systemName: "chart.pie")
           Text("总结")

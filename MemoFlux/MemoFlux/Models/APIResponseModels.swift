@@ -12,7 +12,7 @@ struct AIGenerationRequest: Codable {
   let tags: [String]
   let content: String
   let isimage: Int
-  
+
   enum CodingKeys: String, CodingKey {
     case tags
     case content
@@ -28,7 +28,7 @@ enum NetworkError: Error, LocalizedError {
   case serverError(Int)
   case unauthorized
   case networkError(Error)
-  
+
   var errorDescription: String? {
     switch self {
     case .invalidURL:
@@ -48,20 +48,28 @@ enum NetworkError: Error, LocalizedError {
 }
 
 // MARK: - 主响应模型
-struct APIResponse: Codable {
+struct APIResponse: Codable, Equatable {
   let knowledge: KnowledgeResponse
   let information: InformationResponse
   let schedule: ScheduleResponse
+  let mostPossibleCategory: String
+
+  enum CodingKeys: String, CodingKey {
+    case knowledge
+    case information
+    case schedule
+    case mostPossibleCategory = "most_possbile_category"
+  }
 }
 
 // MARK: - Knowledge 模型
-struct KnowledgeResponse: Codable {
+struct KnowledgeResponse: Codable, Equatable {
   let title: String
   let knowledgeItems: [KnowledgeItem]
   let relatedItems: [String]
   let tags: [String]
   let category: String
-  
+
   enum CodingKeys: String, CodingKey {
     case title
     case knowledgeItems = "knowledge_items"
@@ -71,32 +79,53 @@ struct KnowledgeResponse: Codable {
   }
 }
 
-struct KnowledgeItem: Codable, Identifiable {
+struct KnowledgeItem: Codable, Identifiable, Equatable {
   let id: Int
   let header: String
   let content: String
   let node: KnowledgeNode?
 }
 
-struct KnowledgeNode: Codable {
-  let targetId: Int
-  let relationship: String
-  
+struct KnowledgeNode: Codable, Equatable {
+  let targetId: Int?
+  let relationship: String?
+
   enum CodingKeys: String, CodingKey {
-    case targetId = "targert_id"  // JSON中是"targert_id"，拼写错误
+    case targetId = "target_id"
+    case targetIdTypo = "targert_id"  // 保留错误拼写，保证兼容性
     case relationship
+  }
+
+  init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+
+    if let targetId = try container.decodeIfPresent(Int.self, forKey: .targetId) {
+      self.targetId = targetId
+    } else if let targetId = try container.decodeIfPresent(Int.self, forKey: .targetIdTypo) {
+      self.targetId = targetId
+    } else {
+      self.targetId = nil
+    }
+
+    self.relationship = try container.decodeIfPresent(String.self, forKey: .relationship)
+  }
+
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encodeIfPresent(targetId, forKey: .targetId)
+    try container.encodeIfPresent(relationship, forKey: .relationship)
   }
 }
 
 // MARK: - Information 模型
-struct InformationResponse: Codable {
+struct InformationResponse: Codable, Equatable {
   let title: String
   let informationItems: [InformationItem]
   let postType: String
   let summary: String
   let tags: [String]
   let category: String
-  
+
   enum CodingKeys: String, CodingKey {
     case title
     case informationItems = "information_items"
@@ -107,10 +136,10 @@ struct InformationResponse: Codable {
   }
 }
 
-struct InformationItem: Codable, Identifiable {
+struct InformationItem: Codable, Identifiable, Equatable {
   let header: String
   let content: String
-  
+
   // 为了符合Identifiable协议
   var id: String {
     return header
@@ -118,7 +147,7 @@ struct InformationItem: Codable, Identifiable {
 }
 
 // MARK: - Schedule 模型
-struct ScheduleResponse: Codable {
+struct ScheduleResponse: Codable, Equatable {
   let title: String
   let category: String
   let tasks: [ScheduleTask]
@@ -126,7 +155,7 @@ struct ScheduleResponse: Codable {
   let text: String
 }
 
-struct ScheduleTask: Codable, Identifiable {
+struct ScheduleTask: Codable, Identifiable, Equatable {
   let startTime: String
   let endTime: String
   let people: [String]
@@ -137,7 +166,7 @@ struct ScheduleTask: Codable, Identifiable {
   let category: String
   let suggestedActions: [String]
   let id: Int
-  
+
   enum CodingKeys: String, CodingKey {
     case startTime = "start_time"
     case endTime = "end_time"
@@ -150,12 +179,12 @@ struct ScheduleTask: Codable, Identifiable {
     case suggestedActions = "suggested_actions"
     case id
   }
-  
+
   // 将字符串时间转换为Date
   var startDate: Date? {
     return ISO8601DateFormatter().date(from: startTime)
   }
-  
+
   var endDate: Date? {
     return ISO8601DateFormatter().date(from: endTime)
   }
@@ -173,12 +202,12 @@ extension APIResponse {
     }
     return tags
   }
-  
+
   /// 获取所有任务
   var allTasks: [ScheduleTask] {
     return schedule.tasks
   }
-  
+
   /// 根据日期筛选任务
   func tasks(for date: Date) -> [ScheduleTask] {
     let calendar = Calendar.current
@@ -240,7 +269,8 @@ extension APIResponse {
         ],
         id: "sample-id",
         text: "{}"
-      )
+      ),
+      mostPossibleCategory: "information"
     )
   }
 }

@@ -13,8 +13,8 @@ class NetworkManager: ObservableObject {
   static let shared = NetworkManager()
   
   // API配置
-  private let baseURL = "http://localhost:8000"
-  private let apiToken = "Bearer NkuxThqAzsfOucZgRDo1NZm-_VHHHsyeCLO1RH-ToJg "
+  private let baseURL = "http://api.tokya.online"
+  private let apiToken = "" // 不再需要了，但先暂时留空备用
   
   private let session: URLSession
   
@@ -103,7 +103,7 @@ class NetworkManager: ObservableObject {
     request.httpMethod = "POST"
     request.addValue("application/json", forHTTPHeaderField: "Content-Type")
     request.addValue("application/json", forHTTPHeaderField: "Accept")
-    request.addValue(apiToken, forHTTPHeaderField: "Authorization")
+    // request.addValue(apiToken, forHTTPHeaderField: "Authorization")
     
     do {
       let jsonData = try JSONEncoder().encode(requestBody)
