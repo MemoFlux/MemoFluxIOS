@@ -110,41 +110,56 @@ struct ConfirmAddMemoButton: View {
     
     let allTags = NetworkManager.shared.getAllTags(from: modelContext)
     
-    // 发送API请求
-    NetworkManager.shared.generateAIResponse(
-      content: memoItem.contentForAPI,
-      tags: allTags,
-      isImage: memoItem.image != nil
-    ) { result in
-      DispatchQueue.main.async {
-        switch result {
-        case .success(let response):
-          print("API请求成功")
-          
-          memoItem.setAPIResponse(response)
-          
-          let newTags = Set(memoItem.tags)
-            .union(response.knowledge.tags)
-            .union(response.information.tags)
-            .union(response.schedule.tasks.flatMap { $0.tags })
-          memoItem.tags = Array(newTags)
-          
-        case .failure(let error):
-          print("API请求失败: \(error.localizedDescription)")
-          memoItem.apiProcessingFailed()
+    // 判断是否有图片，决定使用哪种API请求方式
+    if let image = memoItem.image {
+      // 有图片：使用图片Base64编码发送API请求
+      NetworkManager.shared.generateFromImageBase64(image: image) { result in
+        DispatchQueue.main.async {
+          handleAPIResponse(result: result, memoItem: memoItem)
         }
-        
-        do {
-          try modelContext.save()
-          print("API响应保存成功")
-        } catch {
-          print("保存API响应失败: \(error)")
+      }
+    } else {
+      // 无图片：使用文本内容发送API请求
+      NetworkManager.shared.generateAIResponse(
+        content: memoItem.contentForAPI,
+        tags: allTags,
+        isImage: false
+      ) { result in
+        DispatchQueue.main.async {
+          handleAPIResponse(result: result, memoItem: memoItem)
         }
-        
-        isSaving = false
-        onSave()
       }
     }
+  }
+  
+  // MARK: - 处理API响应（新增辅助方法）
+  private func handleAPIResponse(result: Result<APIResponse, NetworkError>, memoItem: MemoItemModel) {
+    switch result {
+    case .success(let response):
+      print("API请求成功")
+      
+      memoItem.setAPIResponse(response)
+      
+      let newTags = Set(memoItem.tags)
+        .union(response.knowledge.tags)
+        .union(response.information.tags)
+        .union(response.schedule.tasks.flatMap { $0.tags })
+      memoItem.tags = Array(newTags)
+      
+    case .failure(let error):
+      print("API请求失败: \(error.localizedDescription)")
+      memoItem.apiProcessingFailed()
+    }
+    
+    do {
+      try modelContext.save()
+      print("API响应保存成功")
+    } catch {
+      print("保存API响应失败: \(error)")
+    }
+    
+    isSaving = false
+    onSave()
   }
 }
 

@@ -7,7 +7,6 @@
 
 import PhotosUI
 import SwiftUI
-import UIKit
 import Vision
 
 struct AddMemoItemView: View {
@@ -19,16 +18,20 @@ struct AddMemoItemView: View {
   @State private var inputTitle = ""
   @State private var inputText = ""
   @State private var useAIParsing = true  // AI解析选项，默认开启
-  @State private var selectedTags: Set<String> = ["工作"]  // 添加选中标签状态
+  @State private var selectedTags = Set<String>() // 选中标签
   
   @State private var selectedImage: UIImage?
   @State private var selectedPhotoItem: PhotosPickerItem?
   
-  // 新增：解析相关状态
+  // 解析相关状态
   @State private var recognizedText = ""
   @State private var isParsingInProgress = false
   @State private var apiResponse: APIResponse?
   @State private var hasAttemptedParsing = false
+  
+  // 图片处理相关状态
+  @State private var imageBase64: String?
+  @State private var isImageProcessing = false
   
   @FocusState private var isTextEditorFocused: Bool
   
@@ -69,28 +72,50 @@ struct AddMemoItemView: View {
               
               if let image = selectedImage {
                 withAnimation {
-                  Image(uiImage: image)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 80)
-                    .cornerRadius(15)
-                    .contextMenu {
-                      Button(
-                        role: .destructive,
-                        action: {
-                          withAnimation {
-                            selectedImage = nil
-                            selectedPhotoItem = nil
-                            recognizedText = ""
-                            // 重置解析状态
-                            apiResponse = nil
-                            hasAttemptedParsing = false
+                  VStack(alignment: .leading, spacing: 5) {
+                    Image(uiImage: image)
+                      .resizable()
+                      .scaledToFit()
+                      .frame(height: 80)
+                      .cornerRadius(15)
+                      .contextMenu {
+                        Button(
+                          role: .destructive,
+                          action: {
+                            withAnimation {
+                              selectedImage = nil
+                              selectedPhotoItem = nil
+                              recognizedText = ""
+                              imageBase64 = nil
+                              // 重置解析状态
+                              apiResponse = nil
+                              hasAttemptedParsing = false
+                            }
                           }
+                        ) {
+                          Label("删除照片", systemImage: "trash")
                         }
-                      ) {
-                        Label("删除照片", systemImage: "trash")
+                      }
+                    
+                    if isImageProcessing {
+                      HStack {
+                        ProgressView()
+                          .scaleEffect(0.7)
+                        Text("正在处理图片...")
+                          .font(.caption)
+                          .foregroundColor(.secondary)
+                      }
+                    } else if imageBase64 != nil {
+                      HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                          .foregroundColor(.green)
+                          .font(.caption)
+                        Text("图片已处理完成")
+                          .font(.caption)
+                          .foregroundColor(.secondary)
                       }
                     }
+                  }
                 }
               }
             }
@@ -156,8 +181,9 @@ struct AddMemoItemView: View {
           {
             withAnimation {
               selectedImage = uiImage
-              // 自动进行OCR识别
+              // 自动进行OCR识别和图片处理
               recognizeTextFromImage(uiImage)
+              processImageForAPI(uiImage)
             }
           }
         }
@@ -165,6 +191,7 @@ struct AddMemoItemView: View {
       .onChange(of: selectedImage) { newImage in
         if let image = newImage {
           recognizeTextFromImage(image)
+          processImageForAPI(image)
         }
       }
       // 监听文本变化，重置解析状态
@@ -175,6 +202,12 @@ struct AddMemoItemView: View {
         }
       }
       .onChange(of: recognizedText) { _ in
+        if hasAttemptedParsing {
+          apiResponse = nil
+          hasAttemptedParsing = false
+        }
+      }
+      .onChange(of: imageBase64) { _ in
         if hasAttemptedParsing {
           apiResponse = nil
           hasAttemptedParsing = false
@@ -265,6 +298,22 @@ struct AddMemoItemView: View {
     }
   }
   
+  // MARK: - 图片处理（新增）
+  private func processImageForAPI(_ image: UIImage) {
+    isImageProcessing = true
+    
+    ImageProcessor.shared.compressAndEncodeToBase64Async(image: image) { base64String in
+      DispatchQueue.main.async {
+        isImageProcessing = false
+        imageBase64 = base64String
+        
+        if base64String == nil {
+          print("图片处理失败")
+        }
+      }
+    }
+  }
+  
   // MARK: - 获取解析内容
   private func getContentForParsing() -> String {
     if !inputText.isEmpty {
@@ -275,24 +324,53 @@ struct AddMemoItemView: View {
     return ""
   }
   
+  // MARK: - 判断是否有图片内容
+  private func hasImageContent() -> Bool {
+    return selectedImage != nil && imageBase64 != nil
+  }
+  
   // MARK: - 执行AI解析
   private func performAIParsing() {
-    let content = getContentForParsing()
-    guard !content.isEmpty else { return }
-    
-    isParsingInProgress = true
-    apiResponse = nil
-    
-    NetworkManager.shared.generateFromText(content) { result in
-      DispatchQueue.main.async {
-        isParsingInProgress = false
-        hasAttemptedParsing = true  // 已经尝试过解析操作
-        
-        switch result {
-        case .success(let response):
-          apiResponse = response
-        case .failure(let error):
-          print("AI解析失败: \(error.localizedDescription)")
+    // 优先使用图片内容，其次使用文本内容
+    if hasImageContent() {
+      // 使用图片进行解析
+      guard let image = selectedImage else { return }
+      
+      isParsingInProgress = true
+      apiResponse = nil
+      
+      NetworkManager.shared.generateFromImageBase64(image: image) { result in
+        DispatchQueue.main.async {
+          isParsingInProgress = false
+          hasAttemptedParsing = true
+          
+          switch result {
+          case .success(let response):
+            apiResponse = response
+          case .failure(let error):
+            print("图片AI解析失败: \(error.localizedDescription)")
+          }
+        }
+      }
+    } else {
+      // 使用文本进行解析
+      let content = getContentForParsing()
+      guard !content.isEmpty else { return }
+      
+      isParsingInProgress = true
+      apiResponse = nil
+      
+      NetworkManager.shared.generateFromText(content) { result in
+        DispatchQueue.main.async {
+          isParsingInProgress = false
+          hasAttemptedParsing = true
+          
+          switch result {
+          case .success(let response):
+            apiResponse = response
+          case .failure(let error):
+            print("文本AI解析失败: \(error.localizedDescription)")
+          }
         }
       }
     }

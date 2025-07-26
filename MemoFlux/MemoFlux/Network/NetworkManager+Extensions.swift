@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import UIKit
 
 extension NetworkManager {
   
@@ -29,8 +30,41 @@ extension NetworkManager {
     recognizedText: String,
     completion: @escaping (Result<APIResponse, NetworkError>) -> Void
   ) {
-    // 修复：发送识别出的文本内容，isImage 设置为 false
+    // 发送识别出的文本内容，isImage 设置为 false
     generateAIResponse(content: recognizedText, isImage: false, completion: completion)
+  }
+  
+  /// 从图片Base64编码生成AI响应（新增方法）
+  /// - Parameters:
+  ///   - image: 原始图片
+  ///   - config: 图片压缩配置
+  ///   - completion: 完成回调
+  func generateFromImageBase64(
+    image: UIImage,
+    config: ImageProcessor.CompressionConfig = .highQuality,
+    completion: @escaping (Result<APIResponse, NetworkError>) -> Void
+  ) {
+    // 异步处理图片压缩和编码
+    ImageProcessor.shared.compressAndEncodeToBase64Async(image: image, config: config) { base64String in
+      guard let base64String = base64String else {
+        completion(.failure(.networkError(NSError(domain: "ImageProcessing", code: -1, userInfo: [NSLocalizedDescriptionKey: "图片处理失败"]))))
+        return
+      }
+      
+      // 发送Base64编码的图片数据
+      self.generateAIResponse(content: base64String, isImage: true, completion: completion)
+    }
+  }
+  
+  /// 从图片Base64编码生成AI响应（同步版本）
+  /// - Parameters:
+  ///   - base64String: 图片的Base64编码字符串
+  ///   - completion: 完成回调
+  func generateFromImageBase64String(
+    base64String: String,
+    completion: @escaping (Result<APIResponse, NetworkError>) -> Void
+  ) {
+    generateAIResponse(content: base64String, isImage: true, completion: completion)
   }
   
   // MARK: - SwiftData 集成
@@ -178,7 +212,6 @@ extension NetworkManager {
     modelContext: ModelContext,
     completion: @escaping (Result<APIResponse, NetworkError>) -> Void
   ) {
-    // 如果已经在处理中，直接返回
     guard !memoItem.isAPIProcessing else {
       completion(
         .failure(
@@ -192,7 +225,6 @@ extension NetworkManager {
     // 标记开始API处理
     memoItem.startAPIProcessing()
     
-    // 保存状态更新
     do {
       try modelContext.save()
     } catch {
@@ -217,7 +249,7 @@ extension NetworkManager {
             .union(response.schedule.tasks.flatMap { $0.tags })
           memoItem.tags = Array(newTags)
           
-          // 如果原来没有标题且API返回了标题，更新标题
+          // 更新标题
           if memoItem.title.isEmpty && !response.information.title.isEmpty {
             memoItem.title = response.information.title
           }
@@ -229,7 +261,6 @@ extension NetworkManager {
           completion(.failure(error))
         }
         
-        // 保存更新
         do {
           try modelContext.save()
         } catch {
