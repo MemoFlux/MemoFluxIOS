@@ -224,10 +224,10 @@ struct ListCellDetailView: View {
               
               Text(item.recognizedText)
                 .font(.body)
-                .padding()
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(15)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+                .background(Color.white)
+                .cornerRadius(15)
             }
             .padding(.horizontal, 16)
             
