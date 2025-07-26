@@ -123,7 +123,8 @@ struct AddMemoItemView: View {
             image: selectedImage,
             tags: selectedTags,
             modelContext: modelContext,
-            apiResponse: apiResponse,  // 传递API解析结果
+            apiResponse: apiResponse,
+            useAIParsing: useAIParsing,
             onSave: {
               dismiss()
             }
@@ -285,7 +286,7 @@ struct AddMemoItemView: View {
     NetworkManager.shared.generateFromText(content) { result in
       DispatchQueue.main.async {
         isParsingInProgress = false
-        hasAttemptedParsing = true  // 已经尝试过解析操作，进行标记
+        hasAttemptedParsing = true  // 已经尝试过解析操作
         
         switch result {
         case .success(let response):
