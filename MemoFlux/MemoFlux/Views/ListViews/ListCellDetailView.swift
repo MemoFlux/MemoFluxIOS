@@ -11,7 +11,7 @@ import SwiftUI
 
 // MARK: - 数据类型枚举
 enum DataType: String, CaseIterable {
-  case knowledge = "知识"
+  // case knowledge = "知识"
   case information = "信息"
   case schedule = "日程"
 }
@@ -21,7 +21,7 @@ struct ListCellDetailView: View {
   
   @Environment(\.modelContext) private var modelContext
   
-  @State private var selectedDataType: DataType = .knowledge
+  @State private var selectedDataType: DataType = .information
   @State private var isManuallyTriggering = false
   
   var body: some View {
@@ -214,8 +214,8 @@ struct ListCellDetailView: View {
         
         // 根据选择的类型显示相应数据
         switch selectedDataType {
-        case .knowledge:
-          KnowledgeView(knowledge: response.knowledge)
+          //        case .knowledge:
+          //          KnowledgeView(knowledge: response.knowledge)
         case .information:
           InformationView(information: response.information)
         case .schedule:
@@ -324,15 +324,14 @@ struct ListCellDetailView: View {
     
     // 根据mostPossibleCategory字段设置默认选项
     switch response.mostPossibleCategory.lowercased() {
-    case "knowledge":
-      selectedDataType = .knowledge
+      //    case "knowledge":
+      //      selectedDataType = .knowledge
     case "information":
       selectedDataType = .information
     case "schedule":
       selectedDataType = .schedule
     default:
-      // 如果字段值不匹配，保持默认值 .knowledge
-      selectedDataType = .knowledge
+      selectedDataType = .information
     }
   }
 }
@@ -501,28 +500,54 @@ struct ScheduleView: View {
   
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
-      Text(schedule.title)
-        .font(.title2)
-        .fontWeight(.semibold)
-        .padding(.horizontal)
-      
-      HStack {
-        Text("分类:")
-          .font(.subheadline)
-          .fontWeight(.medium)
-        Text(schedule.category)
-          .font(.subheadline)
-          .fontWeight(.regular)
-        Spacer()
-      }
-      .padding(.horizontal)
-      
-      LazyVStack(alignment: .leading, spacing: 8) {
-        ForEach(schedule.tasks) { task in
-          ScheduleTaskCard(task: task)
+      if schedule.tasks.isEmpty {
+        VStack(spacing: 16) {
+          Image(systemName: "exclamationmark.triangle")
+            .font(.system(size: 40))
+            .foregroundColor(Color.orange)
+            .padding(.top, 20)
+          
+          Text("当前Memo未识别出意图")
+            .font(.headline)
+            .foregroundColor(.primary)
+            .multilineTextAlignment(.center)
+          
+          Text("您可以尝试添加更多详细信息，或使用AI解析功能重新分析内容")
+            .font(.subheadline)
+            .foregroundColor(.secondary)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal)
+            .padding(.bottom, 20)
         }
+        .frame(maxWidth: .infinity)
+        .padding()
+        .background(Color.white)
+        .cornerRadius(15)
+        .padding(.horizontal)
+      } else {
+        Text(schedule.title)
+          .font(.title2)
+          .fontWeight(.semibold)
+          .padding(.horizontal)
+        
+        HStack {
+          Text("分类:")
+            .font(.subheadline)
+            .fontWeight(.medium)
+          Text(schedule.category)
+            .font(.subheadline)
+            .fontWeight(.regular)
+          Spacer()
+        }
+        .padding(.horizontal)
+        
+        LazyVStack(alignment: .leading, spacing: 8) {
+          ForEach(schedule.tasks) { task in
+            ScheduleTaskCard(task: task)
+          }
+        }
+        .padding(.horizontal)
       }
-      .padding(.horizontal)
     }
   }
 }
