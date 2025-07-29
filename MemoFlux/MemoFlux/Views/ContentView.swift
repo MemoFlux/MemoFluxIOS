@@ -28,7 +28,6 @@ struct ContentView: View {
   }
   
   var body: some View {
-    // 主界面
     TabView {
       HomePageView()
         .tabItem {
@@ -42,17 +41,11 @@ struct ContentView: View {
         }
     }
     .background(Color.globalStyleBackgroundColor)
-    .sheet(isPresented: $showOnBoarding) {
+    .sheet(isPresented: $showOnBoarding, onDismiss: {
+      OnBoardingManager.shared.markOnBoardingAsSeen()
+    }) {
       OnBoardingView(isPresented: $showOnBoarding)
         .transition(.opacity.combined(with: .scale))
-        .onChange(of: showOnBoarding) { newValue in
-          if !newValue {
-#if !DEBUG
-            // 用户完成了OnBoarding，保存状态
-            OnBoardingManager.shared.markOnBoardingAsSeen()
-#endif
-          }
-        }
     }
   }
 }
