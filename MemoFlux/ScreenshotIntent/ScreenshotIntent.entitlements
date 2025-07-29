@@ -4,7 +4,7 @@
 <dict>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.com.shuoma.memoflux</string>
+		<string>group.com.shuoma.memofluxapp</string>
 	</array>
 </dict>
 </plist>

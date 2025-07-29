@@ -20,7 +20,5 @@ struct PendingIntent: Identifiable {
 /// 意图类型枚举
 enum IntentType {
   case calendar
-  case task
   case reminder
-  case note
 }

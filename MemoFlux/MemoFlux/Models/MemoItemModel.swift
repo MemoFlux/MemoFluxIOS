@@ -15,7 +15,7 @@ final class MemoItemModel: Identifiable {
   var id: UUID
   var imageData: Data?  // 存储图片
   var recognizedText: String
-  var userInputText: String = ""  // 新增：用户手动输入的原文
+  var userInputText: String = ""
   var title: String
   var tags: [String]
   var createdAt: Date
