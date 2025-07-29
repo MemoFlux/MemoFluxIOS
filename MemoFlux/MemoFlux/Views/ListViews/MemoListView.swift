@@ -29,7 +29,6 @@ struct MemoListView: View {
     self._isSearchActive = isSearchActive ?? .constant(false)
   }
   
-  // 过滤后的备忘录：排除正在删除的项目
   private var filteredItems: [MemoItemModel] {
     let baseItems = memoItems.filter { !deletingItems.contains($0.id) }
     
@@ -37,15 +36,15 @@ struct MemoListView: View {
       return baseItems
     } else {
       return baseItems.filter { item in
-        // 搜索标题
+        // 标题
         item.title.localizedCaseInsensitiveContains(searchText)
-        // 搜索识别文本
+        // 识别文本
         || item.recognizedText.localizedCaseInsensitiveContains(searchText)
-        // 搜索标签
+        // 标签
         || item.tags.contains { tag in
           tag.localizedCaseInsensitiveContains(searchText)
         }
-        // 搜索来源
+        // 来源
         || item.source.localizedCaseInsensitiveContains(searchText)
       }
     }
@@ -68,7 +67,7 @@ struct MemoListView: View {
     
     // 过滤空分组并排序
     return
-    grouped
+    (grouped
       .filter { !$0.value.isEmpty }  // 关键修复：过滤掉空分组
       .sorted { first, second in
         if first.key == "今天" { return true }
@@ -76,65 +75,98 @@ struct MemoListView: View {
         if first.key == "昨天" { return true }
         if second.key == "昨天" { return false }
         return first.key > second.key
-      }
+      })
   }
   
   var body: some View {
     if memoItems.isEmpty {
-      ContentUnavailableView(
-        "没有内容", systemImage: "photo", description: Text("请从快捷指令或其他来源导入内容。"))
+      emptyStateView
     } else {
-      VStack(spacing: 0) {
-        if !searchText.isEmpty && filteredItems.isEmpty {
-          ContentUnavailableView(
-            "没有找到相关内容",
-            systemImage: "magnifyingglass",
-            description: Text("尝试使用其他关键词搜索")
-          )
-          .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else {
-          ScrollView {
-            LazyVStack(spacing: 16, pinnedViews: [.sectionHeaders]) {
-              if searchText.isEmpty {
-                IntentDiscoveryView(memoItems: memoItems)
-                  .padding(.horizontal, 16)
-                  .padding(.bottom, 8)
-              }
-              
-              ForEach(groupedItems, id: \.0) { section in
-                Section {
-                  LazyVStack(spacing: 12) {
-                    ForEach(section.1) { item in
-                      NavigationLink(destination: ListCellDetailView(item: item)) {
-                        MemoCardView(
-                          item: item,
-                          modelContext: modelContext,
-                          searchText: searchText,
-                          onDelete: { deleteMemo(item) }  // 传递删除回调
-                        )
-                      }
-                      .buttonStyle(PlainButtonStyle())
-                    }
-                  }
-                  .padding(.horizontal, 16)
-                } header: {
-                  SectionHeaderView(title: section.0)
-                }
-              }
-            }
-            .padding(.top, 8)
+      mainContentView
+    }
+  }
+  
+  // MARK: - 子视图
+  
+  private var emptyStateView: some View {
+    ContentUnavailableView(
+      "没有内容",
+      systemImage: "photo",
+      description: Text("请从快捷指令或其他来源导入内容。")
+    )
+  }
+  
+  private var mainContentView: some View {
+    VStack(spacing: 0) {
+      if !searchText.isEmpty && filteredItems.isEmpty {
+        searchEmptyStateView
+      } else {
+        memoListView
+      }
+    }
+    .navigationTitle("Memo")
+    .background(Color.globalStyleBackgroundColor)
+    .searchable(
+      text: $searchText,
+      isPresented: $isSearchActive,
+      placement: .navigationBarDrawer(displayMode: .automatic),
+      prompt: "搜索Memo..."
+    )
+  }
+  
+  private var searchEmptyStateView: some View {
+    ContentUnavailableView(
+      "没有找到相关内容",
+      systemImage: "magnifyingglass",
+      description: Text("尝试使用其他关键词搜索")
+    )
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+  }
+  
+  private var memoListView: some View {
+    List {
+      if searchText.isEmpty {
+        intentDiscoverySection
+      }
+      
+      ForEach(groupedItems, id: \.0) { section in
+        Section {
+          ForEach(section.1) { item in
+            memoRowView(for: item)
           }
+        } header: {
+          SectionHeaderView(title: section.0)
+            .listRowInsets(EdgeInsets())
         }
       }
-      .navigationTitle("Memo")
-      .background(Color.globalStyleBackgroundColor)
-      .searchable(
-        text: $searchText,
-        isPresented: $isSearchActive,
-        placement: .navigationBarDrawer(displayMode: .automatic),
-        prompt: "搜索Memo..."
-      )
     }
+    .listStyle(PlainListStyle())
+    .scrollContentBackground(.hidden)
+    .background(Color.clear)
+  }
+  
+  private var intentDiscoverySection: some View {
+    IntentDiscoveryView(memoItems: memoItems)
+      .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+      .listRowSeparator(.hidden)
+      .listRowBackground(Color.clear)
+  }
+  
+  private func memoRowView(for item: MemoItemModel) -> some View {
+    MemoCardView(
+      item: item,
+      modelContext: modelContext,
+      searchText: searchText,
+      onDelete: { deleteMemo(item) }
+    )
+    .background(
+      NavigationLink("", destination: ListCellDetailView(item: item))
+        .opacity(0)
+    )
+    .buttonStyle(PlainButtonStyle())
+    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+    .listRowSeparator(.hidden)
+    .listRowBackground(Color.clear)
   }
   
   // MARK: - 删除方法
