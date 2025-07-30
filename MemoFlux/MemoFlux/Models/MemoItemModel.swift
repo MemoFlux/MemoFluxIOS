@@ -12,15 +12,15 @@ import SwiftUI
 /// 首页 List cell 中 item 的数据模型
 @Model
 final class MemoItemModel: Identifiable {
-  var id: UUID
+  var id: UUID = UUID()
   var imageData: Data?  // 存储图片
-  var recognizedText: String
+  var recognizedText: String = ""
   var userInputText: String = ""
-  var title: String
-  var tags: [String]
-  var createdAt: Date
+  var title: String = ""
+  var tags: [String] = []
+  var createdAt: Date = Date()
   var scheduledDate: Date?
-  var source: String
+  var source: String = ""
   
   // API响应相关字段
   var apiResponseData: Data?  // 存储API响应的JSON数据

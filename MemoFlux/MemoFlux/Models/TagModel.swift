@@ -12,11 +12,11 @@ import SwiftUI
 /// 标签数据模型
 @Model
 final class TagModel: Identifiable {
-  var id: UUID
-  var name: String
-  var createdAt: Date
-  var lastUsedAt: Date
-  var usageCount: Int
+  var id: UUID = UUID()
+  var name: String = ""
+  var createdAt: Date = Date()
+  var lastUsedAt: Date = Date()
+  var usageCount: Int = 0
   var color: String?  // 可选的标签颜色
   var category: String?  // 可选的标签分类
   

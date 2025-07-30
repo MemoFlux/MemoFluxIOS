@@ -13,7 +13,7 @@ class NetworkManager: ObservableObject {
   static let shared = NetworkManager()
   
   // API配置
-  private let baseURL = "http://api.tokya.online"
+  private let baseURL = SecureConfig.baseURL!
   private let apiToken = ""  // 不再需要，但先暂时留空备用
   
   private let session: URLSession
