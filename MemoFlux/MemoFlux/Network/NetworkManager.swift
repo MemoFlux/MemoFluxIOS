@@ -14,7 +14,7 @@ class NetworkManager: ObservableObject {
   
   // API配置
   private let baseURL = "http://api.tokya.online"
-  private let apiToken = "" // 不再需要，但先暂时留空备用
+  private let apiToken = ""  // 不再需要，但先暂时留空备用
   
   private let session: URLSession
   
@@ -35,7 +35,7 @@ class NetworkManager: ObservableObject {
   ///   - completion: 完成回调
   func generateAIResponse(
     content: String,
-    tags: [String] = [],
+    tags: [String],
     isImage: Bool = false,
     completion: @escaping (Result<APIResponse, NetworkError>) -> Void
   ) {
@@ -62,12 +62,12 @@ class NetworkManager: ObservableObject {
   ///   - completion: 完成回调
   func generateAIResponse(
     from memoItem: MemoItemModel,
-    allTags: [String] = [],
+    allTags: [String],
     completion: @escaping (Result<APIResponse, NetworkError>) -> Void
   ) {
     // 如果有图片，使用Base64编码发送
     if let image = memoItem.image {
-      generateFromImageBase64(image: image, completion: completion)
+      generateFromImageBase64(image: image, tags: allTags, completion: completion)
       return
     }
     
@@ -76,7 +76,12 @@ class NetworkManager: ObservableObject {
     
     // 如果内容为空，返回错误
     guard !content.isEmpty else {
-      completion(.failure(.networkError(NSError(domain: "ContentEmpty", code: -1, userInfo: [NSLocalizedDescriptionKey: "内容为空，无法发送请求"]))))
+      completion(
+        .failure(
+          .networkError(
+            NSError(
+              domain: "ContentEmpty", code: -1, userInfo: [NSLocalizedDescriptionKey: "内容为空，无法发送请求"]
+            ))))
       return
     }
     

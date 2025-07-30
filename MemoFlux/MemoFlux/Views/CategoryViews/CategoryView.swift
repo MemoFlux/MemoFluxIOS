@@ -5,22 +5,33 @@
 //  Created by 马硕 on 2025/7/24.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct CategoryView: View {
   @Environment(\.modelContext) private var modelContext
   @Query private var memos: [MemoItemModel]
+  @Query private var tagModels: [TagModel]
   
-  // 计算所有唯一的标签
+  // 计算所有唯一的标签（从TagModel获取，如果为空则从Memo获取）
   private var allTags: [String] {
-    let tagSet = Set(memos.flatMap { $0.tags })
-    return Array(tagSet).sorted()
+    if !tagModels.isEmpty {
+      return tagModels.map { $0.name }.sorted()
+    } else {
+      // 兼容性：如果TagModel为空，从Memo获取
+      let tagSet = Set(memos.flatMap { $0.tags })
+      return Array(tagSet).sorted()
+    }
   }
   
   // 计算每个标签对应的 Memo 数量
   private func memoCount(for tag: String) -> Int {
     return memos.filter { $0.tags.contains(tag) }.count
+  }
+  
+  // 获取标签的使用频率（如果有TagModel）
+  private func tagUsageCount(for tagName: String) -> Int {
+    return tagModels.first { $0.name == tagName }?.usageCount ?? memoCount(for: tagName)
   }
   
   var body: some View {
@@ -78,6 +89,33 @@ struct CategoryView: View {
       .background(Color.globalStyleBackgroundColor)
       .navigationTitle("标签分类")
       .navigationBarTitleDisplayMode(.large)
+      .onAppear {
+        // 确保TagModel与现有Memo中的标签同步
+        syncTagsFromMemosToTagModel()
+      }
+    }
+  }
+  
+  // MARK: - 私有方法
+  
+  /// 同步Memo中的标签到TagModel
+  private func syncTagsFromMemosToTagModel() {
+    let allMemoTags = Set(memos.flatMap { $0.tags })
+    let existingTagNames = Set(tagModels.map { $0.name })
+    
+    // 找出TagModel中缺少的标签
+    let missingTags = allMemoTags.subtracting(existingTagNames)
+    
+    // 为缺少的标签创建TagModel
+    for tagName in missingTags {
+      TagManager.shared.createOrUpdateTag(name: tagName, in: modelContext)
+    }
+    
+    // 保存更改
+    do {
+      try modelContext.save()
+    } catch {
+      print("同步标签到TagModel失败: \(error)")
     }
   }
 }

@@ -76,13 +76,16 @@ struct HomePageView: View {
   func loadImage() {
     let fileManager = FileManager.default
     if let directory = fileManager.containerURL(
-      forSecurityApplicationGroupIdentifier: "group.com.shuoma.memoflux")
+      forSecurityApplicationGroupIdentifier: "group.com.shuoma.memofluxapp")
     {
       let fileURL = directory.appendingPathComponent("imageFromShortcut.png")
       if let imageData = try? Data(contentsOf: fileURL),
          let newImage = UIImage(data: imageData)
       {
-        let newItem = MemoItemModel(image: newImage, source: "快捷指令")
+        let newItem = MemoItemModel(
+          image: newImage,
+          tags: TagManager.shared.getAllTagNames(from: modelContext),
+          source: "快捷指令")
         
         // 检查是否存在相同item
         let exists = memoItems.contains { item in

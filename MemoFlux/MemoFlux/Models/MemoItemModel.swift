@@ -41,7 +41,7 @@ final class MemoItemModel: Identifiable {
     return try? JSONDecoder().decode(APIResponse.self, from: apiResponseData)
   }
   
-  init(image: UIImage, title: String = "", tags: [String] = [], source: String = "") {
+  init(image: UIImage, title: String = "", tags: [String], source: String = "") {
     self.id = UUID()
     self.imageData = image.pngData()  // 将UIImage转换为Data类型存储，避免swiftData无法存储UIImage的问题
     self.recognizedText = ""
@@ -58,11 +58,19 @@ final class MemoItemModel: Identifiable {
   
   // 初始化，用于swiftData
   init(
-    id: UUID = UUID(), imageData: Data? = nil, recognizedText: String = "", 
-    userInputText: String = "", title: String = "",
-    tags: [String] = [], createdAt: Date = Date(), scheduledDate: Date? = nil,
-    source: String = "", apiResponseData: Data? = nil, isAPIProcessing: Bool = false,
-    apiProcessedAt: Date? = nil, hasAPIResponse: Bool = false
+    id: UUID = UUID(),
+    imageData: Data? = nil,
+    recognizedText: String = "",
+    userInputText: String = "",
+    title: String = "",
+    tags: [String],
+    createdAt: Date = Date(),
+    scheduledDate: Date? = nil,
+    source: String = "",
+    apiResponseData: Data? = nil,
+    isAPIProcessing: Bool = false,
+    apiProcessedAt: Date? = nil,
+    hasAPIResponse: Bool = false
   ) {
     self.id = id
     self.imageData = imageData
@@ -124,5 +132,31 @@ final class MemoItemModel: Identifiable {
     }
     
     return false
+  }
+  
+  /// 设置标签并同步到TagModel
+  /// - Parameters:
+  ///   - newTags: 新的标签数组
+  ///   - modelContext: SwiftData模型上下文
+  func setTags(_ newTags: [String], in modelContext: ModelContext) {
+    self.tags = newTags
+    syncTagsToTagModel(in: modelContext)
+  }
+  
+  /// 添加标签并同步到TagModel
+  /// - Parameters:
+  ///   - tag: 要添加的标签
+  ///   - modelContext: SwiftData模型上下文
+  func addTag(_ tag: String, in modelContext: ModelContext) {
+    if !self.tags.contains(tag) {
+      self.tags.append(tag)
+      syncTagsToTagModel(in: modelContext)
+    }
+  }
+  
+  /// 移除标签
+  /// - Parameter tag: 要移除的标签
+  func removeTag(_ tag: String) {
+    self.tags.removeAll { $0 == tag }
   }
 }

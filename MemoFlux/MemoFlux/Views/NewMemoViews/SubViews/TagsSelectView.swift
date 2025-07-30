@@ -52,6 +52,16 @@ struct TagsSelectView: View {
     return Array(allTags).sorted()
   }
   
+  // 判断标签是否被选中的逻辑
+  private func isTagSelected(_ tag: String) -> Bool {
+    // AI建议的标签默认选中，除非用户主动取消选择
+    if useAIParsing && aiSuggestedTags.contains(tag) {
+      return selectedTags.contains(tag)
+    }
+    // 本地标签需要用户手动选择
+    return selectedTags.contains(tag)
+  }
+  
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
       // 标题和添加自定义按钮
@@ -93,7 +103,7 @@ struct TagsSelectView: View {
               ForEach(aiSuggestedTags, id: \.self) { tag in
                 TagChipView(
                   tag: tag,
-                  isSelected: selectedTags.contains(tag)
+                  isSelected: isTagSelected(tag)
                 ) {
                   toggleTag(tag)
                 }
@@ -152,10 +162,10 @@ struct TagsSelectView: View {
         }
       }
     }
-    .onChange(of: apiResponse) { newResponse in
-      // 当API响应更新时，自动选中新的AI建议标签
-      if useAIParsing, newResponse != nil {
-        for tag in aiSuggestedTags {
+    .onChange(of: aiSuggestedTags) { newTags in
+      // 当AI建议标签更新时，自动选中新的标签
+      if useAIParsing {
+        for tag in newTags {
           selectedTags.insert(tag)
         }
       }

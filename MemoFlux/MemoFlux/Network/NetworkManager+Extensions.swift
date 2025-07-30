@@ -14,65 +14,73 @@ extension NetworkManager {
   /// 从文本内容生成AI响应
   /// - Parameters:
   ///   - text: 文本内容
+  ///   - tags: 要传入的标签
   ///   - completion: 完成回调
   func generateFromText(
     _ text: String,
+    tags: [String],
     completion: @escaping (Result<APIResponse, NetworkError>) -> Void
   ) {
-    generateAIResponse(content: text, isImage: false, completion: completion)
+    generateAIResponse(content: text, tags: tags, isImage: false, completion: completion)
   }
   
   /// 从图片识别文本生成AI响应
   /// - Parameters:
   ///   - recognizedText: 图片识别的文本
+  ///   - tags: 要传入的标签
   ///   - completion: 完成回调
   func generateFromImage(
     recognizedText: String,
+    tags: [String],
     completion: @escaping (Result<APIResponse, NetworkError>) -> Void
   ) {
     // 发送识别出的文本内容，isImage 设置为 false
-    generateAIResponse(content: recognizedText, isImage: false, completion: completion)
+    generateAIResponse(content: recognizedText, tags: tags, isImage: false, completion: completion)
   }
   
-  /// 从图片Base64编码生成AI响应（新增方法）
+  /// 从图片Base64编码生成AI响应
   /// - Parameters:
   ///   - image: 原始图片
   ///   - config: 图片压缩配置
+  ///   - tags: 要传入的标签
   ///   - completion: 完成回调
   func generateFromImageBase64(
     image: UIImage,
     config: ImageProcessor.CompressionConfig = .highQuality,
+    tags: [String],
     completion: @escaping (Result<APIResponse, NetworkError>) -> Void
   ) {
     // 异步处理图片压缩和编码
-    ImageProcessor.shared.compressAndEncodeToBase64Async(image: image, config: config) { base64String in
+    ImageProcessor.shared.compressAndEncodeToBase64Async(image: image, config: config) {
+      base64String in
       guard let base64String = base64String else {
-        completion(.failure(.networkError(NSError(domain: "ImageProcessing", code: -1, userInfo: [NSLocalizedDescriptionKey: "图片处理失败"]))))
+        completion(
+          .failure(
+            .networkError(
+              NSError(
+                domain: "ImageProcessing", code: -1, userInfo: [NSLocalizedDescriptionKey: "图片处理失败"]
+              ))))
         return
       }
       
       // 发送Base64编码的图片数据
-      self.generateAIResponse(content: base64String, isImage: true, completion: completion)
+      self.generateAIResponse(content: base64String, tags: tags, isImage: true, completion: completion)
     }
-  }
-  
-  /// 从图片Base64编码生成AI响应（同步版本）
-  /// - Parameters:
-  ///   - base64String: 图片的Base64编码字符串
-  ///   - completion: 完成回调
-  func generateFromImageBase64String(
-    base64String: String,
-    completion: @escaping (Result<APIResponse, NetworkError>) -> Void
-  ) {
-    generateAIResponse(content: base64String, isImage: true, completion: completion)
   }
   
   // MARK: - SwiftData 集成
   
-  /// 从 SwiftData 获取所有 Tags
+  /// 从 TagModel 获取所有 Tags（推荐使用）
+  /// - Parameter modelContext: SwiftData 模型上下文
+  /// - Returns: 所有标签名称的数组
+  func getAllTags(from modelContext: ModelContext) -> [String] {
+    return TagManager.shared.getAllTagNames(from: modelContext)
+  }
+  
+  /// 从 MemoItemModel 获取所有 Tags（兼容性保留）
   /// - Parameter modelContext: SwiftData 模型上下文
   /// - Returns: 所有唯一标签的数组
-  func getAllTags(from modelContext: ModelContext) -> [String] {
+  func getAllTagsFromMemos(from modelContext: ModelContext) -> [String] {
     do {
       let descriptor = FetchDescriptor<MemoItemModel>()
       let memoItems = try modelContext.fetch(descriptor)
@@ -132,7 +140,7 @@ extension NetworkManager {
   @available(iOS 15.0, *)
   func generateAIResponse(
     content: String,
-    tags: [String] = [],
+    tags: [String],
     isImage: Bool = false
   ) async throws -> APIResponse {
     return try await withCheckedThrowingContinuation { continuation in
@@ -155,7 +163,7 @@ extension NetworkManager {
   @available(iOS 15.0, *)
   func generateAIResponse(
     from memoItem: MemoItemModel,
-    allTags: [String] = []
+    allTags: [String]
   ) async throws -> APIResponse {
     return try await withCheckedThrowingContinuation { continuation in
       generateAIResponse(from: memoItem, allTags: allTags) { result in
@@ -175,9 +183,15 @@ extension NetworkManager {
 extension NetworkManager {
   
   /// 测试网络连接
-  /// - Parameter completion: 完成回调
-  func testConnection(completion: @escaping (Bool) -> Void) {
-    generateAIResponse(content: "测试连接", tags: [], isImage: false) { result in
+  /// - Parameters:
+  ///   - modelContext: SwiftData模型上下文（可选，用于获取现有标签）
+  ///   - completion: 完成回调
+  func testConnection(
+    modelContext: ModelContext? = nil,
+    completion: @escaping (Bool) -> Void
+  ) {
+    let allTags = modelContext != nil ? getAllTags(from: modelContext!) : []
+    generateAIResponse(content: "测试连接", tags: allTags, isImage: false) { result in
       switch result {
       case .success:
         completion(true)
@@ -248,6 +262,9 @@ extension NetworkManager {
             .union(response.information.tags)
             .union(response.schedule.tasks.flatMap { $0.tags })
           memoItem.tags = Array(newTags)
+          
+          // 同步标签到TagModel
+          memoItem.syncTagsToTagModel(in: modelContext)
           
           // 更新标题
           if memoItem.title.isEmpty && !response.information.title.isEmpty {

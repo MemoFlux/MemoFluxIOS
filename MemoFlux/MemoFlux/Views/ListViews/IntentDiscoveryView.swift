@@ -79,6 +79,28 @@ struct IntentDiscoveryView: View {
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
       }
+    } else {
+      VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
+          HStack {
+            HStack(spacing: 8) {
+              Image(systemName: "checkmark")
+                .font(.system(size: 14))
+                .foregroundColor(.green)
+              
+              Text("今日暂无未处理意图！")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.primary)
+            }
+            
+            Spacer()
+          }
+        }
+        .padding(16)
+        .background(Color.greenBackgroundColor)
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+      }
     }
   }
 }

@@ -298,7 +298,7 @@ struct AddMemoItemView: View {
     }
   }
   
-  // MARK: - 图片处理（新增）
+  // MARK: - 图片处理
   private func processImageForAPI(_ image: UIImage) {
     isImageProcessing = true
     
@@ -339,7 +339,10 @@ struct AddMemoItemView: View {
       isParsingInProgress = true
       apiResponse = nil
       
-      NetworkManager.shared.generateFromImageBase64(image: image) { result in
+      NetworkManager.shared.generateFromImageBase64(
+        image: image,
+        tags: TagManager.shared.getAllTagNames(from: modelContext)
+      ) { result in
         DispatchQueue.main.async {
           isParsingInProgress = false
           hasAttemptedParsing = true
@@ -360,7 +363,10 @@ struct AddMemoItemView: View {
       isParsingInProgress = true
       apiResponse = nil
       
-      NetworkManager.shared.generateFromText(content) { result in
+      NetworkManager.shared.generateFromText(
+        content,
+        tags: TagManager.shared.getAllTagNames(from: modelContext)
+      ) { result in
         DispatchQueue.main.async {
           isParsingInProgress = false
           hasAttemptedParsing = true

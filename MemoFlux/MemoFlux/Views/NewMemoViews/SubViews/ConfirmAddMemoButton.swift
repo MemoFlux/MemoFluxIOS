@@ -70,14 +70,11 @@ struct ConfirmAddMemoButton: View {
       )
     }
     
+    // 如果有API响应，设置API响应数据，但不自动添加AI建议的标签
     if let response = apiResponse {
       newMemo.setAPIResponse(response)
-      
-      let apiTags = Set(response.knowledge.tags)
-        .union(response.information.tags)
-        .union(response.schedule.tasks.flatMap { $0.tags })
-      let finalTags = Set(tags).union(apiTags)
-      newMemo.tags = Array(finalTags)
+      // 移除自动合并AI标签的逻辑，只保留用户选中的标签
+      // 用户选中的标签已经在上面的MemoItemModel初始化时设置了
     }
     
     modelContext.insert(newMemo)
@@ -86,14 +83,10 @@ struct ConfirmAddMemoButton: View {
       try modelContext.save()
       print("Memo保存成功")
       
-      // 根据useAIParsing决定是否发送API请求
-      if useAIParsing && apiResponse == nil {
-        sendAPIRequest(for: newMemo)
-      } else {
-        // 不使用AI解析或已有API解析结果，直接保存
-        isSaving = false
-        onSave()
-      }
+      // 移除在创建Memo时发送API请求的逻辑
+      // API请求只应该在"解析"按钮上触发，而不是在"创建Memo"按钮上
+      isSaving = false
+      onSave()
       
     } catch {
       print("保存 Memo 失败: \(error)")
@@ -101,68 +94,73 @@ struct ConfirmAddMemoButton: View {
     }
   }
   
-  private func sendAPIRequest(for memoItem: MemoItemModel) {
-    memoItem.startAPIProcessing()
-    
-    do {
-      try modelContext.save()
-    } catch {
-      print("更新API处理状态失败: \(error)")
-    }
-    
-    let allTags = NetworkManager.shared.getAllTags(from: modelContext)
-    
-    // 判断是否有图片，决定使用哪种API请求方式
-    if let image = memoItem.image {
-      // 有图片：使用图片Base64编码发送API请求
-      NetworkManager.shared.generateFromImageBase64(image: image) { result in
-        DispatchQueue.main.async {
-          handleAPIResponse(result: result, memoItem: memoItem)
-        }
-      }
-    } else {
-      // 无图片：使用文本内容发送API请求
-      NetworkManager.shared.generateAIResponse(
-        content: memoItem.contentForAPI,
-        tags: allTags,
-        isImage: false
-      ) { result in
-        DispatchQueue.main.async {
-          handleAPIResponse(result: result, memoItem: memoItem)
-        }
-      }
-    }
-  }
-  
-  // MARK: - 处理API响应（新增辅助方法）
-  private func handleAPIResponse(result: Result<APIResponse, NetworkError>, memoItem: MemoItemModel) {
-    switch result {
-    case .success(let response):
-      print("API请求成功")
-      
-      memoItem.setAPIResponse(response)
-      
-      let newTags = Set(memoItem.tags)
-        .union(response.knowledge.tags)
-        .union(response.information.tags)
-        .union(response.schedule.tasks.flatMap { $0.tags })
-      memoItem.tags = Array(newTags)
-      
-    case .failure(let error):
-      print("API请求失败: \(error.localizedDescription)")
-      memoItem.apiProcessingFailed()
-    }
-    
-    do {
-      try modelContext.save()
-      print("API响应保存成功")
-    } catch {
-      print("保存API响应失败: \(error)")
-    }
-    
-    isSaving = false
-    onSave()
-  }
+  // MARK: - 以下方法已不再使用
+  /*
+   private func sendAPIRequest(for memoItem: MemoItemModel) {
+   memoItem.startAPIProcessing()
+   
+   do {
+   try modelContext.save()
+   } catch {
+   print("更新API处理状态失败: \(error)")
+   }
+   
+   let allTags = NetworkManager.shared.getAllTags(from: modelContext)
+   
+   // 判断是否有图片，决定使用哪种API请求方式
+   if let image = memoItem.image {
+   // 有图片：使用图片Base64编码发送API请求
+   NetworkManager.shared.generateFromImageBase64(image: image) { result in
+   DispatchQueue.main.async {
+   handleAPIResponse(result: result, memoItem: memoItem)
+   }
+   }
+   } else {
+   // 无图片：使用文本内容发送API请求
+   NetworkManager.shared.generateAIResponse(
+   content: memoItem.contentForAPI,
+   tags: allTags,
+   isImage: false
+   ) { result in
+   DispatchQueue.main.async {
+   handleAPIResponse(result: result, memoItem: memoItem)
+   }
+   }
+   }
+   }
+   
+   private func handleAPIResponse(result: Result<APIResponse, NetworkError>, memoItem: MemoItemModel)
+   {
+   switch result {
+   case .success(let response):
+   print("API请求成功")
+   
+   memoItem.setAPIResponse(response)
+   
+   // 移除自动添加AI建议标签的逻辑
+   // 保持memo的标签为用户选中的标签，不自动添加AI建议的标签
+   // let newTags = Set(memoItem.tags)
+   //   .union(response.knowledge.tags)
+   //   .union(response.information.tags)
+   //   .union(response.schedule.tasks.flatMap { $0.tags })
+   // memoItem.tags = Array(newTags)
+   
+   case .failure(let error):
+   print("API请求失败: \(error.localizedDescription)")
+   memoItem.apiProcessingFailed()
+   }
+   
+   do {
+   try modelContext.save()
+   print("API响应保存成功")
+   } catch {
+   print("保存API响应失败: \(error)")
+   }
+   
+   isSaving = false
+   onSave()
+   }
+   */
 }
 
 // MARK: - 预览
