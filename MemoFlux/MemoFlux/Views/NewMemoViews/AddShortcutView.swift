@@ -11,7 +11,7 @@ struct AddShortcutView: View {
   @Environment(\.dismiss) private var dismiss
   
   // 快捷指令链接
-  private let shortcutURL = URL(string: "https://www.icloud.com/shortcuts/d8e38e35c5f04252aef867523a04b30c")!
+  private let shortcutURL = URL(string: "https://www.icloud.com/shortcuts/6ab04469d285467f8be052eebc6f276f")!
   
   var body: some View {
     NavigationStack {

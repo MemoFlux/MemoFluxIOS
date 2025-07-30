@@ -12,37 +12,37 @@ struct TagsSelectView: View {
   @Binding var selectedTags: Set<String>
   let useAIParsing: Bool
   let apiResponse: APIResponse?
-
+  
   // 从SwiftData查询所有MemoItemModel
   @Query private var memoItems: [MemoItemModel]
-
+  
   // 获取SwiftData的ModelContext用于保存数据
   @Environment(\.modelContext) private var modelContext
-
+  
   // 添加自定义标签的状态
   @State private var showingAddTagAlert = false
   @State private var newTagName = ""
-
+  
   // 计算AI建议的标签
   private var aiSuggestedTags: [String] {
     guard let response = apiResponse else { return [] }
-
+    
     var allAITags = Set<String>()
-
+    
     // 从knowledge获取标签
     allAITags.formUnion(response.knowledge.tags)
-
+    
     // 从information获取标签
     allAITags.formUnion(response.information.tags)
-
+    
     // 从schedule获取标签
     for task in response.schedule.tasks {
       allAITags.formUnion(task.tags)
     }
-
+    
     return Array(allAITags).sorted()
   }
-
+  
   // 从SwiftData中获取所有本地标签
   private var localTags: [String] {
     var allTags = Set<String>()
@@ -51,7 +51,7 @@ struct TagsSelectView: View {
     }
     return Array(allTags).sorted()
   }
-
+  
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
       // 标题和添加自定义按钮
@@ -59,9 +59,9 @@ struct TagsSelectView: View {
         Text("添加标签")
           .font(.system(size: 14, weight: .medium))
           .foregroundColor(.black)
-
+        
         Spacer()
-
+        
         Button("添加自定义") {
           showingAddTagAlert = true
         }
@@ -70,10 +70,10 @@ struct TagsSelectView: View {
       }
       .padding(.bottom, 8)
       .padding(.horizontal, 5)
-
+      
       // 卡片容器
       VStack(alignment: .leading, spacing: 0) {
-
+        
         // AI建议标签部分（仅在使用AI解析且有建议标签时显示）
         if useAIParsing && !aiSuggestedTags.isEmpty {
           VStack(alignment: .leading, spacing: 12) {
@@ -82,18 +82,14 @@ struct TagsSelectView: View {
               Image(systemName: "sparkles")
                 .font(.system(size: 12))
                 .foregroundColor(.blue)
-
+              
               Text("AI 建议标签")
                 .font(.system(size: 12, weight: .medium))
                 .foregroundColor(.blue)
             }
-
-            // AI建议标签芯片 - 使用与普通标签相同的样式
-            LazyVGrid(
-              columns: [
-                GridItem(.adaptive(minimum: 60, maximum: .infinity), spacing: 8)
-              ], spacing: 10
-            ) {
+            
+            // AI建议标签芯片 - 使用FlowLayout替代LazyVGrid
+            FlowLayout(spacing: 8) {
               ForEach(aiSuggestedTags, id: \.self) { tag in
                 TagChipView(
                   tag: tag,
@@ -105,13 +101,13 @@ struct TagsSelectView: View {
             }
           }
           .padding(.bottom, 16)
-
+          
           // 分隔线
           Divider()
             .background(Color.gray.opacity(0.3))
             .padding(.bottom, 16)
         }
-
+        
         // 本地标签部分
         VStack(alignment: .leading, spacing: 12) {
           if useAIParsing && !aiSuggestedTags.isEmpty {
@@ -120,7 +116,7 @@ struct TagsSelectView: View {
               .font(.system(size: 12, weight: .medium))
               .foregroundColor(.secondary)
           }
-
+          
           // 本地标签内容
           if localTags.isEmpty {
             // 没有本地标签时显示提示文字
@@ -130,12 +126,8 @@ struct TagsSelectView: View {
               .frame(maxWidth: .infinity, alignment: .center)
               .padding(.vertical, 20)
           } else {
-            // 本地标签芯片布局
-            LazyVGrid(
-              columns: [
-                GridItem(.adaptive(minimum: 60, maximum: .infinity), spacing: 8)
-              ], spacing: 10
-            ) {
+            // 本地标签芯片布局 - 使用FlowLayout替代LazyVGrid
+            FlowLayout(spacing: 8) {
               ForEach(localTags, id: \.self) { tag in
                 TagChipView(
                   tag: tag,
@@ -171,11 +163,11 @@ struct TagsSelectView: View {
     .alert("添加自定义标签", isPresented: $showingAddTagAlert) {
       TextField("输入标签名称", text: $newTagName)
         .textInputAutocapitalization(.never)
-
+      
       Button("取消", role: .cancel) {
         newTagName = ""
       }
-
+      
       Button("确认") {
         addCustomTag()
       }
@@ -184,7 +176,7 @@ struct TagsSelectView: View {
       Text("请输入新标签的名称")
     }
   }
-
+  
   private func toggleTag(_ tag: String) {
     if selectedTags.contains(tag) {
       selectedTags.remove(tag)
@@ -192,22 +184,22 @@ struct TagsSelectView: View {
       selectedTags.insert(tag)
     }
   }
-
+  
   private func addCustomTag() {
     let trimmedTagName = newTagName.trimmingCharacters(in: .whitespacesAndNewlines)
-
+    
     // 检查标签名称是否为空
     guard !trimmedTagName.isEmpty else {
       newTagName = ""
       return
     }
-
+    
     // 检查标签是否已存在
     guard !localTags.contains(trimmedTagName) && !aiSuggestedTags.contains(trimmedTagName) else {
       newTagName = ""
       return
     }
-
+    
     // 创建一个临时的MemoItem来保存新标签
     // 这样可以确保标签被保存到SwiftData中，并在下次查询时显示
     let tempMemo = MemoItemModel(
@@ -217,14 +209,14 @@ struct TagsSelectView: View {
       tags: [trimmedTagName],
       source: "custom_tag"
     )
-
+    
     modelContext.insert(tempMemo)
-
+    
     do {
       try modelContext.save()
-
+      
       selectedTags.insert(trimmedTagName)
-
+      
       newTagName = ""
     } catch {
       print("保存自定义标签失败: \(error)")
@@ -237,7 +229,7 @@ struct TagChipView: View {
   let tag: String
   let isSelected: Bool
   let onTap: () -> Void
-
+  
   var body: some View {
     Button(action: onTap) {
       HStack(spacing: 4) {
@@ -251,8 +243,8 @@ struct TagChipView: View {
       .frame(minWidth: 60)  // Tag最小宽度
       .background(
         isSelected
-          ? Color.mainStyleBackgroundColor
-          : Color.buttonUnavailableBackgroundColor
+        ? Color.mainStyleBackgroundColor
+        : Color.buttonUnavailableBackgroundColor
       )
       .clipShape(.capsule)
     }
@@ -260,10 +252,69 @@ struct TagChipView: View {
   }
 }
 
+// MARK: - FlowLayout实现
+/// 流式布局容器，实现 Tag 多行显示
+struct FlowLayout: Layout {
+  var spacing: CGFloat
+  
+  init(spacing: CGFloat = 8) {
+    self.spacing = spacing
+  }
+  
+  func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout Void) -> CGSize {
+    let result = arrangeSubviews(proposal: proposal, subviews: subviews)
+    return result.size
+  }
+  
+  func placeSubviews(
+    in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout Void
+  ) {
+    let result = arrangeSubviews(proposal: proposal, subviews: subviews)
+    
+    for (index, position) in result.positions.enumerated() {
+      let point = CGPoint(x: position.x + bounds.minX, y: position.y + bounds.minY)
+      subviews[index].place(at: point, proposal: ProposedViewSize(result.sizes[index]))
+    }
+  }
+  
+  private func arrangeSubviews(proposal: ProposedViewSize, subviews: Subviews) -> (
+    positions: [CGPoint], sizes: [CGSize], size: CGSize
+  ) {
+    guard !subviews.isEmpty else { return ([], [], .zero) }
+    
+    let maxWidth = proposal.width ?? .infinity
+    var positions: [CGPoint] = []
+    var sizes: [CGSize] = []
+    
+    var currentX: CGFloat = 0
+    var currentY: CGFloat = 0
+    var lineHeight: CGFloat = 0
+    
+    for subview in subviews {
+      let size = subview.sizeThatFits(ProposedViewSize(width: maxWidth, height: nil))
+      sizes.append(size)
+      
+      // 换行
+      if currentX + size.width > maxWidth, currentX > 0 {
+        currentX = 0
+        currentY += lineHeight + spacing
+        lineHeight = 0
+      }
+      
+      positions.append(CGPoint(x: currentX, y: currentY))
+      lineHeight = max(lineHeight, size.height)
+      currentX += size.width + spacing
+    }
+    
+    let totalHeight = currentY + lineHeight
+    return (positions, sizes, CGSize(width: maxWidth, height: totalHeight))
+  }
+}
+
 #Preview {
   struct PreviewWrapper: View {
     @State private var selectedTags = Set<String>()
-
+    
     var body: some View {
       VStack(spacing: 20) {
         // 普通状态
@@ -272,7 +323,7 @@ struct TagChipView: View {
           useAIParsing: false,
           apiResponse: nil
         )
-
+        
         // 带AI建议的状态
         TagsSelectView(
           selectedTags: $selectedTags,
@@ -281,9 +332,9 @@ struct TagChipView: View {
         )
       }
       .padding()
-      .background(Color.globalStyleBackgroundColor)
+      .background(Color.gray.opacity(0.05))
     }
-
+    
     // 示例 API 相应
     private func createSampleAPIResponse() -> APIResponse {
       let knowledgeResponse = KnowledgeResponse(
@@ -300,7 +351,7 @@ struct TagChipView: View {
         tags: ["AI", "技术"],
         category: "技术"
       )
-
+      
       let informationResponse = InformationResponse(
         title: "示例信息",
         informationItems: [
@@ -314,7 +365,7 @@ struct TagChipView: View {
         tags: ["学习", "笔记"],
         category: "学习"
       )
-
+      
       let scheduleResponse = ScheduleResponse(
         title: "示例日程",
         category: "工作",
@@ -335,7 +386,7 @@ struct TagChipView: View {
         id: "sample-schedule-id",
         text: "示例日程文本"
       )
-
+      
       return APIResponse(
         knowledge: knowledgeResponse,
         information: informationResponse,
@@ -344,6 +395,6 @@ struct TagChipView: View {
       )
     }
   }
-
+  
   return PreviewWrapper()
 }

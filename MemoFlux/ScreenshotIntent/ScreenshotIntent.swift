@@ -28,7 +28,7 @@ struct ScreenshotIntent: AppIntent {
     }
 
     let directory = FileManager.default.containerURL(
-      forSecurityApplicationGroupIdentifier: "group.com.shuoma.memoflux")
+      forSecurityApplicationGroupIdentifier: "group.com.shuoma.memofluxapp")
 
     guard let directory = directory else {
       if #available(iOS 18.0, *) {
