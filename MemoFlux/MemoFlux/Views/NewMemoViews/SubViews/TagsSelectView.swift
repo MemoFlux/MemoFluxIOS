@@ -33,7 +33,7 @@ struct TagsSelectView: View {
     allAITags.formUnion(response.knowledge.tags)
     
     // 从information获取标签
-    allAITags.formUnion(response.information.tags)
+    // allAITags.formUnion(response.information.tags)
     
     // 从schedule获取标签
     for task in response.schedule.tasks {
@@ -345,7 +345,7 @@ struct FlowLayout: Layout {
       .background(Color.gray.opacity(0.05))
     }
     
-    // 示例 API 相应
+    // 示例 API 响应
     private func createSampleAPIResponse() -> APIResponse {
       let knowledgeResponse = KnowledgeResponse(
         title: "示例知识",
@@ -354,26 +354,12 @@ struct FlowLayout: Layout {
             id: 1,
             header: "示例知识点",
             content: "这是一个示例知识内容",
-            node: nil
+            node: KnowledgeNode(targetId: 2, relationship: "CHILD")
           )
         ],
-        relatedItems: [],
-        tags: ["AI", "技术"],
-        category: "技术"
-      )
-      
-      let informationResponse = InformationResponse(
-        title: "示例信息",
-        informationItems: [
-          InformationItem(
-            header: "示例信息点",
-            content: "这是一个示例信息内容"
-          )
-        ],
-        postType: "笔记",
-        summary: "示例摘要",
-        tags: ["学习", "笔记"],
-        category: "学习"
+        relatedItems: ["相关项目1", "相关项目2"],
+        summary: "这是一个关于AI技术和学习的示例知识总结，包含了相关的技术要点和学习建议。",
+        tags: ["AI", "技术", "学习"]
       )
       
       let scheduleResponse = ScheduleResponse(
@@ -389,19 +375,15 @@ struct FlowLayout: Layout {
             position: ["会议室A"],
             tags: ["会议", "项目"],
             category: "工作",
-            suggestedActions: ["准备会议材料", "发送会议纪要"],
-            id: 1
+            suggestedActions: ["准备会议材料", "发送会议纪要"]
           )
-        ],
-        id: "sample-schedule-id",
-        text: "示例日程文本"
+        ]
       )
       
       return APIResponse(
-        knowledge: knowledgeResponse,
-        information: informationResponse,
+        mostPossibleCategory: "KNOWLEDGE",
         schedule: scheduleResponse,
-        mostPossibleCategory: "INFORMATION"
+        knowledge: knowledgeResponse
       )
     }
   }

@@ -259,7 +259,6 @@ extension NetworkManager {
           // 更新标签（合并API返回的标签）
           let newTags = Set(memoItem.tags)
             .union(response.knowledge.tags)
-            .union(response.information.tags)
             .union(response.schedule.tasks.flatMap { $0.tags })
           memoItem.tags = Array(newTags)
           
@@ -267,8 +266,8 @@ extension NetworkManager {
           memoItem.syncTagsToTagModel(in: modelContext)
           
           // 更新标题
-          if memoItem.title.isEmpty && !response.information.title.isEmpty {
-            memoItem.title = response.information.title
+          if memoItem.title.isEmpty && !response.schedule.title.isEmpty {
+            memoItem.title = response.schedule.title
           }
           
           completion(.success(response))

@@ -390,8 +390,8 @@ struct SummaryView: View {
     switch response.mostPossibleCategory.lowercased() {
     case "knowledge":
       return response.knowledge.title.isEmpty ? "无标题" : response.knowledge.title
-    case "information":
-      return response.information.title.isEmpty ? "无标题" : response.information.title
+//    case "information":
+//      return response.information.title.isEmpty ? "无标题" : response.information.title
     case "schedule":
       return response.schedule.title.isEmpty ? "无标题" : response.schedule.title
     default:
@@ -403,14 +403,14 @@ struct SummaryView: View {
     switch apiResponse.mostPossibleCategory.lowercased() {
     case "knowledge":
       return apiResponse.knowledge.title
-    case "information":
-      return apiResponse.information.summary.isEmpty
-        ? apiResponse.information.title : apiResponse.information.summary
+//    case "information":
+//      return apiResponse.information.summary.isEmpty
+//        ? apiResponse.information.title : apiResponse.information.summary
     case "schedule":
       return apiResponse.schedule.title
     default:
-      return apiResponse.information.summary.isEmpty
-        ? apiResponse.information.title : apiResponse.information.summary
+      return apiResponse.knowledge.summary.isEmpty
+        ? apiResponse.knowledge.title : apiResponse.knowledge.summary
     }
   }
 

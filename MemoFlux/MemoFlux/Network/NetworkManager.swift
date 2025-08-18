@@ -39,7 +39,7 @@ class NetworkManager: ObservableObject {
     isImage: Bool = false,
     completion: @escaping (Result<APIResponse, NetworkError>) -> Void
   ) {
-    guard let url = URL(string: "\(baseURL)/aigen/") else {
+    guard let url = URL(string: "\(baseURL)/GeneralReq/") else {
       completion(.failure(.invalidURL))
       return
     }

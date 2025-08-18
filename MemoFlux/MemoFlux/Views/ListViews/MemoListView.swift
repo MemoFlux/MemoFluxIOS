@@ -392,10 +392,10 @@ struct MemoCardView: View {
           .foregroundColor(.secondary)
           .frame(maxWidth: .infinity, alignment: .leading)
       } else if item.hasAPIResponse, let apiResponse = item.apiResponse,
-        !apiResponse.information.summary.isEmpty
+          !apiResponse.knowledge.summary.isEmpty
       {
         HighlightedText(
-          text: apiResponse.information.summary,
+          text: apiResponse.knowledge.summary,
           searchText: searchText
         )
         .font(.system(size: 14))
@@ -442,8 +442,8 @@ struct MemoCardView: View {
       switch apiResponse.mostPossibleCategory.lowercased() {
       case "knowledge":
         return apiResponse.knowledge.title.isEmpty ? "无标题" : apiResponse.knowledge.title
-      case "information":
-        return apiResponse.information.title.isEmpty ? "无标题" : apiResponse.information.title
+//      case "information":
+//        return apiResponse.information.title.isEmpty ? "无标题" : apiResponse.information.title
       case "schedule":
         return apiResponse.schedule.title.isEmpty ? "无标题" : apiResponse.schedule.title
       default:
