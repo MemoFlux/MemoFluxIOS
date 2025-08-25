@@ -50,41 +50,41 @@ enum NetworkError: Error, LocalizedError {
 // MARK: - 主响应模型
 struct APIResponse: Codable, Equatable {
   let mostPossibleCategory: String
+  let information: InformationResponse
   let schedule: ScheduleResponse
-  let knowledge: KnowledgeResponse
   
   enum CodingKeys: String, CodingKey {
     case mostPossibleCategory
+    case information
     case schedule
-    case knowledge
   }
 }
 
-// MARK: - Knowledge 模型
-struct KnowledgeResponse: Codable, Equatable {
+// MARK: - Information 模型
+struct InformationResponse: Codable, Equatable {
   let title: String
-  let knowledgeItems: [KnowledgeItem]
+  let informationItems: [InformationItem]
   let relatedItems: [String]
   let summary: String
   let tags: [String]
   
   enum CodingKeys: String, CodingKey {
     case title
-    case knowledgeItems
-    case relatedItems
+    case informationItems = "informationItems"
+    case relatedItems = "relatedItems"
     case summary
     case tags
   }
 }
 
-struct KnowledgeItem: Codable, Identifiable, Equatable {
+struct InformationItem: Codable, Identifiable, Equatable {
   let id: Int
   let header: String
   let content: String
-  let node: KnowledgeNode?
+  let node: InformationNode?
 }
 
-struct KnowledgeNode: Codable, Equatable {
+struct InformationNode: Codable, Equatable {
   let targetId: Int
   let relationship: String
   
@@ -111,35 +111,83 @@ struct ScheduleTask: Codable, Identifiable, Equatable {
   let tags: [String]
   let category: String
   let suggestedActions: [String]
-  
-  // 为了符合Identifiable协议，使用startTime作为id
-  var id: String {
-    return startTime
-  }
+  let id: UUID
   
   enum CodingKeys: String, CodingKey {
-    case startTime
-    case endTime
+    case startTime = "startTime"
+    case endTime = "endTime"
     case people
     case theme
-    case coreTasks
+    case coreTasks = "coreTasks"
     case position
     case tags
     case category
-    case suggestedActions
+    case suggestedActions = "suggestedActions"
+    // 注意：id不包含在CodingKeys中，因为我们不从API解码它
+  }
+  
+  // 自定义初始化器，自动生成UUID
+  init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    startTime = try container.decode(String.self, forKey: .startTime)
+    endTime = try container.decode(String.self, forKey: .endTime)
+    people = try container.decode([String].self, forKey: .people)
+    theme = try container.decode(String.self, forKey: .theme)
+    coreTasks = try container.decode([String].self, forKey: .coreTasks)
+    position = try container.decode([String].self, forKey: .position)
+    tags = try container.decode([String].self, forKey: .tags)
+    category = try container.decode(String.self, forKey: .category)
+    suggestedActions = try container.decode([String].self, forKey: .suggestedActions)
+    // 自动生成UUID
+    id = UUID()
+  }
+  
+  // 编码时不包含id字段
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(startTime, forKey: .startTime)
+    try container.encode(endTime, forKey: .endTime)
+    try container.encode(people, forKey: .people)
+    try container.encode(theme, forKey: .theme)
+    try container.encode(coreTasks, forKey: .coreTasks)
+    try container.encode(position, forKey: .position)
+    try container.encode(tags, forKey: .tags)
+    try container.encode(category, forKey: .category)
+    try container.encode(suggestedActions, forKey: .suggestedActions)
+  }
+  
+  // 手动初始化器（用于测试和预览）
+  init(
+    startTime: String,
+    endTime: String,
+    people: [String],
+    theme: String,
+    coreTasks: [String],
+    position: [String],
+    tags: [String],
+    category: String,
+    suggestedActions: [String],
+    id: UUID = UUID()
+  ) {
+    self.startTime = startTime
+    self.endTime = endTime
+    self.people = people
+    self.theme = theme
+    self.coreTasks = coreTasks
+    self.position = position
+    self.tags = tags
+    self.category = category
+    self.suggestedActions = suggestedActions
+    self.id = id
   }
   
   // 将字符串时间转换为Date
   var startDate: Date? {
-    let formatter = ISO8601DateFormatter()
-    formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-    return formatter.date(from: startTime)
+    return ISO8601DateFormatter().date(from: startTime)
   }
   
   var endDate: Date? {
-    let formatter = ISO8601DateFormatter()
-    formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-    return formatter.date(from: endTime)
+    return ISO8601DateFormatter().date(from: endTime)
   }
 }
 
@@ -148,7 +196,7 @@ extension APIResponse {
   /// 获取所有任务的标签
   var allTags: Set<String> {
     var tags = Set<String>()
-    tags.formUnion(knowledge.tags)
+    tags.formUnion(information.tags)
     schedule.tasks.forEach { task in
       tags.formUnion(task.tags)
     }
@@ -167,118 +215,5 @@ extension APIResponse {
       guard let taskDate = task.startDate else { return false }
       return calendar.isDate(taskDate, inSameDayAs: date)
     }
-  }
-}
-
-// MARK: - 示例用法和测试数据
-extension APIResponse {
-  /// 创建示例数据用于预览和测试
-  static var sampleData: APIResponse {
-    return APIResponse(
-      mostPossibleCategory: "INFORMATION",
-      schedule: ScheduleResponse(
-        title: "中国铁路消费记录",
-        category: "消费",
-        tasks: [
-          ScheduleTask(
-            startTime: "2025-07-20T15:58:58+08:00",
-            endTime: "2025-07-20T15:58:58+08:00",
-            people: [],
-            theme: "消费记录",
-            coreTasks: [
-              "查看交易详情",
-              "记录消费金额",
-            ],
-            position: [],
-            tags: [
-              "消费",
-              "铁路",
-              "2025年",
-            ],
-            category: "消费",
-            suggestedActions: [
-              "核对消费金额是否正确",
-              "如需投诉或查询，可联系财付通支付科技有限公司",
-            ]
-          )
-        ]
-      ),
-      knowledge: KnowledgeResponse(
-        title: "交易详情",
-        knowledgeItems: [
-          KnowledgeItem(
-            id: 1,
-            header: "交易状态",
-            content: "Payment successful",
-            node: KnowledgeNode(targetId: 1, relationship: "PARENT")
-          ),
-          KnowledgeItem(
-            id: 2,
-            header: "支付时间",
-            content: "2025/7/20 15:58:58",
-            node: KnowledgeNode(targetId: 1, relationship: "CHILD")
-          ),
-          KnowledgeItem(
-            id: 3,
-            header: "产品",
-            content: "12306消费",
-            node: KnowledgeNode(targetId: 1, relationship: "CHILD")
-          ),
-          KnowledgeItem(
-            id: 4,
-            header: "商户",
-            content: "中国铁路网络有限公司",
-            node: KnowledgeNode(targetId: 5, relationship: "PARENT")
-          ),
-          KnowledgeItem(
-            id: 5,
-            header: "收单机构",
-            content: "财付通支付科技有限公司",
-            node: KnowledgeNode(targetId: 1, relationship: "CHILD")
-          ),
-          KnowledgeItem(
-            id: 6,
-            header: "支付方式",
-            content: "Balance",
-            node: KnowledgeNode(targetId: 1, relationship: "CHILD")
-          ),
-          KnowledgeItem(
-            id: 7,
-            header: "交易订单号",
-            content: "4200002772202507201236367735",
-            node: KnowledgeNode(targetId: 1, relationship: "CHILD")
-          ),
-          KnowledgeItem(
-            id: 8,
-            header: "商户订单号",
-            content: "M2025072073510186",
-            node: KnowledgeNode(targetId: 1, relationship: "CHILD")
-          ),
-          KnowledgeItem(
-            id: 9,
-            header: "交易金额",
-            content: "-128.00",
-            node: KnowledgeNode(targetId: 1, relationship: "CHILD")
-          ),
-          KnowledgeItem(
-            id: 10,
-            header: "交易服务",
-            content: "可进行可疑交易报告和发起分账。",
-            node: KnowledgeNode(targetId: 1, relationship: "CHILD")
-          ),
-        ],
-        relatedItems: [
-          "中国铁路",
-          "12306",
-          "交易记录",
-        ],
-        summary: "本次交易于2025年7月20日15:58:58完成，金额为-128.00，支付方式为余额，交易商户是中国铁路网络有限公司，收单机构为财付通支付科技有限公司。",
-        tags: [
-          "交易",
-          "支付",
-          "中国铁路",
-        ]
-      )
-    )
   }
 }

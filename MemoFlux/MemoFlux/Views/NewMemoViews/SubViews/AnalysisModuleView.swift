@@ -58,8 +58,8 @@ struct AnalysisModuleView: View {
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.black)
 
-              if !response.knowledge.summary.isEmpty {
-                Text("AI 分析：\(response.knowledge.summary)")
+              if !response.information.summary.isEmpty {
+                Text("AI 分析：\(response.information.summary)")
                   .font(.system(size: 12))
                   .foregroundColor(Color(red: 100 / 255, green: 116 / 255, blue: 139 / 255))
               } else {

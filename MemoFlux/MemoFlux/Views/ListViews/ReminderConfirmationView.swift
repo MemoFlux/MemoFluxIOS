@@ -146,7 +146,8 @@ struct ReminderConfirmationView: View {
     position: ["会议室A", "线上会议"],
     tags: ["工作", "会议", "重要"],
     category: "工作",
-    suggestedActions: ["准备会议材料", "发送会议纪要"]
+    suggestedActions: ["准备会议材料", "发送会议纪要"],
+    id: UUID()
   )
   
   ReminderConfirmationView(task: sampleTask)

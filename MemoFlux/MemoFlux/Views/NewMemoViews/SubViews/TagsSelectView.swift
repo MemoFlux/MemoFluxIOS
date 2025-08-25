@@ -30,7 +30,7 @@ struct TagsSelectView: View {
     var allAITags = Set<String>()
     
     // 从knowledge获取标签
-    allAITags.formUnion(response.knowledge.tags)
+    allAITags.formUnion(response.information.tags)
     
     // 从information获取标签
     // allAITags.formUnion(response.information.tags)
@@ -347,43 +347,68 @@ struct FlowLayout: Layout {
     
     // 示例 API 响应
     private func createSampleAPIResponse() -> APIResponse {
-      let knowledgeResponse = KnowledgeResponse(
-        title: "示例知识",
-        knowledgeItems: [
-          KnowledgeItem(
+      let informationResponse = InformationResponse(
+        title: "AI技术学习路线图",
+        informationItems: [
+          InformationItem(
+            id: 0,
+            header: "机器学习基础",
+            content: "了解机器学习的基本概念、算法和应用场景，为深入学习AI技术打下基础。",
+            node: InformationNode(targetId: 0, relationship: "PARENT")
+          ),
+          InformationItem(
             id: 1,
-            header: "示例知识点",
-            content: "这是一个示例知识内容",
-            node: KnowledgeNode(targetId: 2, relationship: "CHILD")
+            header: "深度学习框架",
+            content: "学习TensorFlow、PyTorch等主流深度学习框架的使用方法。",
+            node: InformationNode(targetId: 1, relationship: "CHILD")
+          ),
+          InformationItem(
+            id: 2,
+            header: "实践项目",
+            content: "通过实际项目练习，将理论知识转化为实践能力。",
+            node: InformationNode(targetId: 1, relationship: "CHILD")
           )
         ],
-        relatedItems: ["相关项目1", "相关项目2"],
-        summary: "这是一个关于AI技术和学习的示例知识总结，包含了相关的技术要点和学习建议。",
-        tags: ["AI", "技术", "学习"]
+        relatedItems: ["机器学习", "深度学习", "人工智能"],
+        summary: "这是一个关于AI技术学习的完整路线图，包含了从基础概念到实践应用的全面学习内容。",
+        tags: ["AI", "技术", "学习", "机器学习"]
       )
       
       let scheduleResponse = ScheduleResponse(
-        title: "示例日程",
-        category: "工作",
+        title: "AI学习计划",
+        category: "学习",
         tasks: [
           ScheduleTask(
             startTime: "2024-05-16T09:00:00+08:00",
             endTime: "2024-05-16T17:00:00+08:00",
-            people: ["张三", "李四"],
-            theme: "项目会议",
-            coreTasks: ["讨论项目进度", "制定下一步计划"],
-            position: ["会议室A"],
-            tags: ["会议", "项目"],
-            category: "工作",
-            suggestedActions: ["准备会议材料", "发送会议纪要"]
+            people: [],
+            theme: "机器学习基础学习",
+            coreTasks: ["学习线性回归算法", "练习数据预处理", "完成基础练习题"],
+            position: [],
+            tags: ["学习", "AI", "算法"],
+            category: "学习",
+            suggestedActions: ["阅读相关文档", "完成编程练习", "总结学习笔记"],
+            id: UUID()
+          ),
+          ScheduleTask(
+            startTime: "2024-05-17T14:00:00+08:00",
+            endTime: "2024-05-17T18:00:00+08:00",
+            people: [],
+            theme: "深度学习框架实践",
+            coreTasks: ["安装TensorFlow", "完成第一个神经网络", "调试模型参数"],
+            position: [],
+            tags: ["实践", "深度学习", "TensorFlow"],
+            category: "学习",
+            suggestedActions: ["搭建开发环境", "跟随教程实践", "记录遇到的问题"],
+            id: UUID()
           )
         ]
       )
       
       return APIResponse(
-        mostPossibleCategory: "KNOWLEDGE",
-        schedule: scheduleResponse,
-        knowledge: knowledgeResponse
+        mostPossibleCategory: "INFORMATION",
+        information: informationResponse,
+        schedule: scheduleResponse
       )
     }
   }

@@ -146,7 +146,7 @@ struct HomePageView: View {
           
           // 更新标签（合并API返回的标签）
           let newTags = Set(memoItem.tags)
-            .union(response.knowledge.tags)
+            .union(response.information.tags)
             .union(response.schedule.tasks.flatMap { $0.tags })
           memoItem.tags = Array(newTags)
           

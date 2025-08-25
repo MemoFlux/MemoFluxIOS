@@ -10,20 +10,20 @@ import SwiftUI
 
 struct SummaryView: View {
   @Environment(\.dismiss) private var dismiss
-
+  
   @State private var selectedDate = Date()
   @State private var showDatePicker = false
   @StateObject private var intentManager = IntentCompletionManager()  // 添加意图管理器
-
+  
   // 展开状态管理
   @State private var isNewInformationExpanded = false
   @State private var isIntentCompletionExpanded = false
   @State private var isSuggestedActionsExpanded = false
-
+  
   // SwiftData查询所有MemoItemModel
   @Query(sort: \MemoItemModel.createdAt, order: .reverse) private var allMemoItems: [MemoItemModel]
   @Environment(\.modelContext) private var modelContext
-
+  
   // 计算属性：获取选定日期的统计数据
   private var todayMemos: [MemoItemModel] {
     let calendar = Calendar.current
@@ -31,43 +31,43 @@ struct SummaryView: View {
       calendar.isDate(memo.createdAt, inSameDayAs: selectedDate)
     }
   }
-
+  
   private var todayMemoCount: Int {
     todayMemos.count
   }
-
+  
   private var todayIntentCount: Int {
     // 统计今日产生的意图数量（从API响应中的schedule tasks）
     todayMemos.compactMap { memo in
       memo.apiResponse?.schedule.tasks.count ?? 0
     }.reduce(0, +)
   }
-
+  
   private var completedIntentCount: Int {
     // 计算已完成意图的数量
     let (completedIntents, _) = getTodayIntents()
     return completedIntents.count
   }
-
+  
   var body: some View {
     NavigationView {
       ScrollView {
         VStack(spacing: 16) {
           // 日期选择器
           dateSelectionSection
-
+          
           // 今日概览
           todayOverviewSection
-
+          
           // 今日新增信息
           newInformationSection
-
+          
           // 意图完成情况
           intentCompletionSection
-
+          
           // 待处理建议行动
           suggestedActionsSection
-
+          
           // AI洞察与趋势
           aiInsightsSection
         }
@@ -85,7 +85,7 @@ struct SummaryView: View {
             Image(systemName: "calendar")
           }
         }
-
+        
         ToolbarItem(placement: .navigationBarTrailing) {
           Button(action: {
             dismiss()
@@ -113,13 +113,13 @@ struct SummaryView: View {
       .presentationDetents([.medium])
     }
   }
-
+  
   // MARK: - 日期选择区域
   private var dateSelectionSection: some View {
     HStack {
       Button(action: {
         selectedDate =
-          Calendar.current.date(byAdding: .day, value: -1, to: selectedDate) ?? selectedDate
+        Calendar.current.date(byAdding: .day, value: -1, to: selectedDate) ?? selectedDate
       }) {
         Image(systemName: "chevron.left")
           .foregroundColor(.gray)
@@ -127,17 +127,17 @@ struct SummaryView: View {
           .background(Color.white.opacity(0.9))
           .clipShape(Circle())
       }
-
+      
       Spacer()
-
+      
       Text(selectedDate.formatted(date: .complete, time: .omitted))
         .font(.system(size: 14, weight: .medium))
-
+      
       Spacer()
-
+      
       Button(action: {
         let tomorrow =
-          Calendar.current.date(byAdding: .day, value: 1, to: selectedDate) ?? selectedDate
+        Calendar.current.date(byAdding: .day, value: 1, to: selectedDate) ?? selectedDate
         if tomorrow <= Date() {
           selectedDate = tomorrow
         }
@@ -151,19 +151,19 @@ struct SummaryView: View {
       .disabled(!canGoToNextDay)
     }
   }
-
+  
   private var canGoToNextDay: Bool {
     let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: selectedDate) ?? selectedDate
     return tomorrow <= Date()
   }
-
+  
   // MARK: - 今日概览
   private var todayOverviewSection: some View {
     VStack(alignment: .leading, spacing: 12) {
       Text("今日概览")
         .font(.system(size: 14, weight: .medium))
         .padding(.horizontal, 16)
-
+      
       VStack(spacing: 16) {
         HStack(spacing: 0) {
           overviewItem(icon: "doc.text", title: "新增信息", count: "\(todayMemoCount)", color: .blue)
@@ -173,7 +173,7 @@ struct SummaryView: View {
           overviewItem(
             icon: "lightbulb", title: "新意图", count: "\(todayIntentCount)", color: .orange)
         }
-
+        
         // 图表占位符
         RoundedRectangle(cornerRadius: 12)
           .fill(Color.gray.opacity(0.1))
@@ -194,38 +194,38 @@ struct SummaryView: View {
       .cornerRadius(16)
     }
   }
-
+  
   private func overviewItem(icon: String, title: String, count: String, color: Color) -> some View {
     VStack(spacing: 8) {
       ZStack {
         Circle()
           .fill(color.opacity(0.2))
           .frame(width: 40, height: 40)
-
+        
         Image(systemName: icon)
           .foregroundColor(color)
           .font(.system(size: 16))
       }
-
+      
       Text(title)
         .font(.system(size: 10))
         .foregroundColor(.gray)
-
+      
       Text(count)
         .font(.system(size: 14, weight: .medium))
     }
     .frame(maxWidth: .infinity)
   }
-
+  
   // MARK: - 今日新增信息
   private var newInformationSection: some View {
     VStack(alignment: .leading, spacing: 12) {
       HStack {
         Text("今日新增信息")
           .font(.system(size: 14, weight: .medium))
-
+        
         Spacer()
-
+        
         Button(action: {
           withAnimation(.easeInOut(duration: 0.3)) {
             isNewInformationExpanded.toggle()
@@ -235,7 +235,7 @@ struct SummaryView: View {
             Text(isNewInformationExpanded ? "收起" : "查看全部")
               .font(.system(size: 12))
               .foregroundColor(.blue)
-
+            
             Image(systemName: isNewInformationExpanded ? "chevron.up" : "chevron.down")
               .font(.system(size: 10))
               .foregroundColor(.blue)
@@ -243,13 +243,13 @@ struct SummaryView: View {
         }
       }
       .padding(.horizontal, 16)
-
+      
       if todayMemos.isEmpty {
         VStack(spacing: 8) {
           Image(systemName: "doc.text")
             .foregroundColor(.gray)
             .font(.system(size: 24))
-
+          
           Text("今日暂无新增信息")
             .font(.system(size: 14))
             .foregroundColor(.gray)
@@ -261,7 +261,7 @@ struct SummaryView: View {
       } else {
         VStack(spacing: 12) {
           let memosToShow = isNewInformationExpanded ? todayMemos : Array(todayMemos.prefix(3))
-
+          
           ForEach(memosToShow, id: \.id) { memo in
             memoInformationCard(memo: memo)
               .transition(
@@ -270,7 +270,7 @@ struct SummaryView: View {
                   removal: .scale.combined(with: .opacity)
                 ))
           }
-
+          
           if !isNewInformationExpanded && todayMemos.count > 3 {
             Text("还有 \(todayMemos.count - 3) 条信息")
               .font(.system(size: 12))
@@ -282,7 +282,7 @@ struct SummaryView: View {
       }
     }
   }
-
+  
   private func memoInformationCard(memo: MemoItemModel) -> some View {
     VStack(alignment: .leading, spacing: 12) {
       HStack {
@@ -291,24 +291,24 @@ struct SummaryView: View {
             Circle()
               .fill(categoryColor(for: memo).opacity(0.2))
               .frame(width: 24, height: 24)
-
+            
             Image(systemName: categoryIcon(for: memo))
               .foregroundColor(categoryColor(for: memo))
               .font(.system(size: 12))
           }
-
+          
           Text(getDisplayTitle(for: memo))
             .font(.system(size: 14, weight: .medium))
             .lineLimit(1)
         }
-
+        
         Spacer()
-
+        
         Text(formatTime(memo.createdAt))
           .font(.system(size: 10))
           .foregroundColor(.gray)
       }
-
+      
       if let apiResponse = memo.apiResponse {
         Text(getSummaryText(from: apiResponse))
           .font(.system(size: 12))
@@ -320,7 +320,7 @@ struct SummaryView: View {
           .foregroundColor(.primary)
           .lineLimit(3)
       }
-
+      
       if !memo.tags.isEmpty {
         HStack {
           ForEach(Array(memo.tags.prefix(3)), id: \.self) { tag in
@@ -339,16 +339,14 @@ struct SummaryView: View {
     .background(Color.white.opacity(0.9))
     .cornerRadius(16)
   }
-
+  
   // MARK: - Helper Methods for Category
   private func categoryIcon(for memo: MemoItemModel) -> String {
     guard let apiResponse = memo.apiResponse else {
       return "doc.text"
     }
-
+    
     switch apiResponse.mostPossibleCategory.lowercased() {
-    case "knowledge":
-      return "brain.head.profile"
     case "information":
       return "info.circle"
     case "schedule":
@@ -357,15 +355,13 @@ struct SummaryView: View {
       return "doc.text"
     }
   }
-
+  
   private func categoryColor(for memo: MemoItemModel) -> Color {
     guard let apiResponse = memo.apiResponse else {
       return .blue  // 默认颜色
     }
-
+    
     switch apiResponse.mostPossibleCategory.lowercased() {
-    case "knowledge":
-      return .purple
     case "information":
       return .blue
     case "schedule":
@@ -374,59 +370,54 @@ struct SummaryView: View {
       return .blue
     }
   }
-
+  
   // MARK: - 获取显示标题
   private func getDisplayTitle(for memo: MemoItemModel) -> String {
     // 如果有标题，直接使用
     if !memo.title.isEmpty {
       return memo.title
     }
-
+    
     // 如果没有标题但有API响应，使用最可能类别的标题
     guard let response = memo.apiResponse else {
       return "无标题"
     }
-
+    
     switch response.mostPossibleCategory.lowercased() {
-    case "knowledge":
-      return response.knowledge.title.isEmpty ? "无标题" : response.knowledge.title
-//    case "information":
-//      return response.information.title.isEmpty ? "无标题" : response.information.title
+    case "information":
+      return response.information.title.isEmpty ? "无标题" : response.information.title
     case "schedule":
       return response.schedule.title.isEmpty ? "无标题" : response.schedule.title
     default:
       return "无标题"
     }
   }
-
+  
   private func getSummaryText(from apiResponse: APIResponse) -> String {
     switch apiResponse.mostPossibleCategory.lowercased() {
-    case "knowledge":
-      return apiResponse.knowledge.title
-//    case "information":
-//      return apiResponse.information.summary.isEmpty
-//        ? apiResponse.information.title : apiResponse.information.summary
+    case "information":
+      return apiResponse.information.title
     case "schedule":
       return apiResponse.schedule.title
     default:
-      return apiResponse.knowledge.summary.isEmpty
-        ? apiResponse.knowledge.title : apiResponse.knowledge.summary
+      return apiResponse.information.summary.isEmpty
+      ? apiResponse.information.title : apiResponse.information.summary
     }
   }
-
+  
   private func formatTime(_ date: Date) -> String {
     let formatter = DateFormatter()
     formatter.dateFormat = "HH:mm"
     return formatter.string(from: date)
   }
-
+  
   private func taskItem(title: String, time: String) -> some View {
     HStack {
       Text(title)
         .font(.system(size: 14, weight: .medium))
-
+      
       Spacer()
-
+      
       Text(time)
         .font(.system(size: 10))
         .foregroundColor(.gray)
@@ -435,16 +426,16 @@ struct SummaryView: View {
     .background(Color.blue.opacity(0.05))
     .cornerRadius(12)
   }
-
+  
   // MARK: - 意图完成情况
   private var intentCompletionSection: some View {
     VStack(alignment: .leading, spacing: 12) {
       HStack {
         Text("意图处理情况")
           .font(.system(size: 14, weight: .medium))
-
+        
         Spacer()
-
+        
         Button(action: {
           withAnimation(.easeInOut(duration: 0.3)) {
             isIntentCompletionExpanded.toggle()
@@ -454,7 +445,7 @@ struct SummaryView: View {
             Text(isIntentCompletionExpanded ? "收起" : "查看全部")
               .font(.system(size: 12))
               .foregroundColor(.blue)
-
+            
             Image(systemName: isIntentCompletionExpanded ? "chevron.up" : "chevron.down")
               .font(.system(size: 10))
               .foregroundColor(.blue)
@@ -462,15 +453,15 @@ struct SummaryView: View {
         }
       }
       .padding(.horizontal, 16)
-
+      
       let (completedIntents, pendingIntents) = getTodayIntents()
-
+      
       if completedIntents.isEmpty && pendingIntents.isEmpty {
         VStack(spacing: 8) {
           Image(systemName: "calendar.badge.clock")
             .foregroundColor(.gray)
             .font(.system(size: 24))
-
+          
           Text("今日暂无意图")
             .font(.system(size: 14))
             .foregroundColor(.gray)
@@ -489,20 +480,20 @@ struct SummaryView: View {
                   Circle()
                     .fill(Color.green)
                     .frame(width: 24, height: 24)
-
+                  
                   Image(systemName: "checkmark")
                     .foregroundColor(.white)
                     .font(.system(size: 12, weight: .bold))
                 }
-
+                
                 Text("已处理意图 (\(completedIntents.count))")
                   .font(.system(size: 14, weight: .medium))
               }
-
+              
               VStack(spacing: 8) {
                 let completedToShow =
-                  isIntentCompletionExpanded ? completedIntents : Array(completedIntents.prefix(3))
-
+                isIntentCompletionExpanded ? completedIntents : Array(completedIntents.prefix(3))
+                
                 ForEach(completedToShow, id: \.id) { intent in
                   intentItem(intent: intent, isCompleted: true)
                     .transition(
@@ -511,7 +502,7 @@ struct SummaryView: View {
                         removal: .scale.combined(with: .opacity)
                       ))
                 }
-
+                
                 if !isIntentCompletionExpanded && completedIntents.count > 3 {
                   Text("还有 \(completedIntents.count - 3) 个已处理意图")
                     .font(.system(size: 12))
@@ -522,7 +513,7 @@ struct SummaryView: View {
               }
             }
           }
-
+          
           // 未完成意图部分
           if !pendingIntents.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
@@ -531,20 +522,20 @@ struct SummaryView: View {
                   Circle()
                     .fill(Color.orange.opacity(0.2))
                     .frame(width: 24, height: 24)
-
+                  
                   Image(systemName: "clock")
                     .foregroundColor(.orange)
                     .font(.system(size: 12, weight: .bold))
                 }
-
+                
                 Text("未处理意图 (\(pendingIntents.count))")
                   .font(.system(size: 14, weight: .medium))
               }
-
+              
               VStack(spacing: 8) {
                 let pendingToShow =
-                  isIntentCompletionExpanded ? pendingIntents : Array(pendingIntents.prefix(3))
-
+                isIntentCompletionExpanded ? pendingIntents : Array(pendingIntents.prefix(3))
+                
                 ForEach(pendingToShow, id: \.id) { intent in
                   intentItem(intent: intent, isCompleted: false)
                     .transition(
@@ -553,7 +544,7 @@ struct SummaryView: View {
                         removal: .scale.combined(with: .opacity)
                       ))
                 }
-
+                
                 if !isIntentCompletionExpanded && pendingIntents.count > 3 {
                   Text("还有 \(pendingIntents.count - 3) 个未处理意图")
                     .font(.system(size: 12))
@@ -571,7 +562,7 @@ struct SummaryView: View {
       }
     }
   }
-
+  
   // MARK: - 意图项目视图
   private func intentItem(intent: IntentDiscoveryViewModel, isCompleted: Bool) -> some View {
     HStack(spacing: 12) {
@@ -579,21 +570,21 @@ struct SummaryView: View {
         .font(.system(size: 14))
         .foregroundColor(intent.iconColor)
         .frame(width: 20, height: 20)
-
+      
       VStack(alignment: .leading, spacing: 2) {
         Text(intent.title)
           .font(.system(size: 14, weight: .medium))
           .lineLimit(1)
-
+        
         if let startDate = intent.scheduleTask.startDate {
           Text(formatIntentTime(startDate))
             .font(.system(size: 12))
             .foregroundColor(.secondary)
         }
       }
-
+      
       Spacer()
-
+      
       Button(action: {
         // 切换完成状态
         intentManager.toggleCompletion(intent.intentKey)
@@ -614,22 +605,22 @@ struct SummaryView: View {
     .background(isCompleted ? Color.green.opacity(0.05) : Color.orange.opacity(0.05))
     .cornerRadius(12)
   }
-
+  
   // MARK: - 获取今日意图数据
   private func getTodayIntents() -> (
     completed: [IntentDiscoveryViewModel], pending: [IntentDiscoveryViewModel]
   ) {
     var completedIntents: [IntentDiscoveryViewModel] = []
     var pendingIntents: [IntentDiscoveryViewModel] = []
-
+    
     for memoItem in todayMemos {
       guard let apiResponse = memoItem.apiResponse else { continue }
-
+      
       // 只处理日程类型的意图
       if apiResponse.mostPossibleCategory.lowercased() == "schedule" {
         for task in apiResponse.schedule.tasks {
           let intent = IntentDiscoveryViewModel(memoItem: memoItem, scheduleTask: task)
-
+          
           // 使用完成状态标记判断是否已处理
           if intentManager.isCompleted(intent.intentKey) {
             var completedIntent = intent
@@ -641,25 +632,25 @@ struct SummaryView: View {
         }
       }
     }
-
+    
     return (completedIntents, pendingIntents)
   }
-
+  
   // MARK: - 格式化意图时间
   private func formatIntentTime(_ date: Date) -> String {
     let formatter = DateFormatter()
     formatter.dateFormat = "HH:mm"
     return formatter.string(from: date)
   }
-
+  
   // MARK: - 待处理建议行动
   private var suggestedActionsSection: some View {
     VStack(alignment: .leading, spacing: 12) {
       Text("待处理建议行动（开发中）")
         .font(.system(size: 14, weight: .medium))
-
+      
       Spacer()
-
+      
       Button(action: {
         withAnimation(.easeInOut(duration: 0.3)) {
           isSuggestedActionsExpanded.toggle()
@@ -669,31 +660,31 @@ struct SummaryView: View {
           Text(isSuggestedActionsExpanded ? "收起" : "查看全部")
             .font(.system(size: 12))
             .foregroundColor(.blue)
-
+          
           Image(systemName: isSuggestedActionsExpanded ? "chevron.up" : "chevron.down")
             .font(.system(size: 10))
             .foregroundColor(.blue)
         }
       }
     }
-
+    
     return VStack(alignment: .leading, spacing: 12) {
       HStack {
         Text("待处理建议行动（开发中）")
           .font(.system(size: 14, weight: .medium))
           .foregroundColor(.white)
-
+        
         Spacer()
-
+        
         Image(systemName: "lightbulb.fill")
           .foregroundColor(.yellow)
       }
-
+      
       VStack(spacing: 8) {
         let suggestedActions = getSuggestedActions()
         let actionsToShow =
-          isSuggestedActionsExpanded ? suggestedActions : Array(suggestedActions.prefix(2))
-
+        isSuggestedActionsExpanded ? suggestedActions : Array(suggestedActions.prefix(2))
+        
         ForEach(Array(actionsToShow.enumerated()), id: \.offset) { index, action in
           actionItem(
             icon: action.icon,
@@ -708,7 +699,7 @@ struct SummaryView: View {
               removal: .scale.combined(with: .opacity)
             ))
         }
-
+        
         if !isSuggestedActionsExpanded && suggestedActions.count > 2 {
           Text("还有 \(suggestedActions.count - 2) 个建议行动")
             .font(.system(size: 12))
@@ -740,23 +731,23 @@ private func actionItem(
           Circle()
             .fill(Color.yellow.opacity(0.8))
             .frame(width: 24, height: 24)
-
+          
           Image(systemName: icon)
             .foregroundColor(.blue)
             .font(.system(size: 12))
         }
-
+        
         Text(title)
           .font(.system(size: 14, weight: .medium))
       }
-
+      
       Spacer()
-
+      
       Text(deadline)
         .font(.system(size: 10))
         .foregroundColor(isUrgent ? .orange : .gray)
     }
-
+    
     Text(description)
       .font(.system(size: 12))
       .foregroundColor(.gray)
@@ -772,7 +763,7 @@ private var aiInsightsSection: some View {
     Text("AI洞察与趋势（开发中）")
       .font(.system(size: 14, weight: .medium))
       .padding(.horizontal, 16)
-
+    
     VStack(alignment: .leading, spacing: 16) {
       HStack(spacing: 8) {
         ZStack {
@@ -785,20 +776,20 @@ private var aiInsightsSection: some View {
               )
             )
             .frame(width: 24, height: 24)
-
+          
           Image(systemName: "brain")
             .foregroundColor(.white)
             .font(.system(size: 12))
         }
-
+        
         Text("个性化洞察")
           .font(.system(size: 14, weight: .medium))
       }
-
+      
       Text("根据您的活动模式分析，您在上午时段（9:00-11:00）记录信息效率最高，建议安排重要思考和创意工作在此时段。")
         .font(.system(size: 12))
         .foregroundColor(.primary)
-
+      
       // 效率图表占位符
       RoundedRectangle(cornerRadius: 12)
         .fill(Color.gray.opacity(0.1))
@@ -813,11 +804,11 @@ private var aiInsightsSection: some View {
               .foregroundColor(.gray)
           }
         )
-
+      
       Text("您本周关注的主要主题是\"用户体验\"和\"数据分析\"，相比上周有明显提升。")
         .font(.system(size: 12))
         .foregroundColor(.primary)
-
+      
       HStack {
         Text("效率提升")
           .font(.system(size: 12))
@@ -825,14 +816,14 @@ private var aiInsightsSection: some View {
           .padding(.vertical, 2)
           .background(Color.yellow.opacity(0.3))
           .cornerRadius(8)
-
+        
         Text("工作习惯")
           .font(.system(size: 12))
           .padding(.horizontal, 8)
           .padding(.vertical, 2)
           .background(Color.blue.opacity(0.2))
           .cornerRadius(8)
-
+        
         Spacer()
       }
     }

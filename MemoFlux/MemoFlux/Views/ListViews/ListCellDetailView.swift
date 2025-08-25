@@ -11,8 +11,7 @@ import SwiftUI
 
 // MARK: - 数据类型枚举
 enum DataType: String, CaseIterable {
-  case knowledge = "信息"
-  // case information = "信息"
+  case information = "信息"
   case schedule = "日程"
 }
 
@@ -21,8 +20,9 @@ struct ListCellDetailView: View {
   
   @Environment(\.modelContext) private var modelContext
   
-  @State private var selectedDataType: DataType = .knowledge
+  @State private var selectedDataType: DataType = .information
   @State private var isManuallyTriggering = false
+  @State private var hasInitializedDataType = false
   
   var body: some View {
     ScrollView {
@@ -70,10 +70,10 @@ struct ListCellDetailView: View {
     }
     .background(Color.globalStyleBackgroundColor)
     .onAppear {
-      setDefaultDataTypeFromAPIResponse()
-    }
-    .onChange(of: item.apiResponse) { newResponse in
-      setDefaultDataTypeFromAPIResponse()
+      if !hasInitializedDataType {
+        setDefaultDataTypeFromAPIResponse()
+        hasInitializedDataType = true
+      }
     }
   }
   
@@ -152,7 +152,7 @@ struct ListCellDetailView: View {
       // 显示用户输入的原文（如果有）
       if !item.userInputText.isEmpty {
         VStack(alignment: .leading, spacing: 10) {
-          Text("用户原文")
+          Text("输入原文")
             .font(.headline)
             .padding(.leading, 5)
           
@@ -166,25 +166,25 @@ struct ListCellDetailView: View {
       }
       
       // 显示摘要（如果有API响应）
-//      if let response = item.apiResponse, !response.information.summary.isEmpty {
-//        VStack(alignment: .leading, spacing: 10) {
-//          Text("AI 摘要")
-//            .font(.headline)
-//            .padding(.leading, 5)
-//          
-//          Text(response.information.summary)
-//            .font(.body)
-//            .foregroundColor(.secondary)
-//            .padding()
-//            .background(Color.blue.opacity(0.1))
-//            .cornerRadius(15)
-//          
-//          Text("AI 解析内容")
-//            .font(.headline)
-//            .padding(.leading, 5)
-//        }
-//        .padding(.horizontal, 16)
-//      }
+      if let response = item.apiResponse, !response.information.summary.isEmpty {
+        VStack(alignment: .leading, spacing: 10) {
+          Text("AI 摘要")
+            .font(.headline)
+            .padding(.leading, 5)
+          
+          Text(response.information.summary)
+            .font(.body)
+            .foregroundColor(.secondary)
+            .padding()
+            .background(Color.blue.opacity(0.1))
+            .cornerRadius(15)
+          
+          Text("AI 解析内容")
+            .font(.headline)
+            .padding(.leading, 5)
+        }
+        .padding(.horizontal, 16)
+      }
       
       // 根据API响应状态显示不同内容
       if item.isAPIProcessing {
@@ -201,9 +201,6 @@ struct ListCellDetailView: View {
         .padding()
         
       } else if let response = item.apiResponse {
-        // 有API响应，显示解析结果
-        
-        // 数据类型选择器
         Picker("数据类型", selection: $selectedDataType) {
           ForEach(DataType.allCases, id: \.self) { type in
             Text(type.rawValue).tag(type)
@@ -214,10 +211,8 @@ struct ListCellDetailView: View {
         
         // 根据选择的类型显示相应数据
         switch selectedDataType {
-        case .knowledge:
-          KnowledgeView(knowledge: response.knowledge)
-        // case .information:
-          // InformationView(information: response.knowledge)
+        case .information:
+          InformationView(information: response.information)
         case .schedule:
           ScheduleView(schedule: response.schedule)
         }
@@ -307,10 +302,8 @@ struct ListCellDetailView: View {
     }
     
     switch response.mostPossibleCategory.lowercased() {
-    case "knowledge":
-      return response.knowledge.title
     case "information":
-      return ""
+      return response.information.title
     case "schedule":
       return response.schedule.title
     default:
@@ -324,35 +317,33 @@ struct ListCellDetailView: View {
     
     // 根据mostPossibleCategory字段设置默认选项
     switch response.mostPossibleCategory.lowercased() {
-    case "knowledge":
-      selectedDataType = .knowledge
-//    case "information":
-//      selectedDataType = .information
+    case "information":
+      selectedDataType = .information
     case "schedule":
       selectedDataType = .schedule
     default:
-      selectedDataType = .knowledge
+      selectedDataType = .information
     }
   }
 }
 
-// MARK: - Knowledge 视图
-struct KnowledgeView: View {
-  let knowledge: KnowledgeResponse
+// MARK: - Information 视图
+struct InformationView: View {
+  let information: InformationResponse
   
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
       // 标题
-      Text(knowledge.title)
+      Text(information.title)
         .font(.title2)
         .fontWeight(.semibold)
         .padding(.horizontal)
       
       // 标签
-      if !knowledge.tags.isEmpty {
+      if !information.tags.isEmpty {
         ScrollView(.horizontal, showsIndicators: false) {
           HStack {
-            ForEach(knowledge.tags, id: \.self) { tag in
+            ForEach(information.tags, id: \.self) { tag in
               Text(tag)
                 .font(.caption)
                 .padding(.horizontal, 8)
@@ -366,7 +357,7 @@ struct KnowledgeView: View {
       }
       
       LazyVStack(alignment: .leading, spacing: 8) {
-        ForEach(knowledge.knowledgeItems) { item in
+        ForEach(information.informationItems) { item in
           VStack(alignment: .leading, spacing: 8) {
             Text(item.header)
               .font(.headline)
@@ -388,111 +379,6 @@ struct KnowledgeView: View {
     }
   }
 }
-
-// MARK: - Information 视图
-//struct InformationView: View {
-//  let information: InformationResponse
-//  
-//  private var mergedInformationItems: [(header: String, contents: [String])] {
-//    var mergedItems: [String: [String]] = [:]
-//    
-//    for item in information.informationItems {
-//      if mergedItems[item.header] != nil {
-//        mergedItems[item.header]?.append(item.content)
-//      } else {
-//        mergedItems[item.header] = [item.content]
-//      }
-//    }
-//    
-//    var result: [(header: String, contents: [String])] = []
-//    var processedHeaders: Set<String> = []
-//    
-//    for item in information.informationItems {
-//      if !processedHeaders.contains(item.header) {
-//        result.append((header: item.header, contents: mergedItems[item.header] ?? []))
-//        processedHeaders.insert(item.header)
-//      }
-//    }
-//    
-//    return result
-//  }
-//  
-//  var body: some View {
-//    VStack(alignment: .leading, spacing: 12) {
-//      Text(information.title)
-//        .font(.title2)
-//        .fontWeight(.semibold)
-//        .padding(.horizontal)
-//      
-//      HStack {
-//        Text("类型:")
-//          .font(.subheadline)
-//          .fontWeight(.medium)
-//        Text(information.postType)
-//          .font(.subheadline)
-//          .fontWeight(.regular)
-//        Spacer()
-//      }
-//      .padding(.horizontal)
-//      
-//      if !information.tags.isEmpty {
-//        ScrollView(.horizontal, showsIndicators: false) {
-//          HStack {
-//            ForEach(information.tags, id: \.self) { tag in
-//              Text(tag)
-//                .font(.caption)
-//                .padding(.horizontal, 8)
-//                .padding(.vertical, 4)
-//                .background(Color.blue.opacity(0.2))
-//                .cornerRadius(8)
-//            }
-//          }
-//          .padding(.horizontal)
-//        }
-//      }
-//      
-//      LazyVStack(alignment: .leading, spacing: 8) {
-//        ForEach(Array(mergedInformationItems.enumerated()), id: \.offset) { index, mergedItem in
-//          VStack(alignment: .leading, spacing: 8) {
-//            Text(mergedItem.header)
-//              .font(.headline)
-//              .bold()
-//              .padding(.vertical, 5)
-//            
-//            if mergedItem.contents.count == 1 {
-//              Text(mergedItem.contents[0])
-//                .font(.body)
-//                .foregroundColor(.secondary)
-//            } else {
-//              VStack(alignment: .leading, spacing: 4) {
-//                ForEach(Array(mergedItem.contents.enumerated()), id: \.offset) {
-//                  contentIndex, content in
-//                  HStack(alignment: .top, spacing: 8) {
-//                    Text("•")
-//                      .font(.body)
-//                      .foregroundColor(.secondary)
-//                      .padding(.top, 1)
-//                    
-//                    Text(content)
-//                      .font(.body)
-//                      .foregroundColor(.secondary)
-//                      .frame(maxWidth: .infinity, alignment: .leading)
-//                  }
-//                }
-//              }
-//            }
-//          }
-//          .padding()
-//          .frame(maxWidth: .infinity, alignment: .leading)
-//          .background(Color.white)
-//          .cornerRadius(15)
-//        }
-//      }
-//      .padding(.horizontal)
-//      .listStyle(PlainListStyle())
-//    }
-//  }
-//}
 
 // MARK: - Schedule 视图
 struct ScheduleView: View {

@@ -196,22 +196,23 @@ private func createTestMemoItemsWithSchedule() -> [MemoItemModel] {
     position: ["会议室A"],
     tags: ["重要", "项目"],
     category: "工作会议",
-    suggestedActions: ["准备进度报告", "整理问题清单"]
+    suggestedActions: ["准备进度报告", "整理问题清单"],
+    id: UUID()
   )
   
   let apiResponse = APIResponse(
     mostPossibleCategory: "schedule",
+    information: InformationResponse(
+      title: "会议安排知识",
+      informationItems: [],
+      relatedItems: [],
+      summary: "",
+      tags: ["会议", "项目"]
+    ),
     schedule: ScheduleResponse(
       title: "今日日程",
       category: "工作",
       tasks: [scheduleTask]
-    ),
-    knowledge: KnowledgeResponse(
-      title: "会议安排知识",
-      knowledgeItems: [],
-      relatedItems: [],
-      summary: "",
-      tags: ["会议", "项目"]
     )
   )
   
