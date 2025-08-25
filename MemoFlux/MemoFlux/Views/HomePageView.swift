@@ -84,7 +84,7 @@ struct HomePageView: View {
       {
         let newItem = MemoItemModel(
           image: newImage,
-          tags: TagManager.shared.getAllTagNames(from: modelContext),
+          tags: [],
           source: "快捷指令")
         
         // 检查是否存在相同item
