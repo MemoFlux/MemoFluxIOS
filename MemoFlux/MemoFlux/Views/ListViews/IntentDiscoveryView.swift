@@ -196,7 +196,7 @@ private func createTestMemoItemsWithSchedule() -> [MemoItemModel] {
     position: ["会议室A"],
     tags: ["重要", "项目"],
     category: "工作会议",
-    suggestedActions: ["准备进度报告", "整理问题清单"],
+    suggestedActions: ["准备进度报告", "整理问题清单"]
   )
   
   let apiResponse = APIResponse(
