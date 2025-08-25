@@ -167,6 +167,21 @@ struct MemoListView: View {
     .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
     .listRowSeparator(.hidden)
     .listRowBackground(Color.clear)
+    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+      Button(role: .destructive) {
+        deleteMemo(item)
+      } label: {
+        Label("删除", systemImage: "trash")
+      }
+      
+      Button {
+        // TODO: - 编辑逻辑
+        print("编辑 Memo: \(item.title)")
+      } label: {
+        Label("编辑", systemImage: "square.and.pencil")
+      }
+      .tint(.blue)
+    }
   }
   
   // MARK: - 删除方法
@@ -293,13 +308,12 @@ struct MemoCardView: View {
     .cornerRadius(16)
     .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
     .overlay(
-      // API处理状态指示器
       apiStatusIndicator,
       alignment: .topTrailing
     )
     .contextMenu {
       Button {
-        // TODO: 实现编辑逻辑
+        // TODO: - 实现编辑逻辑
         print("编辑 Memo: \(item.title)")
       } label: {
         Label("编辑", systemImage: "square.and.pencil")
