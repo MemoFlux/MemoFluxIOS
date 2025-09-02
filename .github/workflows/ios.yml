@@ -1,0 +1,62 @@
+name: iOS CI/CD Workflow
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-test-upload:
+    name: Build, Test and Upload to TestFlight
+    runs-on: macos-latest
+
+    steps:
+      # 拉代码
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 设置 Ruby (fastlane 依赖 Ruby)
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2' # 推荐使用最新稳定版本
+
+      # 安装 fastlane
+      - name: Install fastlane
+        run: gem install fastlane
+
+      # 获取默认 scheme
+      - name: Set Default Scheme
+        run: |
+          scheme_list=$(xcodebuild -list -json | tr -d "\n")
+          default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
+          echo $default | cat >default
+          echo Using default scheme: $default
+
+      # 构建 & 测试
+      - name: Build and Test
+        run: |
+          device=`xcrun xctrace list devices 2>&1 | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}' | sed -e "s/ Simulator$//"`
+          scheme=$(cat default)
+          if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then 
+            filetype_parameter="workspace" && file_to_build="`ls -A | grep -i \\.xcworkspace\$`"
+          else 
+            filetype_parameter="project" && file_to_build="`ls -A | grep -i \\.xcodeproj\$`"
+          fi
+          file_to_build=`echo $file_to_build | awk '{$1=$1;print}'`
+          xcodebuild build-for-testing -scheme "$scheme" -"$filetype_parameter" "$file_to_build" -destination "platform=iOS Simulator,name=$device"
+          xcodebuild test-without-building -scheme "$scheme" -"$filetype_parameter" "$file_to_build" -destination "platform=iOS Simulator,name=$device"
+
+      # 上传到 TestFlight
+      - name: Upload to TestFlight
+        run: |
+          fastlane pilot upload \
+            --username "$APPLE_ID" \
+            --app_identifier "$APP_IDENTIFIER" \
+            --ipa "./build/YourApp.ipa" \
+            --skip_waiting_for_build_processing true
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}             # Apple 开发者账号邮箱
+          APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }} # 你的 App 的 Bundle ID
+          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.APP_SPECIFIC_PASSWORD }}
