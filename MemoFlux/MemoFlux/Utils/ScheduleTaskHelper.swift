@@ -255,7 +255,7 @@ struct ActionButtonsView: View {
             actionStatus = .ignored
           }
         } label: {
-          Image(systemName: "xmark")
+          Image(systemName: "trash")
             .font(.system(size: fontSize + 2, weight: .bold))
             .foregroundColor(.white)
             .frame(width: 36, height: 36)
@@ -317,7 +317,7 @@ struct ActionButtonsView: View {
         }
       } label: {
         HStack(spacing: 6) {
-          Image(systemName: "xmark")
+          Image(systemName: "trash")
             .font(.system(size: fontSize + 1, weight: .bold))
           Text("确认忽略")
             .font(.system(size: fontSize + 1, weight: .medium))

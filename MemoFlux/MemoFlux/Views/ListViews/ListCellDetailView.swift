@@ -329,7 +329,7 @@ struct ListCellDetailView: View {
 
 // MARK: - Information 视图
 struct InformationView: View {
-  let information: InformationResponse
+  let information: MemoItemModel.Information
   
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
@@ -382,7 +382,7 @@ struct InformationView: View {
 
 // MARK: - Schedule 视图
 struct ScheduleView: View {
-  let schedule: ScheduleResponse
+  let schedule: MemoItemModel.Schedule
   
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
