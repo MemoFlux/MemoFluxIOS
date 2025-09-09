@@ -24,6 +24,10 @@ struct ListCellDetailView: View {
   @State private var isManuallyTriggering = false
   @State private var hasInitializedDataType = false
   
+  // 添加必要的状态变量
+  @State private var showingReminderConfirmation = false
+  @State private var selectedTask: MemoItemModel.ScheduleTask? = nil
+  
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 16) {
@@ -383,6 +387,31 @@ struct InformationView: View {
 // MARK: - Schedule 视图
 struct ScheduleView: View {
   let schedule: MemoItemModel.Schedule
+  @State private var tasks: [MemoItemModel.ScheduleTask]
+  @State private var showIgnoredTasks = false
+  @State private var showingReminderConfirmation = false
+  @State private var selectedTask: ScheduleTask? = nil
+  
+  init(schedule: MemoItemModel.Schedule) {
+    self.schedule = schedule
+    self._tasks = State(initialValue: schedule.tasks)
+  }
+  
+  // 过滤任务列表
+  private var filteredTasks: [MemoItemModel.ScheduleTask] {
+    tasks.filter { task in
+      if showIgnoredTasks {
+        return true
+      } else {
+        return task.taskStatus == .pending || task.taskStatus == .completed
+      }
+    }
+  }
+  
+  // 检查是否有已忽略的任务
+  private var hasIgnoredTasks: Bool {
+    tasks.contains { task in task.taskStatus == .ignored }
+  }
   
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
@@ -424,12 +453,29 @@ struct ScheduleView: View {
             .font(.subheadline)
             .fontWeight(.regular)
           Spacer()
+          
+          if hasIgnoredTasks {
+            Button {
+              withAnimation {
+                showIgnoredTasks.toggle()
+              }
+            } label: {
+              HStack(spacing: 4) {
+                Image(systemName: showIgnoredTasks ? "checkmark.circle" : "circle")
+                Text("显示已忽略日程")
+              }
+              .font(.subheadline)
+              .foregroundStyle(.gray)
+            }
+          }
         }
         .padding(.horizontal)
         
         LazyVStack(alignment: .leading, spacing: 8) {
-          ForEach(schedule.tasks) { task in
-            ScheduleTaskCard(task: task)
+          ForEach(filteredTasks.indices, id: \.self) { index in
+            if let taskIndex = tasks.firstIndex(where: { $0.id == filteredTasks[index].id }) {
+              ScheduleTaskCard(task: $tasks[taskIndex])
+            }
           }
         }
         .padding(.horizontal)
@@ -440,9 +486,20 @@ struct ScheduleView: View {
 
 // MARK: - Schedule 任务卡片
 struct ScheduleTaskCard: View {
-  let task: ScheduleTask
-  
+  @Binding var task: MemoItemModel.ScheduleTask
   @State private var showingReminderConfirmation = false
+  
+  // 获取状态颜色
+  private var statusColor: Color {
+    switch task.taskStatus {
+    case .pending:
+      return .blue
+    case .completed:
+      return .green
+    case .ignored:
+      return .red
+    }
+  }
   
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
@@ -450,11 +507,21 @@ struct ScheduleTaskCard: View {
         Text(task.theme)
           .font(.headline)
           .foregroundColor(.primary)
+        
+        // 添加状态标签
+        Text(task.taskStatus.rawValue)
+          .font(.caption)
+          .padding(.horizontal, 6)
+          .padding(.vertical, 2)
+          .background(statusColor.opacity(0.2))
+          .foregroundColor(statusColor)
+          .cornerRadius(4)
+        
         Spacer()
         if let startDate = task.startDate {
-          Text(startDate.formatted(date: .abbreviated, time: .shortened))
+          Text(startDate, format: .dateTime.day().month().year().hour().minute())
             .font(.caption)
-            .foregroundColor(.secondary)
+            .foregroundColor(.grayTextColor)
         }
       }
       
@@ -508,11 +575,44 @@ struct ScheduleTaskCard: View {
       }
       
       // EventKit 操作按钮
-      ScheduleTaskHelper.actionButtons(
-        for: task,
-        showingReminderConfirmation: $showingReminderConfirmation
-      )
-      .padding(.top, 8)
+      HStack {
+        ScheduleTaskHelper.actionButtons(
+          for: task,
+          showingReminderConfirmation: $showingReminderConfirmation
+        )
+        .padding(.top, 8)
+        
+        Spacer()
+        
+        // 添加两个圆形按钮
+        HStack(spacing: 12) {
+          // 绿色对勾按钮
+          Button(action: {
+            task.markAsCompleted()
+          }) {
+            Image(systemName: "checkmark")
+              .font(.system(size: 16, weight: .bold))
+              .foregroundColor(.white)
+              .frame(width: 32, height: 32)
+              .background(Color.green)
+              .clipShape(Circle())
+          }
+          
+          // 红色垃圾桶按钮
+          Button(action: {
+            withAnimation {
+              task.markAsIgnored()
+            }
+          }) {
+            Image(systemName: "trash")
+              .font(.system(size: 16, weight: .bold))
+              .foregroundColor(.white)
+              .frame(width: 32, height: 32)
+              .background(Color.red)
+              .clipShape(Circle())
+          }
+        }
+      }
     }
     .padding()
     .background(Color.white)
@@ -534,7 +634,7 @@ struct ScheduleTaskCard: View {
     source: "预览数据"
   )
   
-  return NavigationStack {
+  NavigationStack {
     ListCellDetailView(item: previewItem)
   }
 }

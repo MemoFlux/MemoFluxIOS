@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import SwiftData
 
 // MARK: - 请求模型
 struct AIGenerationRequest: Codable {
