@@ -415,32 +415,19 @@ struct ScheduleView: View {
     tasks.contains { task in task.taskStatus == .ignored }
   }
   
+  // 检查是否还有未被忽略的任务
+  private var hasPendingOrCompletedTask: Bool {
+    tasks.contains { task in task.taskStatus == .pending } ||
+    tasks.contains { task in task.taskStatus == .completed }
+  }
+  
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
       if schedule.tasks.isEmpty {
-        VStack(spacing: 16) {
-          Image(systemName: "exclamationmark.triangle")
-            .font(.system(size: 40))
-            .foregroundColor(Color.orange)
-            .padding(.top, 20)
-          
-          Text("当前Memo未识别出意图")
-            .font(.headline)
-            .foregroundColor(.primary)
-            .multilineTextAlignment(.center)
-          
-          Text("您可以尝试添加更多详细信息，或使用AI解析功能重新分析内容")
-            .font(.subheadline)
-            .foregroundColor(.secondary)
-            .multilineTextAlignment(.center)
-            .padding(.horizontal)
-            .padding(.bottom, 20)
-        }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(Color.white)
-        .cornerRadius(15)
-        .padding(.horizontal)
+        ScheduleEmptyView(
+          title: "当前Memo未识别出意图",
+          desc: "您可以尝试添加更多详细信息，或使用AI解析功能重新分析内容"
+        )
       } else {
         Text(schedule.title)
           .font(.title2)
@@ -473,15 +460,53 @@ struct ScheduleView: View {
         }
         .padding(.horizontal)
         
-        LazyVStack(alignment: .leading, spacing: 8) {
-          ForEach(filteredTasks.indices, id: \.self) { index in
-            if let taskIndex = tasks.firstIndex(where: { $0.id == filteredTasks[index].id }) {
-              ScheduleTaskCard(task: $tasks[taskIndex], memoItem: memoItem)
+        if !hasPendingOrCompletedTask && !showIgnoredTasks {
+          ScheduleEmptyView(
+            title: "暂无有效日程信息",
+            desc: "所有生成的日程均已忽略，可点击“显示已忽略日程”查看。"
+          )
+        } else {
+          LazyVStack(alignment: .leading, spacing: 8) {
+            ForEach(filteredTasks.indices, id: \.self) { index in
+              if let taskIndex = tasks.firstIndex(where: { $0.id == filteredTasks[index].id }) {
+                ScheduleTaskCard(task: $tasks[taskIndex], memoItem: memoItem)
+              }
             }
           }
+          .padding(.horizontal)
         }
-        .padding(.horizontal)
       }
+    }
+  }
+  
+  private struct ScheduleEmptyView: View {
+    @State var title: String
+    @State var desc: String
+    
+    var body: some View {
+      VStack(spacing: 16) {
+        Image(systemName: "exclamationmark.triangle")
+          .font(.system(size: 40))
+          .foregroundColor(Color.orange)
+          .padding(.top, 20)
+        
+        Text("\(title)")
+          .font(.headline)
+          .foregroundColor(.primary)
+          .multilineTextAlignment(.center)
+        
+        Text("\(desc)")
+          .font(.subheadline)
+          .foregroundColor(.secondary)
+          .multilineTextAlignment(.center)
+          .padding(.horizontal)
+          .padding(.bottom, 20)
+      }
+      .frame(maxWidth: .infinity)
+      .padding()
+      .background(Color.white)
+      .cornerRadius(15)
+      .padding(.horizontal)
     }
   }
 }
