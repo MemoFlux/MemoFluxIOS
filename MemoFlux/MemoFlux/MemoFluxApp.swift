@@ -15,6 +15,6 @@ struct MemoFluxApp: App {
       ContentView()
         .preferredColorScheme(.light)  // 暂时强制浅色模式显示，未来适配深色模式后再更改
     }
-    .modelContainer(for: [MemoItemModel.self, TagModel.self])
+    .modelContainer(for: [MemoItemModel.self, TagModel.self, ScheduleTaskModel.self])
   }
 }

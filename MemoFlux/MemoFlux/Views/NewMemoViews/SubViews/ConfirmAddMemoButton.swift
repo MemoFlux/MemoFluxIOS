@@ -72,7 +72,7 @@ struct ConfirmAddMemoButton: View {
     
     // 如果有API响应，设置API响应数据，但不自动添加AI建议的标签
     if let response = apiResponse {
-      newMemo.setAPIResponse(response)
+      newMemo.setAPIResponse(response, in: modelContext)
       // 移除自动合并AI标签的逻辑，只保留用户选中的标签
       // 用户选中的标签已经在上面的MemoItemModel初始化时设置了
     }

@@ -5,6 +5,7 @@
 //  Created by 马硕 on 2025/7/25.
 //
 
+import SwiftData
 import SwiftUI
 
 /// 发现待处理意图视图
@@ -187,7 +188,7 @@ private func createTestMemoItemsWithSchedule() -> [MemoItemModel] {
   )
   
   // 模拟 API 响应
-  let scheduleTask = ScheduleTask(
+  let scheduleTask = MemoItemModel.ScheduleTask(
     startTime: "2024-05-16T10:30:00+08:00",
     endTime: "2024-05-16T11:30:00+08:00",
     people: ["张三", "李四"],
@@ -200,23 +201,27 @@ private func createTestMemoItemsWithSchedule() -> [MemoItemModel] {
     id: UUID()
   )
   
-  let apiResponse = APIResponse(
+  let apiResponse = MemoItemModel.APIResponse(
     mostPossibleCategory: "schedule",
-    information: InformationResponse(
+    information: MemoItemModel.Information(
       title: "会议安排知识",
       informationItems: [],
       relatedItems: [],
       summary: "",
       tags: ["会议", "项目"]
     ),
-    schedule: ScheduleResponse(
+    schedule: MemoItemModel.Schedule(
       title: "今日日程",
       category: "工作",
       tasks: [scheduleTask]
     )
   )
   
-  testItem.setAPIResponse(apiResponse)
+  // 为Preview创建临时的ModelContext
+  let container = try! ModelContainer(for: MemoItemModel.self, ScheduleTaskModel.self)
+  let context = ModelContext(container)
+  
+  testItem.setAPIResponse(apiResponse, in: context)
   
   return [testItem]
 }

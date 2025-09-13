@@ -347,7 +347,7 @@ struct FlowLayout: Layout {
     
     // 示例 API 响应
     private func createSampleAPIResponse() -> APIResponse {
-      let informationResponse = InformationResponse(
+      let informationResponse = MemoItemModel.Information(
         title: "AI技术学习路线图",
         informationItems: [
           InformationItem(
@@ -374,7 +374,7 @@ struct FlowLayout: Layout {
         tags: ["AI", "技术", "学习", "机器学习"]
       )
       
-      let scheduleResponse = ScheduleResponse(
+      let scheduleResponse = MemoItemModel.Schedule(
         title: "AI学习计划",
         category: "学习",
         tasks: [
