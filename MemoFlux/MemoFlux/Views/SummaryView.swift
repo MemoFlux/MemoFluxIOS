@@ -13,7 +13,6 @@ struct SummaryView: View {
   
   @State private var selectedDate = Date()
   @State private var showDatePicker = false
-  @StateObject private var intentManager = IntentCompletionManager()  // 添加意图管理器
   
   // 展开状态管理
   @State private var isNewInformationExpanded = false
@@ -495,7 +494,7 @@ struct SummaryView: View {
                 isIntentCompletionExpanded ? completedIntents : Array(completedIntents.prefix(3))
                 
                 ForEach(completedToShow, id: \.id) { intent in
-                  intentItem(intent: intent, isCompleted: true)
+                  intentItem(intent: intent, isCompleted: true, modelContext: modelContext)
                     .transition(
                       .asymmetric(
                         insertion: .scale.combined(with: .opacity),
@@ -537,7 +536,7 @@ struct SummaryView: View {
                 isIntentCompletionExpanded ? pendingIntents : Array(pendingIntents.prefix(3))
                 
                 ForEach(pendingToShow, id: \.id) { intent in
-                  intentItem(intent: intent, isCompleted: false)
+                  intentItem(intent: intent, isCompleted: false, modelContext: modelContext)
                     .transition(
                       .asymmetric(
                         insertion: .scale.combined(with: .opacity),
@@ -564,7 +563,9 @@ struct SummaryView: View {
   }
   
   // MARK: - 意图项目视图
-  private func intentItem(intent: IntentDiscoveryViewModel, isCompleted: Bool) -> some View {
+  private func intentItem(
+    intent: IntentDiscoveryViewModel, isCompleted: Bool, modelContext: ModelContext
+  ) -> some View {
     HStack(spacing: 12) {
       Image(systemName: intent.iconName)
         .font(.system(size: 14))
@@ -586,8 +587,9 @@ struct SummaryView: View {
       Spacer()
       
       Button(action: {
-        // 切换完成状态
-        intentManager.toggleCompletion(intent.intentKey)
+        let newStatus: ScheduleTaskModel.TaskStatus = isCompleted ? .pending : .completed
+        intent.memoItem.updateTaskStatus(
+          taskId: intent.scheduleTask.id, status: newStatus, in: modelContext)
       }) {
         if isCompleted {
           Image(systemName: "checkmark.circle.fill")
@@ -613,16 +615,25 @@ struct SummaryView: View {
     var completedIntents: [IntentDiscoveryViewModel] = []
     var pendingIntents: [IntentDiscoveryViewModel] = []
     
+    print("🔍 调试：今日Memo数量: \(todayMemos.count)")
+    
     for memoItem in todayMemos {
-      guard let apiResponse = memoItem.apiResponse else { continue }
+      guard let apiResponse = memoItem.apiResponse else {
+        print("⚠️ Memo \(memoItem.id) 没有API响应")
+        continue
+      }
       
-      // 只处理日程类型的意图
-      if apiResponse.mostPossibleCategory.lowercased() == "schedule" {
+      print(
+        "📋 Memo类别: \(apiResponse.mostPossibleCategory), 任务数量: \(apiResponse.schedule.tasks.count)")
+      
+      // 处理所有有任务的意图，不仅限于schedule类型
+      if !apiResponse.schedule.tasks.isEmpty {
         for task in apiResponse.schedule.tasks {
           let intent = IntentDiscoveryViewModel(memoItem: memoItem, scheduleTask: task)
+          print("📝 任务: \(task.theme), 状态: \(task.taskStatus)")
           
-          // 使用完成状态标记判断是否已处理
-          if intentManager.isCompleted(intent.intentKey) {
+          // 直接使用ScheduleTask的taskStatus判断是否已处理
+          if task.taskStatus == .completed {
             var completedIntent = intent
             completedIntent.isCompleted = true
             completedIntents.append(completedIntent)
@@ -633,6 +644,7 @@ struct SummaryView: View {
       }
     }
     
+    print("✅ 已完成意图: \(completedIntents.count), 待处理意图: \(pendingIntents.count)")
     return (completedIntents, pendingIntents)
   }
   
@@ -646,29 +658,6 @@ struct SummaryView: View {
   // MARK: - 待处理建议行动
   private var suggestedActionsSection: some View {
     VStack(alignment: .leading, spacing: 12) {
-      Text("待处理建议行动（开发中）")
-        .font(.system(size: 14, weight: .medium))
-      
-      Spacer()
-      
-      Button(action: {
-        withAnimation(.easeInOut(duration: 0.3)) {
-          isSuggestedActionsExpanded.toggle()
-        }
-      }) {
-        HStack(spacing: 4) {
-          Text(isSuggestedActionsExpanded ? "收起" : "查看全部")
-            .font(.system(size: 12))
-            .foregroundColor(.blue)
-          
-          Image(systemName: isSuggestedActionsExpanded ? "chevron.up" : "chevron.down")
-            .font(.system(size: 10))
-            .foregroundColor(.blue)
-        }
-      }
-    }
-    
-    return VStack(alignment: .leading, spacing: 12) {
       HStack {
         Text("待处理建议行动（开发中）")
           .font(.system(size: 14, weight: .medium))

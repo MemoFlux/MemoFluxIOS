@@ -26,6 +26,8 @@ struct IntentDiscoveryView: View {
       else { continue }
       
       for task in apiResponse.schedule.tasks {
+        // 只显示状态为"待处理"的意图
+        guard task.taskStatus == .pending else { continue }
         let intent = IntentDiscoveryViewModel(memoItem: memoItem, scheduleTask: task)
         intents.append(intent)
       }

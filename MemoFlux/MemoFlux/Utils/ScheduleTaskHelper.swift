@@ -218,8 +218,6 @@ struct ActionButtonsView: View {
     task: ScheduleTask,
     showingReminderConfirmation: Binding<Bool>,
     fontSize: CGFloat,
-    intentKey: String? = nil,
-    intentManager: IntentCompletionManager? = nil,
   ) {
     self.task = task
     self._showingReminderConfirmation = showingReminderConfirmation
