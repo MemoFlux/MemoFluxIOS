@@ -5,6 +5,7 @@
 //  Created by 马硕 on 2025/7/25.
 //
 
+import SwiftData
 import SwiftUI
 
 /// 发现待处理意图视图
@@ -216,7 +217,11 @@ private func createTestMemoItemsWithSchedule() -> [MemoItemModel] {
     )
   )
   
-  testItem.setAPIResponse(apiResponse)
+  // 为Preview创建临时的ModelContext
+  let container = try! ModelContainer(for: MemoItemModel.self, ScheduleTaskModel.self)
+  let context = ModelContext(container)
+  
+  testItem.setAPIResponse(apiResponse, in: context)
   
   return [testItem]
 }

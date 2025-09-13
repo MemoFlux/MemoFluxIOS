@@ -64,7 +64,9 @@ extension NetworkManager {
       }
       
       // 发送Base64编码的图片数据
-      self.generateAIResponse(content: base64String, tags: tags, isImage: true, completion: completion)
+      self.generateAIResponse(
+        content: base64String, tags: tags, isImage: true, completion: completion
+      )
     }
   }
   
@@ -254,7 +256,7 @@ extension NetworkManager {
         switch result {
         case .success(let response):
           // 保存API响应到MemoItem
-          memoItem.setAPIResponse(response)
+          memoItem.setAPIResponse(response, in: modelContext)
           
           // 更新标签（合并API返回的标签）
           let newTags = Set(memoItem.tags)

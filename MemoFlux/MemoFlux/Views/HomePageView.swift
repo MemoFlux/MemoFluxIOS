@@ -10,7 +10,8 @@ import SwiftUI
 
 struct HomePageView: View {
   // SwiftData查询所有MemoItemModel，创建时间降序排列
-  @Query(sort: \MemoItemModel.createdAt, order: .reverse) private var memoItems: [MemoItemModel]
+  @Query(sort: \MemoItemModel.createdAt, order: .reverse)
+  private var memoItems: [MemoItemModel]
   
   @Environment(\.modelContext) private var modelContext
   
@@ -142,7 +143,7 @@ struct HomePageView: View {
         case .success(let response):
           print("快捷指令图片API请求成功")
           // 保存API响应到MemoItem
-          memoItem.setAPIResponse(response)
+          memoItem.setAPIResponse(response, in: modelContext)
           
           // 更新标签（合并API返回的标签）
           let newTags = Set(memoItem.tags)

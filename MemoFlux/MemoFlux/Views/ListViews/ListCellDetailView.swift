@@ -218,7 +218,7 @@ struct ListCellDetailView: View {
         case .information:
           InformationView(information: response.information)
         case .schedule:
-          ScheduleView(schedule: response.schedule)
+          ScheduleView(schedule: response.schedule, memoItem: item)
         }
         
       } else {
@@ -387,13 +387,15 @@ struct InformationView: View {
 // MARK: - Schedule 视图
 struct ScheduleView: View {
   let schedule: MemoItemModel.Schedule
+  let memoItem: MemoItemModel
   @State private var tasks: [MemoItemModel.ScheduleTask]
   @State private var showIgnoredTasks = false
   @State private var showingReminderConfirmation = false
   @State private var selectedTask: ScheduleTask? = nil
   
-  init(schedule: MemoItemModel.Schedule) {
+  init(schedule: MemoItemModel.Schedule, memoItem: MemoItemModel) {
     self.schedule = schedule
+    self.memoItem = memoItem
     self._tasks = State(initialValue: schedule.tasks)
   }
   
@@ -474,7 +476,7 @@ struct ScheduleView: View {
         LazyVStack(alignment: .leading, spacing: 8) {
           ForEach(filteredTasks.indices, id: \.self) { index in
             if let taskIndex = tasks.firstIndex(where: { $0.id == filteredTasks[index].id }) {
-              ScheduleTaskCard(task: $tasks[taskIndex])
+              ScheduleTaskCard(task: $tasks[taskIndex], memoItem: memoItem)
             }
           }
         }
@@ -488,6 +490,17 @@ struct ScheduleView: View {
 struct ScheduleTaskCard: View {
   @Binding var task: MemoItemModel.ScheduleTask
   @State private var showingReminderConfirmation = false
+  
+  // 添加环境变量以访问ModelContext
+  @Environment(\.modelContext) private var modelContext
+  
+  // 添加MemoItemModel引用以调用更新方法
+  var memoItem: MemoItemModel? = nil
+  
+  init(task: Binding<MemoItemModel.ScheduleTask>, memoItem: MemoItemModel? = nil) {
+    self._task = task
+    self.memoItem = memoItem
+  }
   
   // 获取状态颜色
   private var statusColor: Color {
@@ -588,7 +601,13 @@ struct ScheduleTaskCard: View {
         HStack(spacing: 12) {
           // 绿色对勾按钮
           Button(action: {
+            // 更新本地状态
             task.markAsCompleted()
+            
+            // 同步到ScheduleTaskModel
+            if let memoItem = memoItem {
+              memoItem.updateTaskStatus(taskId: task.id, status: .completed, in: modelContext)
+            }
           }) {
             Image(systemName: "checkmark")
               .font(.system(size: 16, weight: .bold))
@@ -601,7 +620,13 @@ struct ScheduleTaskCard: View {
           // 红色垃圾桶按钮
           Button(action: {
             withAnimation {
+              // 更新本地状态
               task.markAsIgnored()
+              
+              // 同步到ScheduleTaskModel
+              if let memoItem = memoItem {
+                memoItem.updateTaskStatus(taskId: task.id, status: .ignored, in: modelContext)
+              }
             }
           }) {
             Image(systemName: "trash")
