@@ -7,9 +7,24 @@
 
 import SwiftData
 import SwiftUI
+import UserNotifications
 
 @main
 struct MemoFluxApp: App {
+  init() {
+    
+  }
+  
+  func requestNotificationPermission() {
+    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
+      if granted {
+        print("Permission granted for notifications.")
+      } else {
+        print("Permission denied.")
+      }
+    }
+  }
+  
   var body: some Scene {
     WindowGroup {
       ContentView()
