@@ -339,18 +339,22 @@ struct AddMemoItemView: View {
       isParsingInProgress = true
       apiResponse = nil
       
-      NetworkManager.shared.generateFromImageBase64(
-        image: image,
-        tags: TagManager.shared.getAllTagNames(from: modelContext)
-      ) { result in
-        DispatchQueue.main.async {
-          isParsingInProgress = false
-          hasAttemptedParsing = true
+      Task {
+        do {
+          let response = try await NetworkManager.shared.generateFromImageBase64(
+            image: image,
+            tags: TagManager.shared.getAllTagNames(from: modelContext)
+          )
           
-          switch result {
-          case .success(let response):
+          await MainActor.run {
+            isParsingInProgress = false
+            hasAttemptedParsing = true
             apiResponse = response
-          case .failure(let error):
+          }
+        } catch {
+          await MainActor.run {
+            isParsingInProgress = false
+            hasAttemptedParsing = true
             print("图片AI解析失败: \(error.localizedDescription)")
           }
         }
@@ -363,18 +367,22 @@ struct AddMemoItemView: View {
       isParsingInProgress = true
       apiResponse = nil
       
-      NetworkManager.shared.generateFromText(
-        content,
-        tags: TagManager.shared.getAllTagNames(from: modelContext)
-      ) { result in
-        DispatchQueue.main.async {
-          isParsingInProgress = false
-          hasAttemptedParsing = true
+      Task {
+        do {
+          let response = try await NetworkManager.shared.generateFromText(
+            content,
+            tags: TagManager.shared.getAllTagNames(from: modelContext)
+          )
           
-          switch result {
-          case .success(let response):
+          await MainActor.run {
+            isParsingInProgress = false
+            hasAttemptedParsing = true
             apiResponse = response
-          case .failure(let error):
+          }
+        } catch {
+          await MainActor.run {
+            isParsingInProgress = false
+            hasAttemptedParsing = true
             print("文本AI解析失败: \(error.localizedDescription)")
           }
         }

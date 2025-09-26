@@ -258,14 +258,16 @@ struct ListCellDetailView: View {
   private func triggerAPIAnalysis() {
     isManuallyTriggering = true
     
-    NetworkManager.shared.triggerAPIAnalysis(for: item, modelContext: modelContext) { result in
-      DispatchQueue.main.async {
-        isManuallyTriggering = false
-        
-        switch result {
-        case .success:
+    Task {
+      do {
+        _ = try await NetworkManager.shared.triggerAPIAnalysis(for: item, modelContext: modelContext)
+        await MainActor.run {
+          isManuallyTriggering = false
           print("手动API分析成功")
-        case .failure(let error):
+        }
+      } catch {
+        await MainActor.run {
+          isManuallyTriggering = false
           print("手动API分析失败: \(error.localizedDescription)")
         }
       }

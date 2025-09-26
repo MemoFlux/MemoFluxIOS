@@ -134,13 +134,14 @@ struct HomePageView: View {
     let allTags = NetworkManager.shared.getAllTags(from: modelContext)
     
     // 发送API请求
-    NetworkManager.shared.generateAIResponse(
-      from: memoItem,
-      allTags: allTags
-    ) { result in
-      DispatchQueue.main.async {
-        switch result {
-        case .success(let response):
+    Task {
+      do {
+        let response = try await NetworkManager.shared.requestAIResponse(
+          from: memoItem,
+          allTags: allTags
+        )
+        
+        await MainActor.run {
           print("快捷指令图片API请求成功")
           // 保存API响应到MemoItem
           memoItem.setAPIResponse(response, in: modelContext)
@@ -156,17 +157,25 @@ struct HomePageView: View {
             memoItem.title = response.schedule.title
           }
           
-        case .failure(let error):
+          // 保存更新
+          do {
+            try modelContext.save()
+            print("快捷指令图片API响应保存成功")
+          } catch {
+            print("保存快捷指令图片API响应失败: \(error)")
+          }
+        }
+      } catch {
+        await MainActor.run {
           print("快捷指令图片API请求失败: \(error.localizedDescription)")
           memoItem.apiProcessingFailed()
-        }
-        
-        // 保存更新
-        do {
-          try modelContext.save()
-          print("快捷指令图片API响应保存成功")
-        } catch {
-          print("保存快捷指令图片API响应失败: \(error)")
+          
+          // 保存更新
+          do {
+            try modelContext.save()
+          } catch {
+            print("保存API处理失败状态失败: \(error)")
+          }
         }
       }
     }

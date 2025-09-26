@@ -117,7 +117,7 @@ struct ConfirmAddMemoButton: View {
    }
    } else {
    // 无图片：使用文本内容发送API请求
-   NetworkManager.shared.generateAIResponse(
+   NetworkManager.shared.requestAIResponse(
    content: memoItem.contentForAPI,
    tags: allTags,
    isImage: false
