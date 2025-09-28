@@ -8,11 +8,16 @@
 import SwiftData
 import SwiftUI
 import UserNotifications
+import UIKit
 
 @main
 struct MemoFluxApp: App {
+  @StateObject private var pushNotificationManager = PushNotificationManager.shared
+  @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+  
   init() {
-    
+    // 初始化推送通知管理器
+    PushNotificationManager.shared.initializePushNotifications()
   }
   
   func requestNotificationPermission() {
@@ -29,7 +34,41 @@ struct MemoFluxApp: App {
     WindowGroup {
       ContentView()
         .preferredColorScheme(.light)  // 暂时强制浅色模式显示，未来适配深色模式后再更改
+        .environmentObject(pushNotificationManager)
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didFinishLaunchingNotification)) { _ in
+          // 应用启动完成后注册远程推送
+          registerForRemoteNotifications()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+          // 应用变为活跃状态时检查推送状态
+          pushNotificationManager.checkAuthorizationStatus()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .registerForRemoteNotifications)) { _ in
+          // 监听设备令牌注册请求
+          print("📱 收到设备令牌注册请求")
+          registerForRemoteNotifications()
+        }
     }
     .modelContainer(for: [MemoItemModel.self, TagModel.self, ScheduleTaskModel.self])
+  }
+  
+  // MARK: - 注册远程推送通知
+  private func registerForRemoteNotifications() {
+    print("🚀 应用启动，开始注册远程推送通知")
+    
+    DispatchQueue.main.async {
+      // 检查当前授权状态
+      UNUserNotificationCenter.current().getNotificationSettings { settings in
+        if settings.authorizationStatus == .authorized {
+          DispatchQueue.main.async {
+            // 注册远程推送通知
+            UIApplication.shared.registerForRemoteNotifications()
+            print("📱 已调用 registerForRemoteNotifications")
+          }
+        } else {
+          print("⚠️ 推送通知未授权，无法注册远程推送")
+        }
+      }
+    }
   }
 }
