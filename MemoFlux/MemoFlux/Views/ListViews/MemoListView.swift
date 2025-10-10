@@ -66,16 +66,17 @@ struct MemoListView: View {
     }
     
     // 过滤空分组并排序
-    return
-    (grouped
-      .filter { !$0.value.isEmpty }  // 过滤掉空分组，以修复swiftData中删除后还在UI中显示的问题
-      .sorted { first, second in
-        if first.key == "今天" { return true }
-        if second.key == "今天" { return false }
-        if first.key == "昨天" { return true }
-        if second.key == "昨天" { return false }
-        return first.key > second.key
-      })
+    return (
+      grouped
+        .filter { !$0.value.isEmpty }  // 过滤掉空分组，以修复swiftData中删除后还在UI中显示的问题
+        .sorted { first, second in
+          if first.key == "今天" { return true }
+          if second.key == "今天" { return false }
+          if first.key == "昨天" { return true }
+          if second.key == "昨天" { return false }
+          return first.key > second.key
+        }
+    )
   }
   
   var body: some View {
