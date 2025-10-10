@@ -5,25 +5,23 @@
 //  Created by 马硕 on 2025/09/28.
 //
 
-import SwiftUI
+import UIKit
 import UserNotifications
 
 class AppDelegate: NSObject, UIApplicationDelegate {
   
   func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-    // 设置推送通知代理，使用 PushNotificationManager 的代理
+    // 设置推送通知代理
     UNUserNotificationCenter.current().delegate = NotificationDelegate.shared
     return true
   }
   
   // MARK: - 远程推送通知回调
   func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-    // 委托给 PushNotificationManager 处理
     PushNotificationManager.shared.didRegisterForRemoteNotifications(withDeviceToken: deviceToken)
   }
   
   func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
-    // 委托给 PushNotificationManager 处理
     PushNotificationManager.shared.didFailToRegisterForRemoteNotifications(withError: error)
   }
   
@@ -34,7 +32,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
   }
 }
 
-
+  
 // MARK: - UNUserNotificationCenterDelegate
 extension AppDelegate: UNUserNotificationCenterDelegate {
   

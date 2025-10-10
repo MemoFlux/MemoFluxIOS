@@ -137,7 +137,7 @@ class PushNotificationManager: NSObject, ObservableObject {
     let userInfo = response.notification.request.content.userInfo
     print("📱 用户点击了推送通知: \(userInfo)")
     
-    // TODO: 根据推送通知内容执行相应操作
+    // TODO: - 根据推送通知内容执行相应操作
     // 例如：导航到特定页面、更新数据等
   }
   
