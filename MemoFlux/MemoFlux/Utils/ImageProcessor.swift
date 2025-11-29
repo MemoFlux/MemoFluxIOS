@@ -12,7 +12,7 @@ import UIKit
 /// 提供图片压缩和Base64编码功能
 class ImageProcessor {
   
-  /// 单例实例
+  // 单例实例
   static let shared = ImageProcessor()
   
   private init() {}
@@ -137,32 +137,6 @@ class ImageProcessor {
       width: originalSize.width * ratio,
       height: originalSize.height * ratio
     )
-  }
-  
-  // MARK: - 工具方法
-  
-  /// 从Base64字符串解码为UIImage
-  /// - Parameter base64String: Base64编码的字符串
-  /// - Returns: 解码后的图片，如果解码失败返回nil
-  func decodeFromBase64(_ base64String: String) -> UIImage? {
-    guard let imageData = Data(base64Encoded: base64String) else {
-      print("Base64解码失败")
-      return nil
-    }
-    
-    return UIImage(data: imageData)
-  }
-  
-  /// 获取图片的估算文件大小
-  /// - Parameters:
-  ///   - image: 图片
-  ///   - compressionQuality: 压缩质量
-  /// - Returns: 估算的文件大小（字节）
-  func getEstimatedFileSize(image: UIImage, compressionQuality: CGFloat = 0.7) -> Int? {
-    guard let imageData = image.jpegData(compressionQuality: compressionQuality) else {
-      return nil
-    }
-    return imageData.count
   }
 }
 
