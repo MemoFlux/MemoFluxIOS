@@ -17,7 +17,7 @@ struct ImageActionButtonsView: View {
         Button(action: cameraAction) {
           HStack {
             Image(systemName: "camera")
-            Text("拍照")
+            Text("memo.camera".localized)
           }
           .frame(maxWidth: .infinity)
           .padding(.vertical, 16)
@@ -29,7 +29,7 @@ struct ImageActionButtonsView: View {
         Button(action: photoPickerAction) {
           HStack {
             Image(systemName: "photo")
-            Text("从相册选择")
+            Text("memo.photo.library".localized)
           }
           .frame(maxWidth: .infinity)
           .padding(.vertical, 16)

@@ -22,7 +22,7 @@ struct TitleComponent: View {
                     .padding(.bottom, 20)
             }
 
-            Text("欢迎使用")
+            Text("onboarding.welcome".localized)
                 .foregroundColor(.primary)
                 .fontWeight(.semibold)
                 .font(.system(size: shouldHideComponents ? 32 : 28))
@@ -36,7 +36,7 @@ struct TitleComponent: View {
                 .font(.system(size: 42))
                 .tracking(2)
 
-            Text("智能备忘录助手")
+            Text("onboarding.subtitle".localized)
                 .foregroundColor(.secondary)
                 .fontWeight(.medium)
                 .font(.system(size: 16))
@@ -57,4 +57,5 @@ struct TitleComponent: View {
     TitleComponent(shouldHideComponents: true)
         .padding(40)
         .background(Color.globalStyleBackgroundColor)
+        .environmentObject(LanguageManager.shared)
 }

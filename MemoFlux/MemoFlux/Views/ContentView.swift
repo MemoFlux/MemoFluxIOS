@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
+  @EnvironmentObject var languageManager: LanguageManager
   
   @State private var showOnBoarding = !OnBoardingManager.shared.hasSeenOnBoarding
   
@@ -32,12 +33,12 @@ struct ContentView: View {
       HomePageView()
         .tabItem {
           Image(systemName: "house")
-          Text("主页")
+          Text("tab.home".localized)
         }
       CategoryView()
         .tabItem {
           Image(systemName: "list.bullet")
-          Text("分类")
+          Text("tab.category".localized)
         }
     }
     .background(Color.globalStyleBackgroundColor)
@@ -52,4 +53,5 @@ struct ContentView: View {
 
 #Preview {
   ContentView()
+    .environmentObject(LanguageManager.shared)
 }

@@ -22,7 +22,7 @@ struct IntentDetectView: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
       HStack {
-        Text("意图识别")
+        Text("intent.detection.title".localized)
           .font(.system(size: 14, weight: .medium))
           .foregroundColor(.black)
         Spacer()
@@ -36,7 +36,7 @@ struct IntentDetectView: View {
             ProgressView()
               .scaleEffect(0.8)
 
-            Text("正在检测意图...")
+            Text("intent.detection.processing".localized)
               .font(.system(size: 14, weight: .medium))
               .foregroundColor(.black)
 
@@ -50,7 +50,7 @@ struct IntentDetectView: View {
               .font(.system(size: 14))
               .foregroundColor(.green)
 
-            Text("检测到日程安排")
+            Text("intent.detection.schedule.found".localized)
               .font(.system(size: 14, weight: .medium))
               .foregroundColor(.black)
 
@@ -60,18 +60,18 @@ struct IntentDetectView: View {
 
           if let firstTask = response.schedule.tasks.first {
             VStack(alignment: .leading, spacing: 8) {
-              Text("日程：\(firstTask.theme)")
+              Text("intent.detection.schedule".localized(with: firstTask.theme))
                 .font(.system(size: 12, weight: .medium))
                 .foregroundColor(.black)
 
               if let startDate = firstTask.startDate {
-                Text("时间：\(startDate.formatted(date: .abbreviated, time: .shortened))")
+                Text("intent.detection.time".localized(with: startDate.formatted(date: .abbreviated, time: .shortened)))
                   .font(.system(size: 12))
                   .foregroundColor(.secondary)
               }
 
               if !firstTask.coreTasks.isEmpty {
-                Text("任务：\(firstTask.coreTasks.joined(separator: "、"))")
+                Text("intent.detection.tasks".localized(with: firstTask.coreTasks.joined(separator: "、")))
                   .font(.system(size: 12))
                   .foregroundColor(.secondary)
                   .lineLimit(2)
@@ -93,7 +93,7 @@ struct IntentDetectView: View {
               .font(.system(size: 14))
               .foregroundColor(.orange)
 
-            Text(apiResponse != nil ? "未检测到日程安排" : "等待检测意图")
+            Text(apiResponse != nil ? "intent.detection.no.schedule".localized : "intent.detection.waiting".localized)
               .font(.system(size: 14, weight: .medium))
               .foregroundColor(.black)
 
@@ -102,7 +102,7 @@ struct IntentDetectView: View {
           .padding(.bottom, 12)
 
           // MARK: - 描述文本
-          Text("当AI检测到日程安排、任务提醒等意图时，会在这里提供快捷操作选项。")
+          Text("intent.detection.description".localized)
             .font(.system(size: 12))
             .foregroundColor(.grayTextColor)
             .lineLimit(nil)
@@ -115,7 +115,7 @@ struct IntentDetectView: View {
                 .font(.system(size: 12))
                 .foregroundColor(Color.buttonUnavailableTextColor)
 
-              Text("添加到日历")
+              Text("intent.detection.add.calendar".localized)
                 .font(.system(size: 12))
                 .foregroundColor(Color.buttonUnavailableTextColor)
             }
@@ -129,7 +129,7 @@ struct IntentDetectView: View {
                 .font(.system(size: 12))
                 .foregroundColor(Color.buttonUnavailableTextColor)
 
-              Text("添加到提醒事项")
+              Text("intent.detection.add.reminder".localized)
                 .font(.system(size: 12))
                 .foregroundColor(Color.buttonUnavailableTextColor)
             }

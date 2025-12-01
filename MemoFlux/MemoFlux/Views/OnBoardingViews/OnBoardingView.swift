@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct OnBoardingView: View {
+  @EnvironmentObject var languageManager: LanguageManager
   
   @State private var isAnimating = false
   @State private var backgroundOpacity = 0.0
@@ -61,4 +62,5 @@ struct OnBoardingView: View {
 
 #Preview {
   OnBoardingView(isPresented: .constant(true))
+    .environmentObject(LanguageManager.shared)
 }

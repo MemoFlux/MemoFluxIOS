@@ -66,13 +66,13 @@ struct TagsSelectView: View {
     VStack(alignment: .leading, spacing: 0) {
       // 标题和添加自定义按钮
       HStack {
-        Text("添加标签")
+        Text("tags.add".localized)
           .font(.system(size: 14, weight: .medium))
           .foregroundColor(.black)
         
         Spacer()
         
-        Button("添加自定义") {
+        Button("tags.add.custom".localized) {
           showingAddTagAlert = true
         }
         .font(.system(size: 12))
@@ -93,7 +93,7 @@ struct TagsSelectView: View {
                 .font(.system(size: 12))
                 .foregroundColor(.blue)
               
-              Text("AI 建议标签")
+              Text("tags.ai.suggested".localized)
                 .font(.system(size: 12, weight: .medium))
                 .foregroundColor(.blue)
             }
@@ -122,7 +122,7 @@ struct TagsSelectView: View {
         VStack(alignment: .leading, spacing: 12) {
           if useAIParsing && !aiSuggestedTags.isEmpty {
             // 如果有AI建议标签，显示"本地标签"标题
-            Text("本地标签")
+            Text("tags.local".localized)
               .font(.system(size: 12, weight: .medium))
               .foregroundColor(.secondary)
           }
@@ -130,7 +130,7 @@ struct TagsSelectView: View {
           // 本地标签内容
           if localTags.isEmpty {
             // 没有本地标签时显示提示文字
-            Text("暂无本地标签")
+            Text("tags.no.local".localized)
               .font(.system(size: 14))
               .foregroundColor(.secondary)
               .frame(maxWidth: .infinity, alignment: .center)
@@ -170,20 +170,20 @@ struct TagsSelectView: View {
         }
       }
     }
-    .alert("添加自定义标签", isPresented: $showingAddTagAlert) {
-      TextField("输入标签名称", text: $newTagName)
+    .alert("tags.add.custom.alert.title".localized, isPresented: $showingAddTagAlert) {
+      TextField("tags.add.custom.alert.placeholder".localized, text: $newTagName)
         .textInputAutocapitalization(.never)
       
-      Button("取消", role: .cancel) {
+      Button("tags.add.custom.alert.cancel".localized, role: .cancel) {
         newTagName = ""
       }
       
-      Button("确认") {
+      Button("tags.add.custom.alert.confirm".localized) {
         addCustomTag()
       }
       .disabled(newTagName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
     } message: {
-      Text("请输入新标签的名称")
+      Text("tags.add.custom.alert.empty".localized)
     }
   }
   

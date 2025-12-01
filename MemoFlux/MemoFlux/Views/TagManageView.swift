@@ -38,11 +38,11 @@ struct TagManagementView: View {
               .font(.system(size: 48))
               .foregroundColor(.gray)
             
-            Text("暂无标签")
+            Text("category.no.tags".localized)
               .font(.title2)
               .foregroundColor(.gray)
             
-            Button("添加第一个标签") {
+            Button("tag.management.add.first".localized) {
               showingAddTag = true
             }
             .buttonStyle(.borderedProminent)
@@ -60,28 +60,28 @@ struct TagManagementView: View {
         }
       }
       .background(Color.globalStyleBackgroundColor)
-      .navigationTitle("标签管理")
+      .navigationTitle("tag.management.title".localized)
       .navigationBarTitleDisplayMode(.large)
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
-          Button("添加") {
+          Button("tag.management.add".localized) {
             showingAddTag = true
           }
         }
         
         ToolbarItem(placement: .navigationBarLeading) {
-          Button("清理") {
+          Button("tag.management.clean".localized) {
             cleanupUnusedTags()
           }
           .foregroundColor(.red)
         }
       }
-      .alert("添加标签", isPresented: $showingAddTag) {
-        TextField("标签名称", text: $newTagName)
-        Button("取消", role: .cancel) {
+      .alert("tag.management.add".localized, isPresented: $showingAddTag) {
+        TextField("tag.management.edit.alert.placeholder".localized, text: $newTagName)
+        Button("common.cancel".localized, role: .cancel) {
           newTagName = ""
         }
-        Button("添加") {
+        Button("tag.management.add".localized) {
           addNewTag()
         }
         .disabled(newTagName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -138,13 +138,13 @@ struct TagManagementRowView: View {
           .foregroundColor(.primary)
         
         HStack {
-          Text("使用 \(tag.usageCount) 次")
+          Text("tag.management.usage.count".localized(with: tag.usageCount))
             .font(.system(size: 12))
             .foregroundColor(.gray)
           
           Spacer()
           
-          Text("最后使用: \(formatDate(tag.lastUsedAt))")
+          Text("tag.management.last.used".localized(with: formatDate(tag.lastUsedAt)))
             .font(.system(size: 12))
             .foregroundColor(.gray)
         }
@@ -152,7 +152,7 @@ struct TagManagementRowView: View {
       
       Spacer()
       
-      Button("编辑") {
+      Button("tag.management.edit".localized) {
         editedName = tag.name
         showingEditAlert = true
       }
@@ -160,10 +160,10 @@ struct TagManagementRowView: View {
       .foregroundColor(.blue)
     }
     .padding(.vertical, 4)
-    .alert("编辑标签", isPresented: $showingEditAlert) {
-      TextField("标签名称", text: $editedName)
-      Button("取消", role: .cancel) {}
-      Button("保存") {
+    .alert("tag.management.edit.alert.title".localized, isPresented: $showingEditAlert) {
+      TextField("tag.management.edit.alert.placeholder".localized, text: $editedName)
+      Button("tag.management.edit.alert.cancel".localized, role: .cancel) {}
+      Button("tag.management.edit.alert.save".localized) {
         updateTagName()
       }
       .disabled(editedName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -200,11 +200,11 @@ struct SearchBar: View {
       Image(systemName: "magnifyingglass")
         .foregroundColor(.gray)
       
-      TextField("搜索标签", text: $text)
+      TextField("tag.management.search.placeholder".localized, text: $text)
         .textFieldStyle(RoundedBorderTextFieldStyle())
       
       if !text.isEmpty {
-        Button("清除") {
+        Button("tag.management.search.clear".localized) {
           text = ""
         }
         .foregroundColor(.gray)

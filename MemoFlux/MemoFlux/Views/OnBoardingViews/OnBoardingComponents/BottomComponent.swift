@@ -13,7 +13,7 @@ struct BottomComponent: View {
 
     var body: some View {
         VStack(alignment: .center, spacing: 16) {
-            Button("开始使用 MemoFlux") {
+            Button("onboarding.start.button".localized) {
                 withAnimation(.easeInOut(duration: 0.3)) {
                     isPresented = false
                 }
@@ -56,4 +56,5 @@ struct OnBoardingButtonStyle: ButtonStyle {
         BottomComponent(isPresented: .constant(true))
     }
     .background(Color.globalStyleBackgroundColor)
+    .environmentObject(LanguageManager.shared)
 }

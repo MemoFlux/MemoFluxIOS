@@ -14,7 +14,7 @@ struct TextInputButtonView: View {
     Button(action: action) {
       HStack {
         Image(systemName: "text.bubble")
-        Text("输入/粘贴文本内容")
+        Text("memo.input.button".localized)
       }
       .frame(maxWidth: .infinity)
       .padding(.vertical, 60)

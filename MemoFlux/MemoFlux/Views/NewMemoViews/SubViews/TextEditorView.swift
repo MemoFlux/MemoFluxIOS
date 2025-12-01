@@ -24,7 +24,7 @@ struct TextEditorView: View {
         // 标题输入框
         UIKitTextInput(
           text: $inputTitle,
-          placeholder: "输入标题",
+          placeholder: "memo.input.title.placeholder".localized,
           inputType: .textField,
           font: UIFont.preferredFont(forTextStyle: .headline),
           onNext: {
@@ -51,7 +51,7 @@ struct TextEditorView: View {
 
           // textEditor 占位符
           if inputText.isEmpty {
-            Text("在这里输入文字\n或点击下方按钮，上传图片")
+            Text("memo.input.text.placeholder".localized)
               .foregroundColor(Color(UIColor.lightGray))
               .padding(.horizontal, 19)
               .padding(.vertical, 18)
@@ -66,7 +66,7 @@ struct TextEditorView: View {
         }) {
           HStack(spacing: 4) {
             Image(systemName: useAIParsing ? "checkmark.circle" : "circle")
-            Text("使用AI解析")
+            Text("memo.use.ai.parsing".localized)
           }
           .font(.subheadline)
           .foregroundColor(Color.mainStyleBackgroundColor)

@@ -30,7 +30,7 @@ struct ConfirmAddMemoButton: View {
             .scaleEffect(0.8)
             .foregroundColor(.white)
         }
-        Text(isSaving ? "创建中..." : "创建 Memo")
+        Text(isSaving ? "memo.creating".localized : "memo.create".localized)
           .font(.system(size: 14, weight: .medium))
           .foregroundStyle(.white)
       }
@@ -53,7 +53,7 @@ struct ConfirmAddMemoButton: View {
         image: image,
         title: title,
         tags: Array(tags),
-        source: "手动创建"
+        source: "memo.source.manual".localized
       )
       
       // 如果有图片，将用户输入的文本保存为用户原文，OCR识别结果保存为recognizedText
@@ -66,7 +66,7 @@ struct ConfirmAddMemoButton: View {
         title: title,
         tags: Array(tags),
         createdAt: Date(),
-        source: "手动创建"
+        source: "memo.source.manual".localized
       )
     }
     

@@ -44,11 +44,11 @@ struct CategoryView: View {
               .font(.system(size: 48))
               .foregroundColor(.gray)
             
-            Text("暂无标签")
+            Text("category.no.tags".localized)
               .font(.title2)
               .foregroundColor(.gray)
             
-            Text("创建 Memo 时添加标签后，这里会显示所有标签")
+            Text("category.no.tags.description".localized)
               .font(.caption)
               .foregroundColor(.gray)
               .multilineTextAlignment(.center)
@@ -87,7 +87,7 @@ struct CategoryView: View {
         }
       }
       .background(Color.globalStyleBackgroundColor)
-      .navigationTitle("标签分类")
+      .navigationTitle("category.title".localized)
       .navigationBarTitleDisplayMode(.large)
       .onAppear {
         // 确保TagModel与现有Memo中的标签同步
@@ -141,11 +141,11 @@ struct TagMemoListView: View {
             .font(.system(size: 48))
             .foregroundColor(.gray)
           
-          Text("暂无相关 Memo")
+          Text("category.no.related.memos".localized)
             .font(.title2)
             .foregroundColor(.gray)
           
-          Text("还没有包含「\(tag)」标签的 Memo")
+          Text("category.no.related.memos.description".localized(with: tag))
             .font(.caption)
             .foregroundColor(.gray)
             .multilineTextAlignment(.center)
@@ -162,7 +162,7 @@ struct TagMemoListView: View {
       }
     }
     .background(Color.globalStyleBackgroundColor)
-    .navigationTitle("标签 - \(tag)")
+    .navigationTitle("category.tag.memos".localized(with: tag))
     .navigationBarTitleDisplayMode(.inline)
   }
 }
@@ -195,7 +195,7 @@ struct TagMemoRowView: View {
       // 内容区域
       VStack(alignment: .leading, spacing: 4) {
         // 标题
-        Text(memo.title.isEmpty ? "无标题" : memo.title)
+        Text(memo.title.isEmpty ? "category.no.title".localized : memo.title)
           .font(.system(size: 16, weight: .medium))
           .foregroundColor(.primary)
           .lineLimit(1)

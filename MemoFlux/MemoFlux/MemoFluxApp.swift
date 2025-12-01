@@ -11,6 +11,8 @@ import UserNotifications
 
 @main
 struct MemoFluxApp: App {
+  @StateObject private var languageManager = LanguageManager.shared
+  
   init() {
     
   }
@@ -29,6 +31,7 @@ struct MemoFluxApp: App {
     WindowGroup {
       ContentView()
         .preferredColorScheme(.light)  // 暂时强制浅色模式显示，未来适配深色模式后再更改
+        .environmentObject(languageManager)
     }
     .modelContainer(for: [MemoItemModel.self, TagModel.self, ScheduleTaskModel.self])
   }
