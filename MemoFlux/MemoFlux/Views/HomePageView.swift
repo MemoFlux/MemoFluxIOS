@@ -17,9 +17,7 @@ struct HomePageView: View {
   
   @State private var showingSummaryView = false
   @State private var showingAddMemoView = false
-  @State private var showingSettingsView = false
   @State private var isSearchActive = false
-  @EnvironmentObject var languageManager: LanguageManager
   
   var body: some View {
     NavigationStack {
@@ -39,15 +37,7 @@ struct HomePageView: View {
         loadImage()
       }
       .toolbar {
-        ToolbarItemGroup(placement: .topBarLeading) {
-          // 设置按钮
-          Button {
-            showingSettingsView = true
-          } label: {
-            Image(systemName: "gearshape")
-              .font(.system(size: 18, weight: .medium))
-          }
-          
+        ToolbarItem(placement: .topBarLeading) {
           // 每日总结按钮
           Button {
             showingSummaryView = true
@@ -80,9 +70,6 @@ struct HomePageView: View {
     }
     .fullScreenCover(isPresented: $showingSummaryView) {
       SummaryView()
-    }
-    .sheet(isPresented: $showingSettingsView) {
-      SettingsView()
     }
   }
   
@@ -197,5 +184,4 @@ struct HomePageView: View {
 
 #Preview {
   HomePageView()
-    .environmentObject(LanguageManager.shared)
 }
