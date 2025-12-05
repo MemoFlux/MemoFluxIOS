@@ -77,6 +77,9 @@ struct AppStrings {
   static var noTags: String { LanguageManager.shared.localized(zh: "暂无标签", en: "No Tags") }
   static var tagsDescription: String { LanguageManager.shared.localized(zh: "创建 Memo 时添加标签后，这里会显示所有标签", en: "Tags added when creating Memos will appear here") }
   static var tagCategories: String { LanguageManager.shared.localized(zh: "标签分类", en: "Tag Categories") }
+  static var sortBy: String { LanguageManager.shared.localized(zh: "排序", en: "Sort") }
+  static var sortByName: String { LanguageManager.shared.localized(zh: "名称", en: "Name") }
+  static var sortByCount: String { LanguageManager.shared.localized(zh: "数量", en: "Count") }
   static var noRelatedMemos: String { LanguageManager.shared.localized(zh: "暂无相关 Memo", en: "No Related Memos") }
   static func noMemosWithTag(_ tag: String) -> String {
     LanguageManager.shared.localized(zh: "还没有包含「\(tag)」标签的 Memo", en: "No Memos with tag \"\(tag)\" yet")

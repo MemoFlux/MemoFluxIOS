@@ -22,6 +22,13 @@ struct SettingsView: View {
                 .foregroundColor(.secondary)
             }
           }
+          
+          NavigationLink(destination: TagManagementView()) {
+            HStack {
+              Text(AppStrings.tagManagement)
+              Spacer()
+            }
+          }
         }
       }
       .navigationTitle(AppStrings.settingsTitle)
