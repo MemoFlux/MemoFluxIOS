@@ -77,6 +77,13 @@ struct AppStrings {
   static var noTags: String { LanguageManager.shared.localized(zh: "暂无标签", en: "No Tags") }
   static var tagsDescription: String { LanguageManager.shared.localized(zh: "创建 Memo 时添加标签后，这里会显示所有标签", en: "Tags added when creating Memos will appear here") }
   static var tagCategories: String { LanguageManager.shared.localized(zh: "标签分类", en: "Tag Categories") }
+  static var byTag: String { LanguageManager.shared.localized(zh: "按标签", en: "By Tag") }
+  static var byTopic: String { LanguageManager.shared.localized(zh: "按主题", en: "By Topic") }
+  static var noTopics: String { LanguageManager.shared.localized(zh: "暂无主题", en: "No Topics") }
+  static var topicsDescription: String { LanguageManager.shared.localized(zh: "AI 解析出的主题将显示在这里", en: "Topics parsed by AI will appear here") }
+  static func topicTitle(_ topic: String) -> String {
+    LanguageManager.shared.localized(zh: "主题 - \(topic)", en: "Topic - \(topic)")
+  }
   static var sortBy: String { LanguageManager.shared.localized(zh: "排序", en: "Sort") }
   static var sortByName: String { LanguageManager.shared.localized(zh: "名称", en: "Name") }
   static var sortByCount: String { LanguageManager.shared.localized(zh: "数量", en: "Count") }
@@ -160,4 +167,13 @@ struct AppStrings {
   static func lastUsed(_ date: String) -> String { LanguageManager.shared.localized(zh: "最后使用: \(date)", en: "Last used: \(date)") }
   static var editTag: String { LanguageManager.shared.localized(zh: "编辑标签", en: "Edit Tag") }
   static var searchTags: String { LanguageManager.shared.localized(zh: "搜索标签", en: "Search Tags") }
+  
+  // MARK: - Topic Management
+  static var topicManagement: String { LanguageManager.shared.localized(zh: "主题管理", en: "Topic Management") }
+  static var topicName: String { LanguageManager.shared.localized(zh: "主题名称", en: "Topic Name") }
+  static var editTopic: String { LanguageManager.shared.localized(zh: "编辑主题", en: "Edit Topic") }
+  static var searchTopics: String { LanguageManager.shared.localized(zh: "搜索主题", en: "Search Topics") }
+  static var noTopicsFound: String { LanguageManager.shared.localized(zh: "未找到主题", en: "No topics found") }
+  static var deleteTopic: String { LanguageManager.shared.localized(zh: "删除主题", en: "Delete Topic") }
+  static var deleteTopicMessage: String { LanguageManager.shared.localized(zh: "确定要删除此主题吗？该主题下的Memo将变为无主题。", en: "Delete this topic? Memos will become uncategorized.") }
 }

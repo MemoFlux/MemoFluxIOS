@@ -29,6 +29,13 @@ struct SettingsView: View {
               Spacer()
             }
           }
+          
+          NavigationLink(destination: TopicManagementView()) {
+            HStack {
+              Text(AppStrings.topicManagement)
+              Spacer()
+            }
+          }
         }
       }
       .navigationTitle(AppStrings.settingsTitle)

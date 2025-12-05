@@ -136,7 +136,29 @@ class TagManager {
   ///   - tag: 要删除的标签
   ///   - modelContext: SwiftData模型上下文
   func deleteTag(_ tag: TagModel, from modelContext: ModelContext) {
-    modelContext.delete(tag)
+    // 1. 从所有Memo中移除该标签
+    do {
+      let tagName = tag.name
+      // 这里不能直接用 Predicate 过滤包含字符串的数组，所以先获取所有Memos
+      // 或者尝试更高效的查询，但 SwiftData 对数组包含的 Predicate 支持可能有限
+      let descriptor = FetchDescriptor<MemoItemModel>()
+      let memos = try modelContext.fetch(descriptor)
+      
+      for memo in memos {
+        if memo.tags.contains(tagName) {
+          memo.tags.removeAll { $0 == tagName }
+        }
+      }
+      
+      // 2. 删除TagModel
+      modelContext.delete(tag)
+      
+      // 3. 保存更改
+      try modelContext.save()
+      
+    } catch {
+      print("删除标签失败: \(error)")
+    }
   }
   
   /// 获取最常用的标签

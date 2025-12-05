@@ -15,30 +15,59 @@ struct CategoryView: View {
   @Query private var tagModels: [TagModel]
   
   @State private var sortOption: SortOption = .count
+  @State private var selectedMode: CategoryMode = .tag
   
   enum SortOption {
     case name
     case count
   }
   
-  // 计算所有唯一的标签（从TagModel获取，如果为空则从Memo获取）
+  enum CategoryMode: Int {
+    case tag = 0
+    case topic = 1
+    
+    var title: String {
+      switch self {
+      case .tag: return AppStrings.byTag
+      case .topic: return AppStrings.byTopic
+      }
+    }
+  }
+  
+  // MARK: - 数据计算
+  
+  // 计算所有唯一的标签
   private var allTags: [String] {
     let tags: [String]
     if !tagModels.isEmpty {
       tags = tagModels.map { $0.name }
     } else {
-      // 兼容性：如果TagModel为空，从Memo获取
       let tagSet = Set(memos.flatMap { $0.tags })
       tags = Array(tagSet)
     }
     
+    return sortItems(tags, countProvider: { tagUsageCount(for: $0) })
+  }
+  
+  // 计算所有唯一的主题（从 Memo 的 mostPossibleCategory 提取）
+  private var allTopics: [String] {
+    let topicSet = Set(memos.compactMap { memo -> String? in
+      guard let response = memo.apiResponse, !response.mostPossibleCategory.isEmpty else { return nil }
+      return response.mostPossibleCategory
+    })
+    
+    return sortItems(Array(topicSet), countProvider: { topicCount(for: $0) })
+  }
+  
+  // 通用排序逻辑
+  private func sortItems(_ items: [String], countProvider: (String) -> Int) -> [String] {
     switch sortOption {
     case .name:
-      return tags.sorted()
+      return items.sorted()
     case .count:
-      return tags.sorted {
-        let count1 = tagUsageCount(for: $0)
-        let count2 = tagUsageCount(for: $1)
+      return items.sorted {
+        let count1 = countProvider($0)
+        let count2 = countProvider($1)
         if count1 == count2 {
           return $0 < $1
         }
@@ -47,102 +76,143 @@ struct CategoryView: View {
     }
   }
   
-  // 计算每个标签对应的 Memo 数量
+  // 标签计数
   private func memoCount(for tag: String) -> Int {
     return memos.filter { $0.tags.contains(tag) }.count
   }
   
-  // 获取标签的使用频率（如果有TagModel）
   private func tagUsageCount(for tagName: String) -> Int {
     return tagModels.first { $0.name == tagName }?.usageCount ?? memoCount(for: tagName)
   }
   
+  // 主题计数
+  private func topicCount(for topic: String) -> Int {
+    return memos.filter { $0.apiResponse?.mostPossibleCategory == topic }.count
+  }
+  
   var body: some View {
     NavigationStack {
-      ScrollView {
-        VStack(alignment: .leading, spacing: 16) {
-          // 顶部标题和排序按钮
-          HStack {
-            Text(AppStrings.tagCategories)
-              .font(.title2)
-              .fontWeight(.bold)
-            
-            Spacer()
-            
-            Menu {
-              Button {
-                sortOption = .count
-              } label: {
-                if sortOption == .count {
-                  Label(AppStrings.sortByCount, systemImage: "checkmark")
-                } else {
-                  Text(AppStrings.sortByCount)
-                }
-              }
+      VStack(spacing: 0) {
+        // 模式切换分段控件
+        Picker("", selection: $selectedMode) {
+          Text(AppStrings.byTag).tag(CategoryMode.tag)
+          Text(AppStrings.byTopic).tag(CategoryMode.topic)
+        }
+        .pickerStyle(SegmentedPickerStyle())
+        .padding(.horizontal)
+        .padding(.vertical, 8)
+        
+        ScrollView {
+          VStack(alignment: .leading, spacing: 16) {
+            // 顶部标题和排序按钮
+            HStack {
+              Text(selectedMode == .tag ? AppStrings.tagCategories : AppStrings.tagCategories.replacingOccurrences(of: "Tag", with: "Topic")) // Fallback if not localized properly or just reuse
+                .font(.title2)
+                .fontWeight(.bold)
               
-              Button {
-                sortOption = .name
+              Spacer()
+              
+              Menu {
+                Button {
+                  sortOption = .count
+                } label: {
+                  if sortOption == .count {
+                    Label(AppStrings.sortByCount, systemImage: "checkmark")
+                  } else {
+                    Text(AppStrings.sortByCount)
+                  }
+                }
+                
+                Button {
+                  sortOption = .name
+                } label: {
+                  if sortOption == .name {
+                    Label(AppStrings.sortByName, systemImage: "checkmark")
+                  } else {
+                    Text(AppStrings.sortByName)
+                  }
+                }
               } label: {
-                if sortOption == .name {
-                  Label(AppStrings.sortByName, systemImage: "checkmark")
-                } else {
-                  Text(AppStrings.sortByName)
+                HStack(spacing: 4) {
+                  Text(AppStrings.sortBy)
+                  Image(systemName: "chevron.down")
+                    .font(.caption)
                 }
-              }
-            } label: {
-              HStack(spacing: 4) {
-                Text(AppStrings.sortBy)
-                Image(systemName: "chevron.down")
-                  .font(.caption)
-              }
-              .font(.subheadline)
-              .foregroundColor(.gray)
-              .padding(.horizontal, 12)
-              .padding(.vertical, 6)
-              .background(Color.grayBackgroundColor.opacity(0.5))
-              .cornerRadius(16)
-            }
-          }
-          .padding(.horizontal)
-          .padding(.top)
-          
-          // 空状态
-          if allTags.isEmpty {
-            emptyStateView
-          } else {
-            // 标签流式布局
-            CategoryFlowLayout(spacing: 12) {
-              ForEach(allTags, id: \.self) { tag in
-                NavigationLink(destination: TagMemoListView(tag: tag)) {
-                  CategoryTagChipView(tag: tag, count: memoCount(for: tag))
-                }
+                .font(.subheadline)
+                .foregroundColor(.gray)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(Color.grayBackgroundColor.opacity(0.5))
+                .cornerRadius(16)
               }
             }
             .padding(.horizontal)
+            .padding(.top)
+            
+            if selectedMode == .tag {
+              tagContentView
+            } else {
+              topicContentView
+            }
           }
         }
       }
       .background(Color.globalStyleBackgroundColor)
-      .navigationTitle(AppStrings.tabCategory) // 使用 TabBar 的标题或者 tagCategories
+      .navigationTitle(AppStrings.tabCategory)
       .navigationBarTitleDisplayMode(.inline)
       .onAppear {
-        // 确保TagModel与现有Memo中的标签同步
         syncTagsFromMemosToTagModel()
       }
     }
   }
   
-  private var emptyStateView: some View {
+  // MARK: - 标签视图
+  private var tagContentView: some View {
+    Group {
+      if allTags.isEmpty {
+        emptyStateView(title: AppStrings.noTags, description: AppStrings.tagsDescription)
+      } else {
+        CategoryFlowLayout(spacing: 12) {
+          ForEach(allTags, id: \.self) { tag in
+            NavigationLink(destination: TagMemoListView(tag: tag)) {
+              CategoryTagChipView(tag: tag, count: memoCount(for: tag))
+            }
+          }
+        }
+        .padding(.horizontal)
+      }
+    }
+  }
+  
+  // MARK: - 主题视图
+  private var topicContentView: some View {
+    Group {
+      if allTopics.isEmpty {
+        emptyStateView(title: AppStrings.noTopics, description: AppStrings.topicsDescription)
+      } else {
+        CategoryFlowLayout(spacing: 12) {
+          ForEach(allTopics, id: \.self) { topic in
+            NavigationLink(destination: TopicMemoListView(topic: topic)) {
+              CategoryTagChipView(tag: topic, count: topicCount(for: topic)) // 复用 TagChipView 样式
+            }
+          }
+        }
+        .padding(.horizontal)
+      }
+    }
+  }
+  
+  private func emptyStateView(title: String, description: String) -> some View {
     VStack(spacing: 16) {
-      Image(systemName: "tag.slash")
+      Image(systemName: "tag.slash") // Or a different icon for topic
         .font(.system(size: 48))
         .foregroundColor(.gray)
       
-      Text(AppStrings.noTags)
+      Text(title)
         .font(.title2)
         .foregroundColor(.gray)
       
-      Text(AppStrings.tagsDescription)
+      Text(description)
         .font(.caption)
         .foregroundColor(.gray)
         .multilineTextAlignment(.center)
@@ -159,15 +229,12 @@ struct CategoryView: View {
     let allMemoTags = Set(memos.flatMap { $0.tags })
     let existingTagNames = Set(tagModels.map { $0.name })
     
-    // 找出TagModel中缺少的标签
     let missingTags = allMemoTags.subtracting(existingTagNames)
     
-    // 为缺少的标签创建TagModel
     for tagName in missingTags {
       TagManager.shared.createOrUpdateTag(name: tagName, in: modelContext)
     }
     
-    // 保存更改
     do {
       try modelContext.save()
     } catch {
@@ -181,7 +248,6 @@ struct CategoryTagChipView: View {
   let tag: String
   let count: Int
   
-  // 预定义的柔和颜色方案 (背景色, 文字色)
   private let colorPairs: [(Color, Color)] = [
     (Color(red: 254/255, green: 226/255, blue: 226/255), Color(red: 220/255, green: 38/255, blue: 38/255)), // Red
     (Color(red: 254/255, green: 243/255, blue: 199/255), Color(red: 217/255, green: 119/255, blue: 6/255)), // Amber
@@ -204,15 +270,6 @@ struct CategoryTagChipView: View {
     HStack(spacing: 6) {
       Text("# \(tag)")
         .font(.system(size: 16, weight: .medium))
-      
-//      if count > 0 {
-//        Text("\(count)")
-//          .font(.system(size: 12))
-//          .padding(.horizontal, 6)
-//          .padding(.vertical, 2)
-//          .background(Color.white.opacity(0.5))
-//          .cornerRadius(8)
-//      }
     }
     .padding(.horizontal, 16)
     .padding(.vertical, 12)
@@ -222,7 +279,7 @@ struct CategoryTagChipView: View {
   }
 }
 
-// MARK: - Flow Layout (Copied locally to ensure independence)
+// MARK: - Flow Layout
 struct CategoryFlowLayout: Layout {
   var spacing: CGFloat
   
@@ -327,6 +384,57 @@ struct TagMemoListView: View {
     .navigationBarTitleDisplayMode(.inline)
   }
 }
+
+// MARK: - 主题相关的 Memo 列表视图
+struct TopicMemoListView: View {
+  let topic: String
+  @ObservedObject private var languageManager = LanguageManager.shared
+  @Environment(\.modelContext) private var modelContext
+  @Query private var allMemos: [MemoItemModel]
+  
+  // 过滤出包含指定主题的 Memo
+  private var filteredMemos: [MemoItemModel] {
+    return allMemos.filter { $0.apiResponse?.mostPossibleCategory == topic }
+      .sorted { $0.createdAt > $1.createdAt }
+  }
+  
+  var body: some View {
+    VStack {
+      if filteredMemos.isEmpty {
+        // 空状态
+        VStack(spacing: 16) {
+          Image(systemName: "doc.text")
+            .font(.system(size: 48))
+            .foregroundColor(.gray)
+          
+          Text(AppStrings.noRelatedMemos)
+            .font(.title2)
+            .foregroundColor(.gray)
+          
+          // Fallback localized string or reuse
+          Text("No Memos in topic \"\(topic)\"")
+            .font(.caption)
+            .foregroundColor(.gray)
+            .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+      } else {
+        // Memo 列表
+        List(filteredMemos) { memo in
+          NavigationLink(destination: ListCellDetailView(item: memo)) {
+            // 复用 TagMemoRowView 但不高亮标签，或者可以高亮主题（如果 UI 支持）
+            TagMemoRowView(memo: memo, highlightTag: "") 
+          }
+        }
+        .listStyle(PlainListStyle())
+      }
+    }
+    .background(Color.globalStyleBackgroundColor)
+    .navigationTitle(AppStrings.topicTitle(topic))
+    .navigationBarTitleDisplayMode(.inline)
+  }
+}
+
 
 // MARK: - 标签 Memo 行视图
 struct TagMemoRowView: View {
