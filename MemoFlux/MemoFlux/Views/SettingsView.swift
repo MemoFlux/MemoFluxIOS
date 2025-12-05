@@ -8,8 +8,24 @@
 import SwiftUI
 
 struct SettingsView: View {
+  @ObservedObject private var languageManager = LanguageManager.shared
+  
   var body: some View {
-    Text("Hello World!")
+    NavigationView {
+      List {
+        Section {
+          NavigationLink(destination: LanguageSettingsView()) {
+            HStack {
+              Text(AppStrings.language)
+              Spacer()
+              Text(languageManager.currentLanguage.displayName)
+                .foregroundColor(.secondary)
+            }
+          }
+        }
+      }
+      .navigationTitle(AppStrings.settingsTitle)
+    }
   }
 }
 

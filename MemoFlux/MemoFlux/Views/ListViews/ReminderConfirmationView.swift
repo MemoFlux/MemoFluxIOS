@@ -11,6 +11,7 @@ import SwiftUI
 struct ReminderConfirmationView: View {
   let task: ScheduleTask
   @Environment(\.dismiss) private var dismiss
+  @ObservedObject private var languageManager = LanguageManager.shared
   
   @State private var reminderTitle: String = ""
   @State private var reminderNotes: String = ""
@@ -21,40 +22,40 @@ struct ReminderConfirmationView: View {
   var body: some View {
     NavigationView {
       Form {
-        Section("标题") {
-          TextField("输入提醒标题", text: $reminderTitle)
+        Section(AppStrings.title) {
+          TextField(AppStrings.reminderTitleInput, text: $reminderTitle)
             .multilineTextAlignment(.leading)
         }
         
-        Section("时间设置") {
-          Toggle("设置提醒时间", isOn: $hasDate)
+        Section(AppStrings.timeSettings) {
+          Toggle(AppStrings.setReminderTime, isOn: $hasDate)
           
           if hasDate {
             DatePicker(
-              "提醒时间",
+              AppStrings.reminderTime,
               selection: $reminderDate,
               displayedComponents: [.date, .hourAndMinute]
             )
           }
         }
         
-        Section("备注") {
+        Section(AppStrings.notes) {
           TextEditor(text: $reminderNotes)
             .frame(minHeight: 100, maxHeight: 240)  // 限制最大高度约10行
             .scrollContentBackground(.hidden)  // 隐藏默认背景
         }
       }
-      .navigationTitle("创建提醒事项")
+      .navigationTitle(AppStrings.createReminder)
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .navigationBarLeading) {
-          Button("取消") {
+          Button(AppStrings.cancel) {
             dismiss()
           }
         }
         
         ToolbarItem(placement: .navigationBarTrailing) {
-          Button("创建") {
+          Button(AppStrings.create) {
             createReminder()
           }
           .disabled(reminderTitle.isEmpty || isCreating)
@@ -82,7 +83,7 @@ struct ReminderConfirmationView: View {
     var notes = ""
     
     if !task.coreTasks.isEmpty {
-      notes += "核心任务:\n"
+      notes += "\(AppStrings.coreTasksPrefix)\n"
       for coreTask in task.coreTasks {
         notes += "• \(coreTask)\n"
       }
@@ -90,7 +91,7 @@ struct ReminderConfirmationView: View {
     }
     
     if !task.suggestedActions.isEmpty {
-      notes += "建议行动:\n"
+      notes += "\(AppStrings.suggestedActionsPrefix)\n"
       for action in task.suggestedActions {
         notes += "• \(action)\n"
       }
@@ -98,15 +99,15 @@ struct ReminderConfirmationView: View {
     }
     
     if !task.people.isEmpty {
-      notes += "参与人员: \(task.people.joined(separator: ", "))\n"
+      notes += "\(AppStrings.participantsPrefix)\(task.people.joined(separator: ", "))\n"
     }
     
     if !task.position.isEmpty {
-      notes += "地点: \(task.position.joined(separator: ", "))\n"
+      notes += "\(AppStrings.locationPrefix)\(task.position.joined(separator: ", "))\n"
     }
     
     if !task.tags.isEmpty {
-      notes += "标签: \(task.tags.joined(separator: ", "))"
+      notes += "\(AppStrings.tagsPrefix)\(task.tags.joined(separator: ", "))"
     }
     
     return notes.trimmingCharacters(in: .whitespacesAndNewlines)

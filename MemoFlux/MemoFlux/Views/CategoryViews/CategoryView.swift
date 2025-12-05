@@ -9,6 +9,7 @@ import SwiftData
 import SwiftUI
 
 struct CategoryView: View {
+  @ObservedObject private var languageManager = LanguageManager.shared
   @Environment(\.modelContext) private var modelContext
   @Query private var memos: [MemoItemModel]
   @Query private var tagModels: [TagModel]
@@ -44,11 +45,11 @@ struct CategoryView: View {
               .font(.system(size: 48))
               .foregroundColor(.gray)
             
-            Text("暂无标签")
+            Text(AppStrings.noTags)
               .font(.title2)
               .foregroundColor(.gray)
             
-            Text("创建 Memo 时添加标签后，这里会显示所有标签")
+            Text(AppStrings.tagsDescription)
               .font(.caption)
               .foregroundColor(.gray)
               .multilineTextAlignment(.center)
@@ -87,7 +88,7 @@ struct CategoryView: View {
         }
       }
       .background(Color.globalStyleBackgroundColor)
-      .navigationTitle("标签分类")
+      .navigationTitle(AppStrings.tagCategories)
       .navigationBarTitleDisplayMode(.large)
       .onAppear {
         // 确保TagModel与现有Memo中的标签同步
@@ -123,6 +124,7 @@ struct CategoryView: View {
 // MARK: - 标签相关的 Memo 列表视图
 struct TagMemoListView: View {
   let tag: String
+  @ObservedObject private var languageManager = LanguageManager.shared
   @Environment(\.modelContext) private var modelContext
   @Query private var allMemos: [MemoItemModel]
   
@@ -141,11 +143,11 @@ struct TagMemoListView: View {
             .font(.system(size: 48))
             .foregroundColor(.gray)
           
-          Text("暂无相关 Memo")
+          Text(AppStrings.noRelatedMemos)
             .font(.title2)
             .foregroundColor(.gray)
           
-          Text("还没有包含「\(tag)」标签的 Memo")
+          Text(AppStrings.noMemosWithTag(tag))
             .font(.caption)
             .foregroundColor(.gray)
             .multilineTextAlignment(.center)
@@ -162,7 +164,7 @@ struct TagMemoListView: View {
       }
     }
     .background(Color.globalStyleBackgroundColor)
-    .navigationTitle("标签 - \(tag)")
+    .navigationTitle(AppStrings.tagTitle(tag))
     .navigationBarTitleDisplayMode(.inline)
   }
 }
@@ -195,7 +197,7 @@ struct TagMemoRowView: View {
       // 内容区域
       VStack(alignment: .leading, spacing: 4) {
         // 标题
-        Text(memo.title.isEmpty ? "无标题" : memo.title)
+        Text(memo.title.isEmpty ? AppStrings.noTitle : memo.title)
           .font(.system(size: 16, weight: .medium))
           .foregroundColor(.primary)
           .lineLimit(1)

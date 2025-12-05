@@ -12,6 +12,7 @@ import Vision
 struct AddMemoItemView: View {
   @Environment(\.dismiss) private var dismiss
   @Environment(\.modelContext) private var modelContext
+  @ObservedObject private var languageManager = LanguageManager.shared
   
   @State private var showingImagePicker = false
   @State private var showingCamera = false
@@ -55,14 +56,14 @@ struct AddMemoItemView: View {
           HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 5) {
               HStack {
-                Text("* 暂时只能拍摄/选择一张照片")
+                Text(AppStrings.onePhotoLimit)
                   .font(.caption)
                   .foregroundStyle(.gray)
                   .frame(maxWidth: .infinity, alignment: .leading)
                 
                 NavigationLink(destination: AddShortcutView()) {
                   HStack(spacing: 0) {
-                    Text("推荐使用快捷指令！")
+                    Text(AppStrings.recommendShortcut)
                     Image(systemName: "chevron.right.circle")
                   }
                 }
@@ -93,7 +94,7 @@ struct AddMemoItemView: View {
                             }
                           }
                         ) {
-                          Label("删除照片", systemImage: "trash")
+                          Label(AppStrings.deletePhoto, systemImage: "trash")
                         }
                       }
                     
@@ -101,7 +102,7 @@ struct AddMemoItemView: View {
                       HStack {
                         ProgressView()
                           .scaleEffect(0.7)
-                        Text("正在处理图片...")
+                        Text(AppStrings.processingImage)
                           .font(.caption)
                           .foregroundColor(.secondary)
                       }
@@ -110,7 +111,7 @@ struct AddMemoItemView: View {
                         Image(systemName: "checkmark.circle.fill")
                           .foregroundColor(.green)
                           .font(.caption)
-                        Text("图片已处理完成")
+                        Text(AppStrings.imageProcessed)
                           .font(.caption)
                           .foregroundColor(.secondary)
                       }
@@ -163,7 +164,7 @@ struct AddMemoItemView: View {
       }
       .background(Color.globalStyleBackgroundColor)
       .ignoresSafeArea(.keyboard)
-      .navigationTitle("创建Memo")
+      .navigationTitle(AppStrings.createMemo)
       .fullScreenCover(isPresented: $showingCamera) {  // 相机调用
         CameraView(image: $selectedImage, isShown: $showingCamera)
           .ignoresSafeArea()
@@ -219,7 +220,7 @@ struct AddMemoItemView: View {
       }
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
-          Button("取消") {
+          Button(AppStrings.cancel) {
             dismiss()
           }
         }
@@ -254,11 +255,11 @@ struct AddMemoItemView: View {
   // MARK: - 获取解析按钮文本
   private func getParseButtonText() -> String {
     if isParsingInProgress {
-      return "解析中..."
+      return AppStrings.parsing
     } else if hasAttemptedParsing {
-      return "再次解析"
+      return AppStrings.parseAgain
     } else {
-      return "解析"
+      return AppStrings.parse
     }
   }
   

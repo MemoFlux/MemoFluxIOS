@@ -11,12 +11,20 @@ import SwiftUI
 
 // MARK: - 数据类型枚举
 enum DataType: String, CaseIterable {
-  case information = "信息"
-  case schedule = "日程"
+  case information
+  case schedule
+  
+  var localizedName: String {
+    switch self {
+    case .information: return AppStrings.typeInformation
+    case .schedule: return AppStrings.typeSchedule
+    }
+  }
 }
 
 struct ListCellDetailView: View {
   let item: MemoItemModel
+  @ObservedObject private var languageManager = LanguageManager.shared
   
   @Environment(\.modelContext) private var modelContext
   
@@ -61,7 +69,7 @@ struct ListCellDetailView: View {
       }
       .padding(.vertical)
     }
-    .navigationTitle("详细信息")
+    .navigationTitle(AppStrings.detailTitle)
     .navigationBarTitleDisplayMode(.inline)
     .toolbar {
       ToolbarItem(placement: .navigationBarTrailing) {
@@ -86,7 +94,7 @@ struct ListCellDetailView: View {
     VStack(alignment: .leading, spacing: 8) {
       HStack {
         Image(systemName: "calendar")
-        Text("创建时间: \(item.createdAt.formatted(date: .abbreviated, time: .shortened))")
+        Text("\(AppStrings.createdPrefix)\(item.createdAt.formatted(date: .abbreviated, time: .shortened))")
         Spacer()
       }
       .font(.subheadline)
@@ -96,7 +104,7 @@ struct ListCellDetailView: View {
       if !item.source.isEmpty {
         HStack {
           Image(systemName: "link")
-          Text("来源: \(item.source)")
+          Text("\(AppStrings.sourcePrefix)\(item.source)")
           Spacer()
         }
         .font(.subheadline)
@@ -108,7 +116,7 @@ struct ListCellDetailView: View {
       if item.isAPIProcessing {
         HStack {
           Image(systemName: "brain")
-          Text("AI正在分析中...")
+          Text(AppStrings.aiAnalyzing)
           ProgressView()
             .scaleEffect(0.8)
           Spacer()
@@ -119,7 +127,7 @@ struct ListCellDetailView: View {
       } else if item.hasAPIResponse, let processedAt = item.apiProcessedAt {
         HStack {
           Image(systemName: "brain.head.profile")
-          Text("AI分析完成: \(processedAt.formatted(date: .omitted, time: .shortened))")
+          Text("\(AppStrings.aiAnalysisCompletePrefix)\(processedAt.formatted(date: .omitted, time: .shortened))")
           Spacer()
         }
         .font(.subheadline)
@@ -156,7 +164,7 @@ struct ListCellDetailView: View {
       // 显示用户输入的原文（如果有）
       if !item.userInputText.isEmpty {
         VStack(alignment: .leading, spacing: 10) {
-          Text("输入原文")
+          Text(AppStrings.originalText)
             .font(.headline)
             .padding(.leading, 5)
           
@@ -172,7 +180,7 @@ struct ListCellDetailView: View {
       // 显示摘要（如果有API响应）
       if let response = item.apiResponse, !response.information.summary.isEmpty {
         VStack(alignment: .leading, spacing: 10) {
-          Text("AI 摘要")
+          Text(AppStrings.aiSummary)
             .font(.headline)
             .padding(.leading, 5)
           
@@ -183,7 +191,7 @@ struct ListCellDetailView: View {
             .background(Color.blue.opacity(0.1))
             .cornerRadius(15)
           
-          Text("AI 解析内容")
+          Text(AppStrings.aiParsedContent)
             .font(.headline)
             .padding(.leading, 5)
         }
@@ -194,10 +202,10 @@ struct ListCellDetailView: View {
       if item.isAPIProcessing {
         // 正在处理API请求
         VStack(spacing: 16) {
-          ProgressView("AI正在分析内容...")
+          ProgressView(AppStrings.aiAnalyzingContent)
             .frame(maxWidth: .infinity, alignment: .center)
           
-          Text("请稍候，AI正在为您分析内容并生成智能解析结果")
+          Text(AppStrings.aiAnalyzingDesc)
             .font(.caption)
             .foregroundColor(.secondary)
             .multilineTextAlignment(.center)
@@ -205,9 +213,9 @@ struct ListCellDetailView: View {
         .padding()
         
       } else if let response = item.apiResponse {
-        Picker("数据类型", selection: $selectedDataType) {
+        Picker(AppStrings.dataType, selection: $selectedDataType) {
           ForEach(DataType.allCases, id: \.self) { type in
-            Text(type.rawValue).tag(type)
+            Text(type.localizedName).tag(type)
           }
         }
         .pickerStyle(SegmentedPickerStyle())
@@ -226,7 +234,7 @@ struct ListCellDetailView: View {
         VStack(alignment: .leading, spacing: 8) {
           if !item.recognizedText.isEmpty {
             VStack(alignment: .leading, spacing: 10) {
-              Text("本地文本")
+              Text(AppStrings.localText)
                 .font(.headline)
                 .padding(.leading, 5)
               
@@ -243,7 +251,7 @@ struct ListCellDetailView: View {
             manualAnalysisButton
             
           } else {
-            Text("暂无识别内容")
+            Text(AppStrings.noRecognizedContent)
               .font(.body)
               .foregroundColor(.secondary)
               .padding()
@@ -282,7 +290,7 @@ struct ListCellDetailView: View {
           ProgressView()
             .scaleEffect(0.8)
         }
-        Text(isManuallyTriggering ? "AI分析中..." : "重新使用AI解析")
+        Text(isManuallyTriggering ? AppStrings.aiAnalyzing : AppStrings.reparseAI)
       }
     }
     .font(.system(size: 14, weight: .medium))
@@ -394,6 +402,7 @@ struct ScheduleView: View {
   @State private var showIgnoredTasks = false
   @State private var showingReminderConfirmation = false
   @State private var selectedTask: ScheduleTask? = nil
+  @ObservedObject private var languageManager = LanguageManager.shared
   
   init(schedule: MemoItemModel.Schedule, memoItem: MemoItemModel) {
     self.schedule = schedule
@@ -427,8 +436,8 @@ struct ScheduleView: View {
     VStack(alignment: .leading, spacing: 12) {
       if schedule.tasks.isEmpty {
         ScheduleEmptyView(
-          title: "当前Memo未识别出意图",
-          desc: "您可以尝试添加更多详细信息，或使用AI解析功能重新分析内容"
+          title: AppStrings.noIntentRecognized,
+          desc: AppStrings.noIntentDesc
         )
       } else {
         Text(schedule.title)
@@ -437,7 +446,7 @@ struct ScheduleView: View {
           .padding(.horizontal)
         
         HStack {
-          Text("分类:")
+          Text(AppStrings.categoryPrefix)
             .font(.subheadline)
             .fontWeight(.medium)
           Text(schedule.category)
@@ -453,7 +462,7 @@ struct ScheduleView: View {
             } label: {
               HStack(spacing: 4) {
                 Image(systemName: showIgnoredTasks ? "checkmark.circle" : "circle")
-                Text("显示已忽略日程")
+                Text(AppStrings.showIgnoredSchedules)
               }
               .font(.subheadline)
               .foregroundStyle(.gray)
@@ -464,8 +473,8 @@ struct ScheduleView: View {
         
         if !hasPendingOrCompletedTask && !showIgnoredTasks {
           ScheduleEmptyView(
-            title: "暂无有效日程信息",
-            desc: "所有生成的日程均已忽略，可点击“显示已忽略日程”查看。"
+            title: AppStrings.noValidSchedule,
+            desc: AppStrings.allSchedulesIgnored
           )
         } else {
           LazyVStack(alignment: .leading, spacing: 8) {
@@ -517,6 +526,7 @@ struct ScheduleView: View {
 struct ScheduleTaskCard: View {
   @Binding var task: MemoItemModel.ScheduleTask
   @State private var showingReminderConfirmation = false
+  @ObservedObject private var languageManager = LanguageManager.shared
   
   // 添加环境变量以访问ModelContext
   @Environment(\.modelContext) private var modelContext
@@ -560,14 +570,14 @@ struct ScheduleTaskCard: View {
         Spacer()
         if let startDate = task.startDate {
           Text(startDate, format: .dateTime.day().month().year().hour().minute())
-            .font(.caption)
-            .foregroundColor(.grayTextColor)
+          .font(.caption)
+          .foregroundColor(.grayTextColor)
         }
       }
       
       if !task.coreTasks.isEmpty {
         VStack(alignment: .leading, spacing: 4) {
-          Text("核心任务:")
+          Text(AppStrings.coreTasksPrefix)
             .font(.subheadline)
             .fontWeight(.medium)
           ForEach(task.coreTasks, id: \.self) { coreTask in
@@ -584,7 +594,7 @@ struct ScheduleTaskCard: View {
       
       if !task.suggestedActions.isEmpty {
         VStack(alignment: .leading, spacing: 4) {
-          Text("建议行动:")
+          Text(AppStrings.suggestedActionsPrefix)
             .font(.subheadline)
             .fontWeight(.medium)
           ForEach(task.suggestedActions, id: \.self) { action in

@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
+  @ObservedObject private var languageManager = LanguageManager.shared
   
   @State private var showOnBoarding = !OnBoardingManager.shared.hasSeenOnBoarding
   @State private var selectedTabIndex = 0
@@ -31,16 +32,16 @@ struct ContentView: View {
   var body: some View {
     if #available(iOS 26.0, *) {
       TabView(selection: $selectedTabIndex) {
-        Tab("主页", systemImage: "house", value: 0) {
+        Tab(AppStrings.tabHome, systemImage: "house", value: 0) {
           HomePageView()
         }
-        Tab("意图", systemImage: "calendar", value: 1) {
+        Tab(AppStrings.tabIntent, systemImage: "calendar", value: 1) {
           IntentListView()
         }
-        Tab("分类", systemImage: "list.bullet", value: 2) {
+        Tab(AppStrings.tabCategory, systemImage: "list.bullet", value: 2) {
           CategoryView()
         }
-        Tab("设置", systemImage: "gearshape", value: 3) {
+        Tab(AppStrings.tabSettings, systemImage: "gearshape", value: 3) {
           SettingsView()
         }
         
@@ -55,22 +56,22 @@ struct ContentView: View {
         HomePageView()
           .tabItem {
             Image(systemName: "house")
-            Text("主页")
+            Text(AppStrings.tabHome)
           }
         IntentListView()
           .tabItem {
             Image(systemName: "calendar")
-            Text("意图")
+            Text(AppStrings.tabIntent)
           }
         CategoryView()
           .tabItem {
             Image(systemName: "list.bullet")
-            Text("分类")
+            Text(AppStrings.tabCategory)
           }
         SettingsView()
           .tabItem {
             Image(systemName: "gearshape")
-            Text("设置")
+            Text(AppStrings.tabSettings)
           }
       }
       .background(Color.globalStyleBackgroundColor)

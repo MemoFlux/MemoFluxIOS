@@ -13,6 +13,7 @@ import VisionKit
 struct MemoListView: View {
   let memoItems: [MemoItemModel]
   let modelContext: ModelContext
+  @ObservedObject private var languageManager = LanguageManager.shared
   
   // 搜索相关
   @State private var searchText = ""
@@ -55,12 +56,12 @@ struct MemoListView: View {
     let calendar = Calendar.current
     let grouped = Dictionary(grouping: filteredItems) { item in
       if calendar.isDateInToday(item.createdAt) {
-        return "今天"
+        return AppStrings.today
       } else if calendar.isDateInYesterday(item.createdAt) {
-        return "昨天"
+        return AppStrings.yesterday
       } else {
         let formatter = DateFormatter()
-        formatter.dateFormat = "MM月dd日"
+        formatter.dateFormat = LanguageManager.shared.currentLanguage == .chinese ? "MM月dd日" : "MMM dd"
         return formatter.string(from: item.createdAt)
       }
     }
@@ -70,10 +71,10 @@ struct MemoListView: View {
       grouped
         .filter { !$0.value.isEmpty }  // 过滤掉空分组，以修复swiftData中删除后还在UI中显示的问题
         .sorted { first, second in
-          if first.key == "今天" { return true }
-          if second.key == "今天" { return false }
-          if first.key == "昨天" { return true }
-          if second.key == "昨天" { return false }
+          if first.key == AppStrings.today { return true }
+          if second.key == AppStrings.today { return false }
+          if first.key == AppStrings.yesterday { return true }
+          if second.key == AppStrings.yesterday { return false }
           return first.key > second.key
         }
     )
@@ -91,9 +92,9 @@ struct MemoListView: View {
   
   private var emptyStateView: some View {
     ContentUnavailableView(
-      "没有内容",
+      AppStrings.noContent,
       systemImage: "photo",
-      description: Text("请从快捷指令或其他来源导入内容。")
+      description: Text(AppStrings.importPrompt)
     )
   }
   
@@ -105,21 +106,21 @@ struct MemoListView: View {
         memoListView
       }
     }
-    .navigationTitle("Memo")
+    .navigationTitle("Memo") // Assuming "Memo" is international enough or should be localized
     .background(Color.globalStyleBackgroundColor)
     .searchable(
       text: $searchText,
       isPresented: $isSearchActive,
       placement: .navigationBarDrawer(displayMode: .automatic),
-      prompt: "搜索Memo..."
+      prompt: Text(AppStrings.searchPrompt)
     )
   }
   
   private var searchEmptyStateView: some View {
     ContentUnavailableView(
-      "没有找到相关内容",
+      AppStrings.noSearchResults,
       systemImage: "magnifyingglass",
-      description: Text("尝试使用其他关键词搜索")
+      description: Text(AppStrings.tryOtherKeywords)
     )
     .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
@@ -172,14 +173,14 @@ struct MemoListView: View {
       Button(role: .destructive) {
         deleteMemo(item)
       } label: {
-        Label("删除", systemImage: "trash")
+        Label(AppStrings.delete, systemImage: "trash")
       }
       
       Button {
         // TODO: - 编辑逻辑
         print("编辑 Memo: \(item.title)")
       } label: {
-        Label("编辑", systemImage: "square.and.pencil")
+        Label(AppStrings.edit, systemImage: "square.and.pencil")
       }
       .tint(.blue)
     }
@@ -188,7 +189,7 @@ struct MemoListView: View {
   // MARK: - 删除方法
   
   private func deleteMemo(_ item: MemoItemModel) {
-    let itemTitle = item.title.isEmpty ? "无标题" : item.title
+    let itemTitle = item.title.isEmpty ? AppStrings.noTitle : item.title
     let itemId = item.id
     
     // 立即标记为删除状态，并更新UI
@@ -206,10 +207,10 @@ struct MemoListView: View {
           deletingItems.remove(itemId)
         }
         
-        print("✅ 成功删除 Memo: \(itemTitle)")
+        print("✅ \(AppStrings.deletedMemo): \(itemTitle)")
         
       } catch {
-        print("❌ 删除 Memo 失败: \(error)")
+        print("❌ \(AppStrings.deleteFailed): \(error)")
         
         // 删除失败，恢复状态并回滚
         deletingItems.remove(itemId)
@@ -246,6 +247,7 @@ struct MemoCardView: View {
   let modelContext: ModelContext
   let searchText: String
   let onDelete: (() -> Void)?  // 添加删除回调
+  @ObservedObject private var languageManager = LanguageManager.shared
   
   @State private var textHeight: CGFloat = 0
   @State private var imageHeight: CGFloat = 0
@@ -317,7 +319,7 @@ struct MemoCardView: View {
         // TODO: - 实现编辑逻辑
         print("编辑 Memo: \(item.title)")
       } label: {
-        Label("编辑", systemImage: "square.and.pencil")
+        Label(AppStrings.edit, systemImage: "square.and.pencil")
       }
       .tint(.black)
       
@@ -328,7 +330,7 @@ struct MemoCardView: View {
           deleteMemo()
         }
       } label: {
-        Label("删除", systemImage: "trash")
+        Label(AppStrings.delete, systemImage: "trash")
       }
     }
     .onAppear {
@@ -402,7 +404,7 @@ struct MemoCardView: View {
       .lineLimit(2)
       
       if item.isAPIProcessing {
-        Text("加载中...")
+        Text(AppStrings.processing)
           .font(.system(size: 14))
           .foregroundColor(.secondary)
           .frame(maxWidth: .infinity, alignment: .leading)
@@ -439,7 +441,7 @@ struct MemoCardView: View {
             }
           })
       } else if hasImage {
-        Text("正在识别文字...")
+        Text(AppStrings.recognizingText)
           .font(.system(size: 14))
           .foregroundColor(.secondary)
       }
@@ -456,15 +458,15 @@ struct MemoCardView: View {
     if item.hasAPIResponse, let apiResponse = item.apiResponse {
       switch apiResponse.mostPossibleCategory.lowercased() {
       case "information":
-        return apiResponse.information.title.isEmpty ? "无标题" : apiResponse.information.title
+        return apiResponse.information.title.isEmpty ? AppStrings.noTitle : apiResponse.information.title
       case "schedule":
-        return apiResponse.schedule.title.isEmpty ? "无标题" : apiResponse.schedule.title
+        return apiResponse.schedule.title.isEmpty ? AppStrings.noTitle : apiResponse.schedule.title
       default:
-        return "无标题"
+        return AppStrings.noTitle
       }
     }
     
-    return "无标题"
+    return AppStrings.noTitle
   }
   
   private var imageView: some View {

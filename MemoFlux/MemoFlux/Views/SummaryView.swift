@@ -9,6 +9,7 @@ import SwiftData
 import SwiftUI
 
 struct SummaryView: View {
+  @ObservedObject private var languageManager = LanguageManager.shared
   @Environment(\.dismiss) private var dismiss
   
   @State private var selectedDate = Date()
@@ -74,7 +75,7 @@ struct SummaryView: View {
         .padding(.bottom, 100)
       }
       .background(Color.globalStyleBackgroundColor)
-      .navigationTitle("每日总结")
+      .navigationTitle(AppStrings.summaryTitle)
       .navigationBarTitleDisplayMode(.large)
       .toolbar {
         ToolbarItem(placement: .navigationBarLeading) {
@@ -89,20 +90,20 @@ struct SummaryView: View {
           Button(action: {
             dismiss()
           }) {
-            Text("完成")
+            Text(AppStrings.done)
           }
         }
       }
     }
     .sheet(isPresented: $showDatePicker) {
       NavigationView {
-        DatePicker("选择日期", selection: $selectedDate, displayedComponents: .date)
+        DatePicker(AppStrings.selectDate, selection: $selectedDate, displayedComponents: .date)
           .datePickerStyle(GraphicalDatePickerStyle())
-          .navigationTitle("选择日期")
+          .navigationTitle(AppStrings.datePickerTitle)
           .navigationBarTitleDisplayMode(.inline)
           .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-              Button("完成") {
+              Button(AppStrings.done) {
                 showDatePicker = false
               }
               .font(.system(size: 16, weight: .medium))
@@ -159,18 +160,18 @@ struct SummaryView: View {
   // MARK: - 今日概览
   private var todayOverviewSection: some View {
     VStack(alignment: .leading, spacing: 12) {
-      Text("今日概览")
+      Text(AppStrings.todayOverview)
         .font(.system(size: 14, weight: .medium))
         .padding(.horizontal, 16)
       
       VStack(spacing: 16) {
         HStack(spacing: 0) {
-          overviewItem(icon: "doc.text", title: "新增信息", count: "\(todayMemoCount)", color: .blue)
+          overviewItem(icon: "doc.text", title: AppStrings.newInfo, count: "\(todayMemoCount)", color: .blue)
           overviewItem(
-            icon: "checkmark.circle", title: "完成意图", count: "\(completedIntentCount)", color: .green
+            icon: "checkmark.circle", title: AppStrings.completedIntents, count: "\(completedIntentCount)", color: .green
           )
           overviewItem(
-            icon: "lightbulb", title: "新意图", count: "\(todayIntentCount)", color: .orange)
+            icon: "lightbulb", title: AppStrings.newIntents, count: "\(todayIntentCount)", color: .orange)
         }
         
         // 图表占位符
@@ -182,7 +183,7 @@ struct SummaryView: View {
               Image(systemName: "chart.line.uptrend.xyaxis")
                 .font(.system(size: 40))
                 .foregroundColor(.gray.opacity(0.5))
-              Text("活动趋势图表（开发中）")
+              Text(AppStrings.activityChart)
                 .font(.caption)
                 .foregroundColor(.gray)
             }
@@ -220,7 +221,7 @@ struct SummaryView: View {
   private var newInformationSection: some View {
     VStack(alignment: .leading, spacing: 12) {
       HStack {
-        Text("今日新增信息")
+        Text(AppStrings.todayNewInfo)
           .font(.system(size: 14, weight: .medium))
         
         Spacer()
@@ -231,7 +232,7 @@ struct SummaryView: View {
           }
         }) {
           HStack(spacing: 4) {
-            Text(isNewInformationExpanded ? "收起" : "查看全部")
+            Text(isNewInformationExpanded ? AppStrings.collapse : AppStrings.viewAll)
               .font(.system(size: 12))
               .foregroundColor(.blue)
             
@@ -249,7 +250,7 @@ struct SummaryView: View {
             .foregroundColor(.gray)
             .font(.system(size: 24))
           
-          Text("今日暂无新增信息")
+          Text(AppStrings.noNewInfoToday)
             .font(.system(size: 14))
             .foregroundColor(.gray)
         }
@@ -271,7 +272,7 @@ struct SummaryView: View {
           }
           
           if !isNewInformationExpanded && todayMemos.count > 3 {
-            Text("还有 \(todayMemos.count - 3) 条信息")
+            Text(AppStrings.remainingInfoCount(todayMemos.count - 3))
               .font(.system(size: 12))
               .foregroundColor(.gray)
               .frame(maxWidth: .infinity)
@@ -379,16 +380,16 @@ struct SummaryView: View {
     
     // 如果没有标题但有API响应，使用最可能类别的标题
     guard let response = memo.apiResponse else {
-      return "无标题"
+      return AppStrings.noTitle
     }
     
     switch response.mostPossibleCategory.lowercased() {
     case "information":
-      return response.information.title.isEmpty ? "无标题" : response.information.title
+      return response.information.title.isEmpty ? AppStrings.noTitle : response.information.title
     case "schedule":
-      return response.schedule.title.isEmpty ? "无标题" : response.schedule.title
+      return response.schedule.title.isEmpty ? AppStrings.noTitle : response.schedule.title
     default:
-      return "无标题"
+      return AppStrings.noTitle
     }
   }
   
@@ -430,7 +431,7 @@ struct SummaryView: View {
   private var intentCompletionSection: some View {
     VStack(alignment: .leading, spacing: 12) {
       HStack {
-        Text("意图处理情况")
+        Text(AppStrings.intentStatus)
           .font(.system(size: 14, weight: .medium))
         
         Spacer()
@@ -441,7 +442,7 @@ struct SummaryView: View {
           }
         }) {
           HStack(spacing: 4) {
-            Text(isIntentCompletionExpanded ? "收起" : "查看全部")
+            Text(isIntentCompletionExpanded ? AppStrings.collapse : AppStrings.viewAll)
               .font(.system(size: 12))
               .foregroundColor(.blue)
             
@@ -461,7 +462,7 @@ struct SummaryView: View {
             .foregroundColor(.gray)
             .font(.system(size: 24))
           
-          Text("今日暂无意图")
+          Text(AppStrings.noIntentsToday)
             .font(.system(size: 14))
             .foregroundColor(.gray)
         }
@@ -485,7 +486,7 @@ struct SummaryView: View {
                     .font(.system(size: 12, weight: .bold))
                 }
                 
-                Text("已处理意图 (\(completedIntents.count))")
+                Text(AppStrings.processedIntentsCount(completedIntents.count))
                   .font(.system(size: 14, weight: .medium))
               }
               
@@ -503,7 +504,7 @@ struct SummaryView: View {
                 }
                 
                 if !isIntentCompletionExpanded && completedIntents.count > 3 {
-                  Text("还有 \(completedIntents.count - 3) 个已处理意图")
+                  Text(AppStrings.remainingProcessedIntentsCount(completedIntents.count - 3))
                     .font(.system(size: 12))
                     .foregroundColor(.gray)
                     .frame(maxWidth: .infinity)
@@ -527,7 +528,7 @@ struct SummaryView: View {
                     .font(.system(size: 12, weight: .bold))
                 }
                 
-                Text("未处理意图 (\(pendingIntents.count))")
+                Text(AppStrings.pendingIntentsCount(pendingIntents.count))
                   .font(.system(size: 14, weight: .medium))
               }
               
@@ -545,7 +546,7 @@ struct SummaryView: View {
                 }
                 
                 if !isIntentCompletionExpanded && pendingIntents.count > 3 {
-                  Text("还有 \(pendingIntents.count - 3) 个未处理意图")
+                  Text(AppStrings.remainingPendingIntentsCount(pendingIntents.count - 3))
                     .font(.system(size: 12))
                     .foregroundColor(.gray)
                     .frame(maxWidth: .infinity)
@@ -659,7 +660,7 @@ struct SummaryView: View {
   private var suggestedActionsSection: some View {
     VStack(alignment: .leading, spacing: 12) {
       HStack {
-        Text("待处理建议行动（开发中）")
+        Text(AppStrings.suggestedActionsDev)
           .font(.system(size: 14, weight: .medium))
           .foregroundColor(.white)
         
@@ -690,7 +691,7 @@ struct SummaryView: View {
         }
         
         if !isSuggestedActionsExpanded && suggestedActions.count > 2 {
-          Text("还有 \(suggestedActions.count - 2) 个建议行动")
+          Text(AppStrings.remainingActionsCount(suggestedActions.count - 2))
             .font(.system(size: 12))
             .foregroundColor(.white.opacity(0.8))
             .frame(maxWidth: .infinity)
@@ -749,7 +750,7 @@ private func actionItem(
 // MARK: - AI洞察与趋势
 private var aiInsightsSection: some View {
   VStack(alignment: .leading, spacing: 12) {
-    Text("AI洞察与趋势（开发中）")
+    Text(AppStrings.aiInsightsDev)
       .font(.system(size: 14, weight: .medium))
       .padding(.horizontal, 16)
     
@@ -771,11 +772,11 @@ private var aiInsightsSection: some View {
             .font(.system(size: 12))
         }
         
-        Text("个性化洞察")
+        Text(AppStrings.personalizedInsights)
           .font(.system(size: 14, weight: .medium))
       }
       
-      Text("根据您的活动模式分析，您在上午时段（9:00-11:00）记录信息效率最高，建议安排重要思考和创意工作在此时段。")
+      Text(AppStrings.insightsDemoText1)
         .font(.system(size: 12))
         .foregroundColor(.primary)
       
@@ -788,25 +789,25 @@ private var aiInsightsSection: some View {
             Image(systemName: "chart.bar")
               .font(.system(size: 30))
               .foregroundColor(.gray.opacity(0.5))
-            Text("效率分析图表")
+            Text(AppStrings.efficiencyChart)
               .font(.caption)
               .foregroundColor(.gray)
           }
         )
       
-      Text("您本周关注的主要主题是\"用户体验\"和\"数据分析\"，相比上周有明显提升。")
+      Text(AppStrings.insightsDemoText2)
         .font(.system(size: 12))
         .foregroundColor(.primary)
       
       HStack {
-        Text("效率提升")
+        Text(AppStrings.efficiencyBoost)
           .font(.system(size: 12))
           .padding(.horizontal, 8)
           .padding(.vertical, 2)
           .background(Color.yellow.opacity(0.3))
           .cornerRadius(8)
         
-        Text("工作习惯")
+        Text(AppStrings.workHabits)
           .font(.system(size: 12))
           .padding(.horizontal, 8)
           .padding(.vertical, 2)

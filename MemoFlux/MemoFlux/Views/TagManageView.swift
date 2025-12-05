@@ -12,6 +12,7 @@ import SwiftData
 struct TagManagementView: View {
   @Environment(\.modelContext) private var modelContext
   @Query private var tagModels: [TagModel]
+  @ObservedObject private var languageManager = LanguageManager.shared
   @State private var searchText = ""
   @State private var showingAddTag = false
   @State private var newTagName = ""
@@ -38,11 +39,11 @@ struct TagManagementView: View {
               .font(.system(size: 48))
               .foregroundColor(.gray)
             
-            Text("暂无标签")
+            Text(AppStrings.noTags)
               .font(.title2)
               .foregroundColor(.gray)
             
-            Button("添加第一个标签") {
+            Button(AppStrings.addFirstTag) {
               showingAddTag = true
             }
             .buttonStyle(.borderedProminent)
@@ -60,28 +61,28 @@ struct TagManagementView: View {
         }
       }
       .background(Color.globalStyleBackgroundColor)
-      .navigationTitle("标签管理")
+      .navigationTitle(AppStrings.tagManagement)
       .navigationBarTitleDisplayMode(.large)
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
-          Button("添加") {
+          Button(AppStrings.add) {
             showingAddTag = true
           }
         }
         
         ToolbarItem(placement: .navigationBarLeading) {
-          Button("清理") {
+          Button(AppStrings.cleanup) {
             cleanupUnusedTags()
           }
           .foregroundColor(.red)
         }
       }
-      .alert("添加标签", isPresented: $showingAddTag) {
-        TextField("标签名称", text: $newTagName)
-        Button("取消", role: .cancel) {
+      .alert(AppStrings.addTag, isPresented: $showingAddTag) {
+        TextField(AppStrings.tagName, text: $newTagName)
+        Button(AppStrings.cancel, role: .cancel) {
           newTagName = ""
         }
-        Button("添加") {
+        Button(AppStrings.add) {
           addNewTag()
         }
         .disabled(newTagName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -129,6 +130,7 @@ struct TagManagementRowView: View {
   let modelContext: ModelContext
   @State private var showingEditAlert = false
   @State private var editedName = ""
+  @ObservedObject private var languageManager = LanguageManager.shared
   
   var body: some View {
     HStack {
@@ -138,13 +140,13 @@ struct TagManagementRowView: View {
           .foregroundColor(.primary)
         
         HStack {
-          Text("使用 \(tag.usageCount) 次")
+          Text(AppStrings.usedCount(tag.usageCount))
             .font(.system(size: 12))
             .foregroundColor(.gray)
           
           Spacer()
           
-          Text("最后使用: \(formatDate(tag.lastUsedAt))")
+          Text(AppStrings.lastUsed(formatDate(tag.lastUsedAt)))
             .font(.system(size: 12))
             .foregroundColor(.gray)
         }
@@ -152,7 +154,7 @@ struct TagManagementRowView: View {
       
       Spacer()
       
-      Button("编辑") {
+      Button(AppStrings.edit) {
         editedName = tag.name
         showingEditAlert = true
       }
@@ -160,10 +162,10 @@ struct TagManagementRowView: View {
       .foregroundColor(.blue)
     }
     .padding(.vertical, 4)
-    .alert("编辑标签", isPresented: $showingEditAlert) {
-      TextField("标签名称", text: $editedName)
-      Button("取消", role: .cancel) {}
-      Button("保存") {
+    .alert(AppStrings.editTag, isPresented: $showingEditAlert) {
+      TextField(AppStrings.tagName, text: $editedName)
+      Button(AppStrings.cancel, role: .cancel) {}
+      Button(AppStrings.save) {
         updateTagName()
       }
       .disabled(editedName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -194,17 +196,18 @@ struct TagManagementRowView: View {
 /// 搜索栏组件
 struct SearchBar: View {
   @Binding var text: String
+  @ObservedObject private var languageManager = LanguageManager.shared
   
   var body: some View {
     HStack {
       Image(systemName: "magnifyingglass")
         .foregroundColor(.gray)
       
-      TextField("搜索标签", text: $text)
+      TextField(AppStrings.searchTags, text: $text)
         .textFieldStyle(RoundedBorderTextFieldStyle())
       
       if !text.isEmpty {
-        Button("清除") {
+        Button(AppStrings.clear) {
           text = ""
         }
         .foregroundColor(.gray)

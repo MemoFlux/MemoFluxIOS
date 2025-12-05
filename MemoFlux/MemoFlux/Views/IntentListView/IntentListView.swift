@@ -11,6 +11,7 @@ import SwiftUI
 enum IntentViewMode { case list, calendar }
 
 struct IntentListView: View {
+  @ObservedObject private var languageManager = LanguageManager.shared
   @State private var viewMode: IntentViewMode = .calendar
   @State private var selectedDate = Date()
   @State private var months: [Date] = []
@@ -18,12 +19,12 @@ struct IntentListView: View {
   @Query(sort: \MemoItemModel.createdAt, order: .reverse) private var memoItems: [MemoItemModel]
 
   private let calendar = Calendar.current
-  private let monthFormatter: DateFormatter = {
+  private var monthFormatter: DateFormatter {
     let formatter = DateFormatter()
-    formatter.dateFormat = "yyyy年M月"
-    formatter.locale = Locale(identifier: "zh_CN")
+    formatter.dateFormat = LanguageManager.shared.currentLanguage == .chinese ? "yyyy年M月" : "MMMM yyyy"
+    formatter.locale = Locale(identifier: LanguageManager.shared.currentLanguage == .chinese ? "zh_CN" : "en_US")
     return formatter
-  }()
+  }
 
   var body: some View {
     NavigationView {
@@ -34,11 +35,11 @@ struct IntentListView: View {
           listContent
         }
       }
-      .navigationTitle(viewMode == .calendar ? "日历" : "意图列表")
+      .navigationTitle(viewMode == .calendar ? AppStrings.calendarView : AppStrings.intentList)
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem {
-          Picker("视图", selection: $viewMode) {
+          Picker(AppStrings.viewMode, selection: $viewMode) {
             Image(systemName: "list.bullet").tag(IntentViewMode.list)
             Image(systemName:  "calendar").tag(IntentViewMode.calendar)
           }
@@ -166,16 +167,16 @@ struct IntentListView: View {
   private var groupedIntents: [(String, [IntentDiscoveryViewModel])] {
     var groups: [String: [IntentDiscoveryViewModel]] = [:]
     let formatter = DateFormatter()
-    formatter.dateFormat = "yyyy年M月d日"
+    formatter.dateFormat = LanguageManager.shared.currentLanguage == .chinese ? "yyyy年M月d日" : "MMMM d, yyyy"
     for memo in memoItems {
       guard let apiResponse = memo.apiResponse else { continue }
       for task in apiResponse.schedule.tasks {
         let date = task.startDate ?? memo.createdAt
         let key: String
         if calendar.isDateInToday(date) {
-          key = "今天"
+          key = AppStrings.today
         } else if calendar.isDateInYesterday(date) {
-          key = "昨天"
+          key = AppStrings.yesterday
         } else {
           key = formatter.string(from: date)
         }
@@ -184,10 +185,10 @@ struct IntentListView: View {
       }
     }
     let sorted = groups.sorted { lhs, rhs in
-      if lhs.key == "今天" { return true }
-      if rhs.key == "今天" { return false }
-      if lhs.key == "昨天" { return true }
-      if rhs.key == "昨天" { return false }
+      if lhs.key == AppStrings.today { return true }
+      if rhs.key == AppStrings.today { return false }
+      if lhs.key == AppStrings.yesterday { return true }
+      if rhs.key == AppStrings.yesterday { return false }
       return lhs.key > rhs.key
     }
     return sorted.map { ($0.key, $0.value) }
@@ -200,13 +201,14 @@ struct MonthView: View {
   @Binding var selectedDate: Date
   let calendar: Calendar
   let onDayTapped: (Date) -> Void
+  @ObservedObject private var languageManager = LanguageManager.shared
 
-  private let monthFormatter: DateFormatter = {
+  private var monthFormatter: DateFormatter {
     let formatter = DateFormatter()
-    formatter.dateFormat = "yyyy年M月"
-    formatter.locale = Locale(identifier: "zh_CN")
+    formatter.dateFormat = LanguageManager.shared.currentLanguage == .chinese ? "yyyy年M月" : "MMMM yyyy"
+    formatter.locale = Locale(identifier: LanguageManager.shared.currentLanguage == .chinese ? "zh_CN" : "en_US")
     return formatter
-  }()
+  }
 
   var body: some View {
     VStack(spacing: 0) {
@@ -372,15 +374,23 @@ extension Calendar {
 
 // MARK: - 底部当日意图面板
 struct DayIntentPanel: View {
+  @ObservedObject private var languageManager = LanguageManager.shared
   let date: Date
   let intents: [IntentDiscoveryViewModel]
 
   private var headerText: String {
     let formatter = DateFormatter()
-    formatter.dateFormat = "yyyy年M月d日"
-    if Calendar.current.isDateInToday(date) { return "今天的意图 (\(intents.count))" }
-    if Calendar.current.isDateInYesterday(date) { return "昨天的意图 (\(intents.count))" }
-    return "\(formatter.string(from: date)) 的意图 (\(intents.count))"
+    formatter.dateFormat = LanguageManager.shared.currentLanguage == .chinese ? "yyyy年M月d日" : "MMMM d, yyyy"
+    
+    let countSuffix = " (\(intents.count))"
+    
+    if Calendar.current.isDateInToday(date) { 
+      return AppStrings.todaysIntents + countSuffix
+    }
+    if Calendar.current.isDateInYesterday(date) { 
+      return AppStrings.yesterdaysIntents + countSuffix
+    }
+    return AppStrings.intentsFor(formatter.string(from: date)) + countSuffix
   }
 
   var body: some View {

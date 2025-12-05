@@ -11,6 +11,7 @@ import SwiftUI
 /// 发现待处理意图视图
 struct IntentDiscoveryView: View {
   let memoItems: [MemoItemModel]
+  @ObservedObject private var languageManager = LanguageManager.shared
   
   private var todayScheduleIntents: [IntentDiscoveryViewModel] {
     let calendar = Calendar.current
@@ -50,7 +51,7 @@ struct IntentDiscoveryView: View {
                 .font(.system(size: 14))
                 .foregroundColor(.orange)
               
-              Text("今日待处理意图")
+              Text(AppStrings.todayPendingIntents)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.primary)
             }
@@ -91,7 +92,7 @@ struct IntentDiscoveryView: View {
                 .font(.system(size: 14))
                 .foregroundColor(.green)
               
-              Text("今日暂无未处理意图！")
+              Text(AppStrings.noPendingIntentsToday)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.primary)
             }
