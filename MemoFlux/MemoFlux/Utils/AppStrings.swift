@@ -96,12 +96,56 @@ struct AppStrings {
   }
   
   // MARK: - Add Memo View
+  static var inputTitlePrompt: String { LanguageManager.shared.localized(zh: "输入标题", en: "Enter Title") }
+  static var inputTextPlaceholder: String { LanguageManager.shared.localized(zh: "在这里输入文字或点击下方按钮", en: "Enter text here or click buttons below") }
+  static var uploadImage: String { LanguageManager.shared.localized(zh: "上传图片", en: "Upload Image") }
+  static var useAIParsing: String { LanguageManager.shared.localized(zh: "使用AI解析", en: "Use AI Parsing") }
+  static var takePhoto: String { LanguageManager.shared.localized(zh: "拍照", en: "Take Photo") }
+  static var chooseFromAlbum: String { LanguageManager.shared.localized(zh: "从相册选择", en: "Choose from Album") }
+  static var smartAnalysisResults: String { LanguageManager.shared.localized(zh: "智能解析结果", en: "Smart Analysis Results") }
+  static var analysisComplete: String { LanguageManager.shared.localized(zh: "AI分析完成", en: "AI Analysis Complete") }
+  static var analysisFinishedDesc: String { LanguageManager.shared.localized(zh: "AI分析已完成", en: "AI Analysis Finished") }
+  static var analysisFinishedWithDetail: String { LanguageManager.shared.localized(zh: "AI分析已完成，可查看详细解析结果", en: "AI Analysis finished, check details below") }
+  static var viewDetailedResults: String { LanguageManager.shared.localized(zh: "可查看详细解析结果", en: "Detailed results available") }
+  static var scheduleDetected: String { LanguageManager.shared.localized(zh: "检测到日程安排", en: "Schedule Detected") }
+  static var schedule: String { LanguageManager.shared.localized(zh: "日程", en: "Schedule") }
+  static func schedulePrefix(_ theme: String) -> String { LanguageManager.shared.localized(zh: "日程：\(theme)", en: "Schedule: \(theme)") }
+  static var time: String { LanguageManager.shared.localized(zh: "时间", en: "Time") }
+  static func timePrefix(_ time: String) -> String { LanguageManager.shared.localized(zh: "时间：\(time)", en: "Time: \(time)") }
+  static var task: String { LanguageManager.shared.localized(zh: "任务", en: "Task") }
+  static func taskPrefix(_ tasks: String) -> String { LanguageManager.shared.localized(zh: "任务：\(tasks)", en: "Tasks: \(tasks)") }
+  static var intentRecognition: String { LanguageManager.shared.localized(zh: "意图识别", en: "Intent Recognition") }
+  static var addToCalendar: String { LanguageManager.shared.localized(zh: "添加到日历", en: "Add to Calendar") }
+  static var addToReminders: String { LanguageManager.shared.localized(zh: "添加到提醒事项", en: "Add to Reminders") }
+  static var aiSuggestedTags: String { LanguageManager.shared.localized(zh: "AI建议标签", en: "AI Suggested Tags") }
+  static var addCustom: String { LanguageManager.shared.localized(zh: "添加自定义", en: "Add Custom") }
+  static var addTags: String { LanguageManager.shared.localized(zh: "添加标签", en: "Add Tags") }
+  static var aiSuggestedTagsTitle: String { LanguageManager.shared.localized(zh: "AI 建议标签", en: "AI Suggested Tags") }
+  static var localTags: String { LanguageManager.shared.localized(zh: "本地标签", en: "Local Tags") }
+  
+  static func aiAnalysisSummaryPrefix(_ summary: String) -> String {
+    LanguageManager.shared.localized(zh: "AI 分析：\(summary)", en: "AI Analysis: \(summary)")
+  }
+  static var aiAnalysisFinishedPrefix: String { LanguageManager.shared.localized(zh: "AI 分析：已完成内容分析", en: "AI Analysis: Content analysis complete") }
+  static var waitingForAnalysis: String { LanguageManager.shared.localized(zh: "等待解析信息", en: "Waiting for analysis") }
+  static var aiAnalysisNoContent: String { LanguageManager.shared.localized(zh: "AI 分析：未识别到有效内容，请输入或上传信息", en: "AI Analysis: No content identified, please enter or upload info") }
+  static var addMoreForBetterResults: String { LanguageManager.shared.localized(zh: "添加更多内容可获得更精准的解析结果", en: "Add more content for better analysis results") }
+  static var detectingIntents: String { LanguageManager.shared.localized(zh: "正在检测意图...", en: "Detecting intents...") }
+  static var noScheduleDetected: String { LanguageManager.shared.localized(zh: "未检测到日程安排", en: "No schedule detected") }
+  static var waitingForIntentDetection: String { LanguageManager.shared.localized(zh: "等待检测意图", en: "Waiting for intent detection") }
+  static var intentDetectionDesc: String { LanguageManager.shared.localized(zh: "当AI检测到日程安排、任务提醒等意图时，会在这里提供快捷操作选项。", en: "Quick actions will appear here when AI detects schedules or tasks.") }
+  static var noLocalTags: String { LanguageManager.shared.localized(zh: "暂无本地标签", en: "No local tags") }
+  static var inputTagNamePrompt: String { LanguageManager.shared.localized(zh: "请输入新标签的名称", en: "Please enter a name for the new tag") }
+  static var confirm: String { LanguageManager.shared.localized(zh: "确认", en: "Confirm") }
+  
   static var onePhotoLimit: String { LanguageManager.shared.localized(zh: "* 暂时只能拍摄/选择一张照片", en: "* Only one photo can be selected/taken") }
   static var recommendShortcut: String { LanguageManager.shared.localized(zh: "推荐使用快捷指令！", en: "Recommended: Use Shortcuts!") }
   static var deletePhoto: String { LanguageManager.shared.localized(zh: "删除照片", en: "Delete Photo") }
   static var processingImage: String { LanguageManager.shared.localized(zh: "正在处理图片...", en: "Processing image...") }
   static var imageProcessed: String { LanguageManager.shared.localized(zh: "图片已处理完成", en: "Image processing complete") }
-  static var createMemo: String { LanguageManager.shared.localized(zh: "创建Memo", en: "Create Memo") }
+  static var createMemo: String { LanguageManager.shared.localized(zh: "创建 Memo", en: "Create Memo") }
+  static var creating: String { LanguageManager.shared.localized(zh: "创建中...", en: "Creating...") }
+  static var translating: String { LanguageManager.shared.localized(zh: "正在翻译...", en: "Translating...") }
   static var parse: String { LanguageManager.shared.localized(zh: "解析", en: "Parse") }
   static var parsing: String { LanguageManager.shared.localized(zh: "解析中...", en: "Parsing...") }
   static var parseAgain: String { LanguageManager.shared.localized(zh: "再次解析", en: "Parse Again") }
@@ -111,10 +155,30 @@ struct AppStrings {
   static var tryOtherKeywords: String { LanguageManager.shared.localized(zh: "尝试使用其他关键词搜索", en: "Try searching with different keywords") }
   static var searchPrompt: String { LanguageManager.shared.localized(zh: "搜索Memo...", en: "Search Memo...") }
   static var delete: String { LanguageManager.shared.localized(zh: "删除", en: "Delete") }
+  static var manualCreation: String { LanguageManager.shared.localized(zh: "手动创建", en: "Manual Creation") }
   static var processing: String { LanguageManager.shared.localized(zh: "加载中...", en: "Loading...") }
   static var recognizingText: String { LanguageManager.shared.localized(zh: "正在识别文字...", en: "Recognizing text...") }
   static var deletedMemo: String { LanguageManager.shared.localized(zh: "成功删除 Memo", en: "Memo deleted successfully") }
   static var deleteFailed: String { LanguageManager.shared.localized(zh: "删除 Memo 失败", en: "Failed to delete Memo") }
+  
+  // MARK: - Shortcut View
+  static var shortcutTitle: String { LanguageManager.shared.localized(zh: "MemoFlux 快捷指令", en: "MemoFlux Shortcuts") }
+  static var fastCapture: String { LanguageManager.shared.localized(zh: "快速捕捉", en: "Fast Capture") }
+  static var fastCaptureDesc: String { LanguageManager.shared.localized(zh: "随时随地一键启动，快速捕捉灵感和信息", en: "One-tap start anywhere to capture inspiration.") }
+  static var directImport: String { LanguageManager.shared.localized(zh: "直接导入", en: "Direct Import") }
+  static var directImportDesc: String { LanguageManager.shared.localized(zh: "拍照或选择图片后自动导入到 MemoFlux 应用", en: "Import photos directly into MemoFlux.") }
+  static var smartRecognition: String { LanguageManager.shared.localized(zh: "智能识别", en: "Smart Recognition") }
+  static var smartRecognitionDesc: String { LanguageManager.shared.localized(zh: "自动识别图片中的文字，无需手动输入", en: "Automatically recognize text in images.") }
+  static var aiAnalysisFeature: String { LanguageManager.shared.localized(zh: "AI 分析", en: "AI Analysis") }
+  static var aiAnalysisFeatureDesc: String { LanguageManager.shared.localized(zh: "使用 AI 自动分析内容，提取关键信息", en: "Use AI to analyze content and extract info.") }
+  static var installSteps: String { LanguageManager.shared.localized(zh: "安装步骤", en: "Installation Steps") }
+  static var clickBelow: String { LanguageManager.shared.localized(zh: "点击下方按钮", en: "Click the button below") }
+  static var jumpToShortcuts: String { LanguageManager.shared.localized(zh: "将跳转到快捷指令应用", en: "Will jump to the Shortcuts app") }
+  static var addShortcutAction: String { LanguageManager.shared.localized(zh: "添加快捷指令", en: "Add Shortcut") }
+  static var inShortcutsApp: String { LanguageManager.shared.localized(zh: "在快捷指令应用中点击\"添加快捷指令\"", en: "Tap \"Add Shortcut\" in the app.") }
+  static var installShortcutButton: String { LanguageManager.shared.localized(zh: "安装快捷指令", en: "Install Shortcut") }
+  static var actionButtonHint: String { LanguageManager.shared.localized(zh: "可添加到Action Button或通过辅助触控快速启动", en: "Add to Action Button or AssistiveTouch.") }
+  static var addShortcutNavTitle: String { LanguageManager.shared.localized(zh: "添加快捷指令", en: "Add Shortcut") }
   
   // MARK: - Intent Discovery View
   static var todayPendingIntents: String { LanguageManager.shared.localized(zh: "今日待处理意图", en: "Today's Pending Intents") }
@@ -167,6 +231,8 @@ struct AppStrings {
   static func lastUsed(_ date: String) -> String { LanguageManager.shared.localized(zh: "最后使用: \(date)", en: "Last used: \(date)") }
   static var editTag: String { LanguageManager.shared.localized(zh: "编辑标签", en: "Edit Tag") }
   static var searchTags: String { LanguageManager.shared.localized(zh: "搜索标签", en: "Search Tags") }
+  static var addCustomTag: String { LanguageManager.shared.localized(zh: "添加自定义标签", en: "Add Custom Tag") }
+  static var inputTagName: String { LanguageManager.shared.localized(zh: "输入标签名称", en: "Enter tag name") }
   
   // MARK: - Topic Management
   static var topicManagement: String { LanguageManager.shared.localized(zh: "主题管理", en: "Topic Management") }

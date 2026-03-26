@@ -15,24 +15,28 @@ struct ImageActionButtonsView: View {
     VStack(spacing: 10) {
       HStack(spacing: 10) {
         Button(action: cameraAction) {
-          HStack {
+          HStack(spacing: 6) {
             Image(systemName: "camera")
-            Text("拍照")
+            Text(AppStrings.takePhoto)
+              .lineLimit(1)
+              .minimumScaleFactor(0.5)
           }
           .frame(maxWidth: .infinity)
-          .padding(.vertical, 16)
+          .frame(height: 56)
         }
         .foregroundStyle(.white)
         .background(Color.mainStyleBackgroundColor)
         .cornerRadius(15)
         
         Button(action: photoPickerAction) {
-          HStack {
+          HStack(spacing: 6) {
             Image(systemName: "photo")
-            Text("从相册选择")
+            Text(AppStrings.chooseFromAlbum)
+              .lineLimit(1)
+              .minimumScaleFactor(0.5)
           }
           .frame(maxWidth: .infinity)
-          .padding(.vertical, 16)
+          .frame(height: 56)
         }
         .foregroundStyle(.white)
         .background(Color.mainStyleBackgroundColor)

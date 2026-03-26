@@ -107,11 +107,11 @@ struct CategoryView: View {
             // 顶部标题和排序按钮
             HStack {
               Text(selectedMode == .tag ? AppStrings.tagCategories : AppStrings.tagCategories.replacingOccurrences(of: "Tag", with: "Topic")) // Fallback if not localized properly or just reuse
-                .font(.title2)
+              .font(.title2)
                 .fontWeight(.bold)
-              
-              Spacer()
-              
+                
+                Spacer()
+                
               Menu {
                 Button {
                   sortOption = .count
@@ -139,13 +139,13 @@ struct CategoryView: View {
                     .font(.caption)
                 }
                 .font(.subheadline)
-                .foregroundColor(.gray)
+                  .foregroundColor(.gray)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .background(Color.grayBackgroundColor.opacity(0.5))
                 .cornerRadius(16)
               }
-            }
+              }
             .padding(.horizontal)
             .padding(.top)
             
@@ -457,7 +457,7 @@ struct TagMemoRowView: View {
           .frame(width: 60, height: 60)
           .overlay(
             Image(systemName: "photo")
-            .foregroundColor(.gray)
+              .foregroundColor(.gray)
           )
       }
       

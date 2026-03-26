@@ -28,6 +28,15 @@ struct IntentListView: View {
 
   var body: some View {
     NavigationView {
+      VStack(spacing: 0) {
+        Picker(selection: $viewMode, label: Text("")) {
+          Text(AppStrings.intentList).tag(IntentViewMode.list)
+          Text(AppStrings.calendarView).tag(IntentViewMode.calendar)
+        }
+        .pickerStyle(SegmentedPickerStyle())
+        .padding(.horizontal)
+        .padding(.bottom, 8)
+        
       Group {
         if viewMode == .calendar {
           calendarContent
@@ -35,16 +44,9 @@ struct IntentListView: View {
           listContent
         }
       }
-      .navigationTitle(viewMode == .calendar ? AppStrings.calendarView : AppStrings.intentList)
-      .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem {
-          Picker(AppStrings.viewMode, selection: $viewMode) {
-            Image(systemName: "list.bullet").tag(IntentViewMode.list)
-            Image(systemName:  "calendar").tag(IntentViewMode.calendar)
-          }
-        }
       }
+      .navigationTitle(AppStrings.tabIntent)
+      .navigationBarTitleDisplayMode(.inline)
     }
   }
 

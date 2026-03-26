@@ -16,6 +16,7 @@ struct ConfirmAddMemoButton: View {
   let modelContext: ModelContext
   let apiResponse: APIResponse?
   let useAIParsing: Bool
+  var isTranslating: Bool = false
   let onSave: () -> Void
   
   @State private var isSaving = false
@@ -25,21 +26,21 @@ struct ConfirmAddMemoButton: View {
       saveMemo()
     } label: {
       HStack {
-        if isSaving {
+        if isSaving || isTranslating {
           ProgressView()
             .scaleEffect(0.8)
             .foregroundColor(.white)
         }
-        Text(isSaving ? "创建中..." : "创建 Memo")
+        Text(isSaving ? AppStrings.creating : (isTranslating ? AppStrings.translating : AppStrings.createMemo))
           .font(.system(size: 14, weight: .medium))
           .foregroundStyle(.white)
       }
       .frame(maxWidth: .infinity)
       .padding(.vertical, 16)
-      .background(isSaving ? Color.gray : Color.mainStyleBackgroundColor)
+      .background((isSaving || isTranslating) ? Color.gray : Color.mainStyleBackgroundColor)
       .cornerRadius(12)
     }
-    .disabled(isSaving)
+    .disabled(isSaving || isTranslating)
     .padding(.top, 30)
   }
   
@@ -53,7 +54,7 @@ struct ConfirmAddMemoButton: View {
         image: image,
         title: title,
         tags: Array(tags),
-        source: "手动创建"
+        source: AppStrings.manualCreation
       )
       
       // 如果有图片，将用户输入的文本保存为用户原文，OCR识别结果保存为recognizedText
@@ -66,7 +67,7 @@ struct ConfirmAddMemoButton: View {
         title: title,
         tags: Array(tags),
         createdAt: Date(),
-        source: "手动创建"
+        source: AppStrings.manualCreation
       )
     }
     

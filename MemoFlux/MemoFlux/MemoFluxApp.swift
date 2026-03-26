@@ -15,6 +15,13 @@ struct MemoFluxApp: App {
   @StateObject private var pushNotificationManager = PushNotificationManager.shared
   @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
   
+  // 用于处理 Deep Link 分享的图片
+  @State private var sharedImage: UIImage?
+  @State private var showSharedMemoView = false
+  
+  // ⚠️ 需要与 Share Extension 里配置的 App Group ID 保持一致
+  private let appGroupId = "group.com.xiaobai.memofluxapp"
+  
   init() {
     // 初始化推送通知管理器
     PushNotificationManager.shared.initializePushNotifications()
@@ -48,8 +55,46 @@ struct MemoFluxApp: App {
           print("📱 收到设备令牌注册请求")
           registerForRemoteNotifications()
         }
+        // 处理 URL Scheme
+        .onOpenURL { url in
+          handleOpenURL(url)
+        }
+        // 弹出创建 Memo 视图（带有分享的图片）
+        // 用全屏更贴近“进入创建页”的体验
+        .fullScreenCover(isPresented: $showSharedMemoView) {
+          AddMemoItemView(initialImage: sharedImage)
+        }
     }
     .modelContainer(for: [MemoItemModel.self, TagModel.self, ScheduleTaskModel.self])
+  }
+  
+  // MARK: - URL Handling
+  private func handleOpenURL(_ url: URL) {
+    print("🚀 App opened with URL: \(url.absoluteString)")
+    
+    // 解析 URL: memoflux://share?imagePath=...
+    guard url.scheme == "memoflux", url.host == "share" else { return }
+    
+    guard let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
+          let queryItems = components.queryItems else { return }
+    
+    if let imagePath = queryItems.first(where: { $0.name == "imagePath" })?.value, !imagePath.isEmpty {
+      // 从 App Group 容器读取图片
+      if let sharedContainerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupId) {
+        let fileURL = sharedContainerURL.appendingPathComponent(imagePath)
+        if let data = try? Data(contentsOf: fileURL), let image = UIImage(data: data) {
+          DispatchQueue.main.async {
+            self.sharedImage = image
+            self.showSharedMemoView = true
+          }
+          
+          // 可选：读取后删除临时文件
+          try? FileManager.default.removeItem(at: fileURL)
+        } else {
+          print("❌ Failed to load image from shared container")
+        }
+      }
+    }
   }
   
   // MARK: - 注册远程推送通知

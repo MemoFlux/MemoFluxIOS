@@ -8,6 +8,7 @@
 import PhotosUI
 import SwiftUI
 import Vision
+import Translation
 
 struct AddMemoItemView: View {
   @Environment(\.dismiss) private var dismiss
@@ -30,11 +31,22 @@ struct AddMemoItemView: View {
   @State private var apiResponse: APIResponse?
   @State private var hasAttemptedParsing = false
   
+  // 翻译相关状态
+  @State private var translationConfig: Any?
+  @State private var isTranslating = false
+  
   // 图片处理相关状态
   @State private var imageBase64: String?
   @State private var isImageProcessing = false
   
   @FocusState private var isTextEditorFocused: Bool
+  
+  // 自定义初始化器，允许传入初始图片
+  init(initialImage: UIImage? = nil) {
+    if let image = initialImage {
+      _selectedImage = State(initialValue: image)
+    }
+  }
   
   var body: some View {
     NavigationStack {
@@ -151,6 +163,7 @@ struct AddMemoItemView: View {
             modelContext: modelContext,
             apiResponse: apiResponse,
             useAIParsing: useAIParsing,
+            isTranslating: isTranslating,
             onSave: {
               dismiss()
             }
@@ -214,10 +227,20 @@ struct AddMemoItemView: View {
           hasAttemptedParsing = false
         }
       }
+      // 如果初始有图片（例如从分享扩展进入），自动触发处理
+      .onAppear {
+        if let image = selectedImage {
+          recognizeTextFromImage(image)
+          processImageForAPI(image)
+        }
+      }
       .contentShape(Rectangle())  // 点击背景关闭键盘
       .onTapGesture {
         isTextEditorFocused = false
       }
+      .modifier(TranslationApplier(config: translationConfig, action: { session in
+        await translateResponse(session: session)
+      }))
       .toolbar {
         ToolbarItem(placement: .navigationBarTrailing) {
           Button(AppStrings.cancel) {
@@ -351,6 +374,8 @@ struct AddMemoItemView: View {
             isParsingInProgress = false
             hasAttemptedParsing = true
             apiResponse = response
+            // 自动触发翻译
+            triggerTranslation()
           }
         } catch {
           await MainActor.run {
@@ -379,6 +404,8 @@ struct AddMemoItemView: View {
             isParsingInProgress = false
             hasAttemptedParsing = true
             apiResponse = response
+            // 自动触发翻译
+            triggerTranslation()
           }
         } catch {
           await MainActor.run {
@@ -388,6 +415,57 @@ struct AddMemoItemView: View {
           }
         }
       }
+    }
+  }
+
+  // MARK: - 翻译逻辑
+  private func triggerTranslation() {
+    if #available(iOS 18.0, *) {
+      guard let _ = apiResponse else { return }
+      translationConfig = TranslationSession.Configuration(target: Locale.Language(identifier: "en"))
+    }
+  }
+  
+  private func translateResponse(session: Any) async {
+    guard #available(iOS 18.0, *), 
+          let translationSession = session as? TranslationSession,
+          var response = apiResponse else { return }
+    
+    await MainActor.run { isTranslating = true }
+    
+    let sourceStrings = response.allTranslatableStrings
+    var translatedStrings = [String]()
+    
+    do {
+      // 批量翻译
+      let requests = sourceStrings.map { TranslationSession.Request(sourceText: $0) }
+      let responses = try await translationSession.translations(from: requests)
+      translatedStrings = responses.map { $0.targetText }
+      
+      await MainActor.run {
+        response.applyTranslations(translatedStrings)
+        self.apiResponse = response
+        self.isTranslating = false
+      }
+    } catch {
+      print("翻译失败: \(error)")
+      await MainActor.run { isTranslating = false }
+    }
+  }
+}
+
+// MARK: - 辅助组件
+struct TranslationApplier: ViewModifier {
+  let config: Any?
+  let action: @Sendable (Any) async -> Void
+  
+  func body(content: Content) -> some View {
+    if #available(iOS 18.0, *), let translationConfig = config as? TranslationSession.Configuration {
+      content.translationTask(translationConfig) { session in
+        await action(session)
+      }
+    } else {
+      content
     }
   }
 }

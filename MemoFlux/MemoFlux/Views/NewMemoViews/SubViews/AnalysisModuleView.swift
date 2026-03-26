@@ -20,7 +20,7 @@ struct AnalysisModuleView: View {
     VStack(alignment: .leading, spacing: 0) {
       // 标题
       HStack {
-        Text("智能解析结果")
+        Text(AppStrings.smartAnalysisResults)
           .font(.system(size: 14, weight: .medium))
           .foregroundColor(.black)
         Spacer()
@@ -37,11 +37,11 @@ struct AnalysisModuleView: View {
               .scaleEffect(0.8)
 
             VStack(alignment: .leading, spacing: 4) {
-              Text("AI正在分析中...")
+              Text(AppStrings.aiAnalyzing)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.black)
 
-              Text("请稍候，正在为您生成智能解析结果")
+              Text(AppStrings.aiAnalyzingDesc)
                 .font(.system(size: 12))
                 .foregroundColor(Color(red: 100 / 255, green: 116 / 255, blue: 139 / 255))
             }
@@ -54,16 +54,16 @@ struct AnalysisModuleView: View {
           // 有API响应数据
           HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 10) {
-              Text("AI 分析完成")
+              Text(AppStrings.analysisComplete)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.black)
 
               if !response.information.summary.isEmpty {
-                Text("AI 分析：\(response.information.summary)")
+                Text(AppStrings.aiAnalysisSummaryPrefix(response.information.summary))
                   .font(.system(size: 12))
                   .foregroundColor(Color(red: 100 / 255, green: 116 / 255, blue: 139 / 255))
               } else {
-                Text("AI 分析：已完成内容分析")
+                Text(AppStrings.aiAnalysisFinishedPrefix)
                   .font(.system(size: 12))
                   .foregroundColor(Color(red: 100 / 255, green: 116 / 255, blue: 139 / 255))
               }
@@ -87,7 +87,7 @@ struct AnalysisModuleView: View {
               .font(.system(size: 12))
               .foregroundColor(.green)
 
-            Text("AI分析已完成，可查看详细解析结果")
+            Text(AppStrings.analysisFinishedWithDetail)
               .font(.system(size: 12))
               .foregroundColor(.grayTextColor)
           }
@@ -96,13 +96,11 @@ struct AnalysisModuleView: View {
           // 默认状态
           HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 10) {
-              Text("等待解析信息")
+              Text(AppStrings.waitingForAnalysis)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.black)
 
-              Text(
-                "AI 分析：未识别到有效内容，请输入或上传信息"
-              )
+              Text(AppStrings.aiAnalysisNoContent)
               .font(.system(size: 12))
               .foregroundColor(Color(red: 100 / 255, green: 116 / 255, blue: 139 / 255))
             }
@@ -125,7 +123,7 @@ struct AnalysisModuleView: View {
               .font(.system(size: 12))
               .foregroundColor(Color(red: 245 / 255, green: 158 / 255, blue: 11 / 255))
 
-            Text("添加更多内容可获得更精准的解析结果")
+            Text(AppStrings.addMoreForBetterResults)
               .font(.system(size: 12))
               .foregroundColor(.grayTextColor)
           }

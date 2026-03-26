@@ -2,7 +2,6 @@
 //  ScreenshotIntent.swift
 //  ScreenshotIntent
 //
-//  Created by 马硕 on 2025/7/24.
 //
 
 import AppIntents
@@ -28,7 +27,7 @@ struct ScreenshotIntent: AppIntent {
     }
 
     let directory = FileManager.default.containerURL(
-      forSecurityApplicationGroupIdentifier: "group.com.shuoma.memofluxapp")
+      forSecurityApplicationGroupIdentifier: "group.com.xiaobai.memofluxapp")
 
     guard let directory = directory else {
       if #available(iOS 18.0, *) {

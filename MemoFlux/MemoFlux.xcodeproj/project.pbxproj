@@ -7,10 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		03F1EF462EF2570D005076EE /* Share Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 03F1EF3C2EF2570C005076EE /* Share Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		658CA4192E321F6800F1C7CC /* ScreenshotIntent.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = 658CA4102E321F6800F1C7CC /* ScreenshotIntent.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		03F1EF442EF2570D005076EE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 656AAAEC2E314FFF00519789 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 03F1EF3B2EF2570C005076EE;
+			remoteInfo = "Share Extension";
+		};
 		658CA4172E321F6800F1C7CC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 656AAAEC2E314FFF00519789 /* Project object */;
@@ -21,6 +29,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		03F1EF4B2EF2570D005076EE /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				03F1EF462EF2570D005076EE /* Share Extension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		656AAB442E31BAE100519789 /* Embed ExtensionKit Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -35,11 +54,19 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		03F1EF3C2EF2570C005076EE /* Share Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Share Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		656AAAF42E314FFF00519789 /* MemoFlux.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MemoFlux.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		658CA4102E321F6800F1C7CC /* ScreenshotIntent.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = ScreenshotIntent.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		03F1EF472EF2570D005076EE /* Exceptions for "Share Extension" folder in "Share Extension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 03F1EF3B2EF2570C005076EE /* Share Extension */;
+		};
 		65574A552E31FD4F0052145C /* Exceptions for "MemoFlux" folder in "MemoFlux" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -57,6 +84,19 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		0345C14A2EF476A90049115D /* New Folder */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "New Folder";
+			sourceTree = "<group>";
+		};
+		03F1EF3D2EF2570D005076EE /* Share Extension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				03F1EF472EF2570D005076EE /* Exceptions for "Share Extension" folder in "Share Extension" target */,
+			);
+			path = "Share Extension";
+			sourceTree = "<group>";
+		};
 		65574A3D2E31D4230052145C /* MemoFlux */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -76,6 +116,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		03F1EF392EF2570C005076EE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		656AAAF12E314FFF00519789 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -97,16 +144,20 @@
 			isa = PBXGroup;
 			children = (
 				658CA4112E321F6800F1C7CC /* ScreenshotIntent */,
+				03F1EF3D2EF2570D005076EE /* Share Extension */,
 				656AAAF52E314FFF00519789 /* Products */,
 				65574A3D2E31D4230052145C /* MemoFlux */,
+				0345C14A2EF476A90049115D /* New Folder */,
 			);
 			sourceTree = "<group>";
+			usesTabs = 0;
 		};
 		656AAAF52E314FFF00519789 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				656AAAF42E314FFF00519789 /* MemoFlux.app */,
 				658CA4102E321F6800F1C7CC /* ScreenshotIntent.appex */,
+				03F1EF3C2EF2570C005076EE /* Share Extension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -114,6 +165,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		03F1EF3B2EF2570C005076EE /* Share Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 03F1EF482EF2570D005076EE /* Build configuration list for PBXNativeTarget "Share Extension" */;
+			buildPhases = (
+				03F1EF382EF2570C005076EE /* Sources */,
+				03F1EF392EF2570C005076EE /* Frameworks */,
+				03F1EF3A2EF2570C005076EE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				03F1EF3D2EF2570D005076EE /* Share Extension */,
+			);
+			name = "Share Extension";
+			packageProductDependencies = (
+			);
+			productName = "Share Extension";
+			productReference = 03F1EF3C2EF2570C005076EE /* Share Extension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		656AAAF32E314FFF00519789 /* MemoFlux */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 656AAAFF2E31500100519789 /* Build configuration list for PBXNativeTarget "MemoFlux" */;
@@ -122,13 +195,16 @@
 				656AAAF12E314FFF00519789 /* Frameworks */,
 				656AAAF22E314FFF00519789 /* Resources */,
 				656AAB442E31BAE100519789 /* Embed ExtensionKit Extensions */,
+				03F1EF4B2EF2570D005076EE /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				658CA4182E321F6800F1C7CC /* PBXTargetDependency */,
+				03F1EF452EF2570D005076EE /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
+				0345C14A2EF476A90049115D /* New Folder */,
 				65574A3D2E31D4230052145C /* MemoFlux */,
 			);
 			name = MemoFlux;
@@ -167,9 +243,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1640;
+				LastSwiftUpdateCheck = 2610;
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
+					03F1EF3B2EF2570C005076EE = {
+						CreatedOnToolsVersion = 26.1;
+					};
 					656AAAF32E314FFF00519789 = {
 						CreatedOnToolsVersion = 16.4;
 					};
@@ -194,11 +273,19 @@
 			targets = (
 				656AAAF32E314FFF00519789 /* MemoFlux */,
 				658CA40F2E321F6800F1C7CC /* ScreenshotIntent */,
+				03F1EF3B2EF2570C005076EE /* Share Extension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		03F1EF3A2EF2570C005076EE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		656AAAF22E314FFF00519789 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -216,6 +303,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		03F1EF382EF2570C005076EE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		656AAAF02E314FFF00519789 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -233,6 +327,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		03F1EF452EF2570D005076EE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 03F1EF3B2EF2570C005076EE /* Share Extension */;
+			targetProxy = 03F1EF442EF2570D005076EE /* PBXContainerItemProxy */;
+		};
 		658CA4182E321F6800F1C7CC /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 658CA40F2E321F6800F1C7CC /* ScreenshotIntent */;
@@ -241,6 +340,68 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		03F1EF492EF2570D005076EE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "Share Extension/Share Extension.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = QJB3DT4V8S;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Share Extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Share Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.xiaobai.memofluxapp.Share-Extension";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		03F1EF4A2EF2570D005076EE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "Share Extension/Share Extension.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = QJB3DT4V8S;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Share Extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Share Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.xiaobai.memofluxapp.Share-Extension";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		656AAAFD2E31500100519789 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -368,11 +529,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
-				CODE_SIGN_ENTITLEMENTS = MemoFlux/MemoFlux.entitlements;
+				CODE_SIGN_ENTITLEMENTS = MemoFlux/MemoFluxDebug.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 12;
-				DEVELOPMENT_TEAM = 97698DJKXY;
+				DEVELOPMENT_TEAM = QJB3DT4V8S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MemoFlux/Info.plist;
@@ -393,7 +554,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.shuoma.memofluxapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.xiaobai.memofluxapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -412,7 +573,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 12;
-				DEVELOPMENT_TEAM = 97698DJKXY;
+				DEVELOPMENT_TEAM = QJB3DT4V8S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MemoFlux/Info.plist;
@@ -433,7 +594,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.shuoma.memofluxapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.xiaobai.memofluxapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -449,7 +610,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 97698DJKXY;
+				DEVELOPMENT_TEAM = QJB3DT4V8S;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ScreenshotIntent/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = ScreenshotIntent;
@@ -461,7 +622,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.shuoma.memofluxapp.screenshotintent;
+				PRODUCT_BUNDLE_IDENTIFIER = com.xiaobai.memofluxapp.screenshotintent;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -478,7 +639,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 97698DJKXY;
+				DEVELOPMENT_TEAM = QJB3DT4V8S;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ScreenshotIntent/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = ScreenshotIntent;
@@ -490,7 +651,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.shuoma.memofluxapp.screenshotintent;
+				PRODUCT_BUNDLE_IDENTIFIER = com.xiaobai.memofluxapp.screenshotintent;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -503,6 +664,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		03F1EF482EF2570D005076EE /* Build configuration list for PBXNativeTarget "Share Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				03F1EF492EF2570D005076EE /* Debug */,
+				03F1EF4A2EF2570D005076EE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		656AAAEF2E314FFF00519789 /* Build configuration list for PBXProject "MemoFlux" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

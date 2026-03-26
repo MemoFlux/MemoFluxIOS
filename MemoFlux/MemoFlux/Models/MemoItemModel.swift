@@ -290,14 +290,71 @@ final class MemoItemModel: Identifiable {
   
   // MARK: - 嵌套模型 - 主响应模型
   struct APIResponse: Codable, Equatable {
-    let mostPossibleCategory: String
-    let information: Information
+    var mostPossibleCategory: String
+    var information: Information
     var schedule: Schedule
     
     enum CodingKeys: String, CodingKey {
       case mostPossibleCategory
       case information
       case schedule
+    }
+    
+    /// 获取所有需要翻译的字符串
+    var allTranslatableStrings: [String] {
+      var strings = [String]()
+      strings.append(mostPossibleCategory)
+      strings.append(information.title)
+      strings.append(information.summary)
+      strings.append(contentsOf: information.tags)
+      strings.append(schedule.title)
+      strings.append(schedule.category)
+      
+      for task in schedule.tasks {
+        strings.append(task.theme)
+        strings.append(task.category)
+        strings.append(contentsOf: task.coreTasks)
+        strings.append(contentsOf: task.suggestedActions)
+        strings.append(contentsOf: task.tags)
+        strings.append(contentsOf: task.position)
+      }
+      return strings
+    }
+    
+    /// 应用翻译后的字符串
+    mutating func applyTranslations(_ translated: [String]) {
+      var index = 0
+      
+      func next() -> String {
+        guard index < translated.count else { return "" }
+        let val = translated[index]
+        index += 1
+        return val
+      }
+      
+      func nextArray(_ count: Int) -> [String] {
+        var arr = [String]()
+        for _ in 0..<count {
+          arr.append(next())
+        }
+        return arr
+      }
+      
+      mostPossibleCategory = next()
+      information.title = next()
+      information.summary = next()
+      information.tags = nextArray(information.tags.count)
+      schedule.title = next()
+      schedule.category = next()
+      
+      for i in 0..<schedule.tasks.count {
+        schedule.tasks[i].theme = next()
+        schedule.tasks[i].category = next()
+        schedule.tasks[i].coreTasks = nextArray(schedule.tasks[i].coreTasks.count)
+        schedule.tasks[i].suggestedActions = nextArray(schedule.tasks[i].suggestedActions.count)
+        schedule.tasks[i].tags = nextArray(schedule.tasks[i].tags.count)
+        schedule.tasks[i].position = nextArray(schedule.tasks[i].position.count)
+      }
     }
     
     /// 获取所有任务的标签
@@ -327,11 +384,11 @@ final class MemoItemModel: Identifiable {
   
   // MARK: - Information 模型
   struct Information: Codable, Equatable {
-    let title: String
+    var title: String
     let informationItems: [InformationItem]
     let relatedItems: [String]
-    let summary: String
-    let tags: [String]
+    var summary: String
+    var tags: [String]
     
     enum CodingKeys: String, CodingKey {
       case title
@@ -361,8 +418,8 @@ final class MemoItemModel: Identifiable {
   
   // MARK: - Schedule 模型
   struct Schedule: Codable, Equatable {
-    let title: String
-    let category: String
+    var title: String
+    var category: String
     var tasks: [ScheduleTask]
   }
   
@@ -370,12 +427,12 @@ final class MemoItemModel: Identifiable {
     let startTime: String
     let endTime: String
     let people: [String]
-    let theme: String
-    let coreTasks: [String]
-    let position: [String]
-    let tags: [String]
-    let category: String
-    let suggestedActions: [String]
+    var theme: String
+    var coreTasks: [String]
+    var position: [String]
+    var tags: [String]
+    var category: String
+    var suggestedActions: [String]
     let id: UUID
     
     // 任务状态枚举

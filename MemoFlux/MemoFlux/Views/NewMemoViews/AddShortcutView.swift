@@ -29,7 +29,7 @@ struct AddShortcutView: View {
                 .foregroundStyle(Color.mainStyleBackgroundColor)
             }
             
-            Text("MemoFlux 快捷指令")
+            Text(AppStrings.shortcutTitle)
               .font(.system(size: 24, weight: .bold))
               .foregroundColor(.primary)
           }
@@ -37,19 +37,19 @@ struct AddShortcutView: View {
           
           // 快捷指令介绍
           VStack(alignment: .leading, spacing: 16) {
-            featureRow(icon: "bolt.fill", title: "快速捕捉", description: "随时随地一键启动，快速捕捉灵感和信息")
+            featureRow(icon: "bolt.fill", title: AppStrings.fastCapture, description: AppStrings.fastCaptureDesc)
             
-            featureRow(icon: "arrow.right.doc.on.clipboard", title: "直接导入", description: "拍照或选择图片后自动导入到 MemoFlux 应用")
+            featureRow(icon: "arrow.right.doc.on.clipboard", title: AppStrings.directImport, description: AppStrings.directImportDesc)
             
-            featureRow(icon: "text.viewfinder", title: "智能识别", description: "自动识别图片中的文字，无需手动输入")
+            featureRow(icon: "text.viewfinder", title: AppStrings.smartRecognition, description: AppStrings.smartRecognitionDesc)
             
-            featureRow(icon: "brain", title: "AI 分析", description: "使用 AI 自动分析内容，提取关键信息")
+            featureRow(icon: "brain", title: AppStrings.aiAnalysisFeature, description: AppStrings.aiAnalysisFeatureDesc)
           }
           .padding(.horizontal, 20)
           
           // 安装提示
           VStack(spacing: 12) {
-            Text("安装步骤")
+            Text(AppStrings.installSteps)
               .font(.system(size: 18, weight: .semibold))
               .frame(maxWidth: .infinity, alignment: .leading)
             
@@ -62,10 +62,10 @@ struct AddShortcutView: View {
                 .clipShape(Circle())
               
               VStack(alignment: .leading, spacing: 4) {
-                Text("点击下方按钮")
+                Text(AppStrings.clickBelow)
                   .font(.system(size: 16, weight: .medium))
                 
-                Text("将跳转到快捷指令应用")
+                Text(AppStrings.jumpToShortcuts)
                   .font(.system(size: 14))
                   .foregroundColor(.secondary)
               }
@@ -82,10 +82,10 @@ struct AddShortcutView: View {
                 .clipShape(Circle())
               
               VStack(alignment: .leading, spacing: 4) {
-                Text("添加快捷指令")
+                Text(AppStrings.addShortcutAction)
                   .font(.system(size: 16, weight: .medium))
                 
-                Text("在快捷指令应用中点击\"添加快捷指令\"")
+                Text(AppStrings.inShortcutsApp)
                   .font(.system(size: 14))
                   .foregroundColor(.secondary)
               }
@@ -102,7 +102,7 @@ struct AddShortcutView: View {
           } label: {
             HStack {
               Image(systemName: "square.and.arrow.down")
-              Text("安装快捷指令")
+              Text(AppStrings.installShortcutButton)
             }
             .font(.system(size: 16, weight: .semibold))
             .foregroundColor(.white)
@@ -119,7 +119,7 @@ struct AddShortcutView: View {
             Image(systemName: "info.circle")
               .font(.system(size: 14))
             
-            Text("可添加到Action Button或通过辅助触控快速启动")
+            Text(AppStrings.actionButtonHint)
               .font(.system(size: 14))
           }
           .foregroundColor(.grayTextColor)
@@ -130,7 +130,7 @@ struct AddShortcutView: View {
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)
       .background(Color.globalStyleBackgroundColor)
-      .navigationTitle("添加快捷指令")
+      .navigationTitle(AppStrings.addShortcutNavTitle)
       .navigationBarTitleDisplayMode(.inline)
     }
   }

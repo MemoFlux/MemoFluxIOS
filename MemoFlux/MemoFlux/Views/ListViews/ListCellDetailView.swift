@@ -570,8 +570,8 @@ struct ScheduleTaskCard: View {
         Spacer()
         if let startDate = task.startDate {
           Text(startDate, format: .dateTime.day().month().year().hour().minute())
-          .font(.caption)
-          .foregroundColor(.grayTextColor)
+            .font(.caption)
+            .foregroundColor(.grayTextColor)
         }
       }
       

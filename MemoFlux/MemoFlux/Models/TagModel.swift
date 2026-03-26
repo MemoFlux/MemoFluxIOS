@@ -151,7 +151,7 @@ class TagManager {
       }
       
       // 2. 删除TagModel
-      modelContext.delete(tag)
+    modelContext.delete(tag)
       
       // 3. 保存更改
       try modelContext.save()
