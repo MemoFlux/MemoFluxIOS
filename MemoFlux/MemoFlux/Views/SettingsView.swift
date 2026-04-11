@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SettingsView: View {
   @ObservedObject private var languageManager = LanguageManager.shared
+  @ObservedObject private var modelStore = AIModelStore.shared
   
   var body: some View {
     NavigationView {
@@ -20,6 +21,16 @@ struct SettingsView: View {
               Spacer()
               Text(languageManager.currentLanguage.displayName)
                 .foregroundColor(.secondary)
+            }
+          }
+          
+          NavigationLink(destination: ModelManagementView()) {
+            HStack {
+              Text(AppStrings.modelSelection)
+              Spacer()
+              Text(modelStore.selectedModel.name)
+                .foregroundColor(.secondary)
+                .lineLimit(1)
             }
           }
           

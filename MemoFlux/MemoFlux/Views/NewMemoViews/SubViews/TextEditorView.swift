@@ -13,7 +13,7 @@ struct TextEditorView: View {
   @Binding var inputTitle: String
   @FocusState var isTextEditorFocused: Bool
   @FocusState var isTitleFocused: Bool
-  @Binding var useAIParsing: Bool  // AI解析选项
+  let selectedModelName: String
 
   private let titleHeight: CGFloat = 50
   private let contentHeight: CGFloat = 130
@@ -61,12 +61,13 @@ struct TextEditorView: View {
       }
 
       HStack {
-        Button(action: {
-          useAIParsing.toggle()
-        }) {
-          HStack(spacing: 4) {
-            Image(systemName: useAIParsing ? "checkmark.circle" : "circle")
-            Text(AppStrings.useAIParsing)
+        NavigationLink(destination: ModelSelectionView()) {
+          HStack(spacing: 6) {
+            Image(systemName: "sparkles")
+            Text(selectedModelName)
+              .lineLimit(1)
+            Image(systemName: "chevron.right")
+              .font(.system(size: 12, weight: .semibold))
           }
           .font(.subheadline)
           .foregroundColor(Color.mainStyleBackgroundColor)
@@ -245,7 +246,6 @@ class TextInputCoordinator: NSObject, UITextFieldDelegate, UITextViewDelegate {
 struct TextEditorViewPreview: View {
   @State private var inputText = ""
   @State private var inputTitle = ""
-  @State private var useAIParsing = true
   @FocusState private var isTextEditorFocused: Bool
 
   var body: some View {
@@ -253,7 +253,7 @@ struct TextEditorViewPreview: View {
       inputText: $inputText,
       inputTitle: $inputTitle,
       isTextEditorFocused: _isTextEditorFocused,
-      useAIParsing: $useAIParsing
+      selectedModelName: "Doubao Seed 1.6"
     )
     .padding()
   }

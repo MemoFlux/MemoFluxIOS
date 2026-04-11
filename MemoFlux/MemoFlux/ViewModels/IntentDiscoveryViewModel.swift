@@ -22,7 +22,7 @@ struct IntentDiscoveryViewModel: Identifiable {
     self.id = UUID()
     self.memoItem = memoItem
     self.scheduleTask = scheduleTask
-    self.title = scheduleTask.theme
+    self.title = scheduleTask.displayTitle ?? memoItem.displayTitle
     self.iconName = "calendar"
     self.iconColor = Color(.orange)
     self.isCompleted = isCompleted

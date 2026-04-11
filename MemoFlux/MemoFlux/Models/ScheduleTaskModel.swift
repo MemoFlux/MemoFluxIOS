@@ -65,11 +65,11 @@ final class ScheduleTaskModel: Identifiable {
   
   // 将字符串时间转换为Date
   var startDate: Date? {
-    return ISO8601DateFormatter().date(from: startTime)
+    return FlexibleDateParser.parse(startTime)
   }
   
   var endDate: Date? {
-    return ISO8601DateFormatter().date(from: endTime)
+    return FlexibleDateParser.parse(endTime)
   }
   
   // MARK: - 状态管理方法

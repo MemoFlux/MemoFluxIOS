@@ -440,6 +440,26 @@ final class MemoItemModel: Identifiable {
       case pending = "待处理"
       case completed = "已处理"
       case ignored = "已忽略"
+      
+      init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let rawValue = try container.decode(String.self)
+        
+        switch rawValue.uppercased() {
+        case "PENDING":
+          self = .pending
+        case "COMPLETED":
+          self = .completed
+        case "IGNORED":
+          self = .ignored
+        default:
+          if let value = TaskStatus(rawValue: rawValue) {
+            self = value
+          } else {
+            self = .pending
+          }
+        }
+      }
     }
     
     // 任务状态，默认为待处理
@@ -456,6 +476,7 @@ final class MemoItemModel: Identifiable {
       case category
       case suggestedActions = "suggestedActions"
       case status
+      case taskStatus
       case id
     }
     
@@ -472,7 +493,10 @@ final class MemoItemModel: Identifiable {
       category = try container.decode(String.self, forKey: .category)
       suggestedActions = try container.decode([String].self, forKey: .suggestedActions)
       // 尝试解码状态，如果不存在则默认为待处理
-      taskStatus = try container.decodeIfPresent(TaskStatus.self, forKey: .status) ?? .pending
+      taskStatus =
+        try container.decodeIfPresent(TaskStatus.self, forKey: .status)
+        ?? (try container.decodeIfPresent(TaskStatus.self, forKey: .taskStatus))
+        ?? .pending
       
       // 尝试解码ID，如果不存在则基于内容生成稳定的UUID
       if let existingId = try container.decodeIfPresent(UUID.self, forKey: .id) {
@@ -529,11 +553,11 @@ final class MemoItemModel: Identifiable {
     
     // 将字符串时间转换为Date
     var startDate: Date? {
-      return ISO8601DateFormatter().date(from: startTime)
+      return FlexibleDateParser.parse(startTime)
     }
     
     var endDate: Date? {
-      return ISO8601DateFormatter().date(from: endTime)
+      return FlexibleDateParser.parse(endTime)
     }
     
     // MARK: - 状态管理方法
@@ -568,6 +592,106 @@ typealias InformationNode = MemoItemModel.InformationNode
 typealias Schedule = MemoItemModel.Schedule
 typealias ScheduleTask = MemoItemModel.ScheduleTask
 
+extension MemoItemModel {
+  var displayTitle: String {
+    if let title = title.nilIfBlank {
+      return title
+    }
+    
+    if let response = apiResponse,
+       let title = response.preferredDisplayTitle {
+      return title
+    }
+    
+    if let title = recognizedText.nilIfBlank {
+      return title
+    }
+    
+    if let title = userInputText.nilIfBlank {
+      return title
+    }
+    
+    return AppStrings.noTitle
+  }
+}
+
+extension MemoItemModel.APIResponse {
+  var preferredDisplayTitle: String? {
+    switch mostPossibleCategory.lowercased() {
+    case "schedule":
+      return schedule.preferredTitle
+        ?? information.preferredTitle
+    case "information":
+      return information.preferredTitle
+        ?? schedule.preferredTitle
+    default:
+      return schedule.preferredTitle
+        ?? information.preferredTitle
+    }
+  }
+}
+
+extension MemoItemModel.Information {
+  var preferredTitle: String? {
+    if let title = title.nilIfBlank {
+      return title
+    }
+    
+    if let item = informationItems.first(where: { $0.header.nilIfBlank != nil }),
+       let header = item.header.nilIfBlank {
+      return header
+    }
+    
+    if let summary = summary.nilIfBlank {
+      return summary
+    }
+    
+    return nil
+  }
+}
+
+extension MemoItemModel.Schedule {
+  var preferredTitle: String? {
+    if let title = title.nilIfBlank {
+      return title
+    }
+    
+    for task in tasks {
+      if let title = task.displayTitle {
+        return title
+      }
+    }
+    
+    if let category = category.nilIfBlank {
+      return category
+    }
+    
+    return nil
+  }
+}
+
+extension MemoItemModel.ScheduleTask {
+  var displayTitle: String? {
+    if let theme = theme.nilIfBlank {
+      return theme
+    }
+    
+    if let task = coreTasks.first(where: { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) {
+      return task
+    }
+    
+    if let category = category.nilIfBlank {
+      return category
+    }
+    
+    if let tag = tags.first(where: { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) {
+      return tag
+    }
+    
+    return nil
+  }
+}
+
 // MARK: - String扩展，用于生成稳定的UUID
 extension String {
   /// 基于字符串内容生成稳定的UUID字符串
@@ -580,5 +704,10 @@ extension String {
     let formatted =
     "\(uuidString.prefix(8))-\(uuidString.dropFirst(8).prefix(4))-\(uuidString.dropFirst(12).prefix(4))-\(uuidString.dropFirst(16).prefix(4))-\(uuidString.dropFirst(20).prefix(12))"
     return formatted
+  }
+  
+  var nilIfBlank: String? {
+    let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
+    return trimmed.isEmpty ? nil : trimmed
   }
 }

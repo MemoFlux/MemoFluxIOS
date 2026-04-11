@@ -450,23 +450,7 @@ struct MemoCardView: View {
   
   // MARK: - 获取显示标题
   private func getDisplayTitle() -> String {
-    if !item.title.isEmpty {
-      return item.title
-    }
-    
-    // 如果没有标题但有API解析结果，使用most_possible_category对应的标题
-    if item.hasAPIResponse, let apiResponse = item.apiResponse {
-      switch apiResponse.mostPossibleCategory.lowercased() {
-      case "information":
-        return apiResponse.information.title.isEmpty ? AppStrings.noTitle : apiResponse.information.title
-      case "schedule":
-        return apiResponse.schedule.title.isEmpty ? AppStrings.noTitle : apiResponse.schedule.title
-      default:
-        return AppStrings.noTitle
-      }
-    }
-    
-    return AppStrings.noTitle
+    item.displayTitle
   }
   
   private var imageView: some View {

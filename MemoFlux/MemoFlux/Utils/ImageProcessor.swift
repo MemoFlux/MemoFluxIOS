@@ -45,6 +45,20 @@ class ImageProcessor {
       maxHeight: 600,
       compressionQuality: 0.5
     )
+    
+    /// Ark 优化配置：最大尺寸512x512，压缩质量0.4
+    static let arkOptimized = CompressionConfig(
+      maxWidth: 512,
+      maxHeight: 512,
+      compressionQuality: 0.4
+    )
+    
+    /// Ark 兜底配置：最大尺寸384x384，压缩质量0.3
+    static let arkFallback = CompressionConfig(
+      maxWidth: 384,
+      maxHeight: 384,
+      compressionQuality: 0.3
+    )
   }
   
   // MARK: - 主要功能方法

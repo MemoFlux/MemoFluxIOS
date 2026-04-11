@@ -27,6 +27,8 @@ enum NetworkError: Error, LocalizedError {
   case decodingError(Error)
   case serverError(Int)
   case unauthorized
+  case invalidConfiguration(String)
+  case invalidResponseFormat(String)
   case networkError(Error)
   
   var errorDescription: String? {
@@ -41,9 +43,12 @@ enum NetworkError: Error, LocalizedError {
       return "服务器错误: \(code)"
     case .unauthorized:
       return "未授权访问"
+    case .invalidConfiguration(let message):
+      return "配置错误: \(message)"
+    case .invalidResponseFormat(let message):
+      return "响应格式错误: \(message)"
     case .networkError(let error):
       return "网络错误: \(error.localizedDescription)"
     }
   }
 }
-

@@ -373,32 +373,17 @@ struct SummaryView: View {
   
   // MARK: - 获取显示标题
   private func getDisplayTitle(for memo: MemoItemModel) -> String {
-    // 如果有标题，直接使用
-    if !memo.title.isEmpty {
-      return memo.title
-    }
-    
-    // 如果没有标题但有API响应，使用最可能类别的标题
-    guard let response = memo.apiResponse else {
-      return AppStrings.noTitle
-    }
-    
-    switch response.mostPossibleCategory.lowercased() {
-    case "information":
-      return response.information.title.isEmpty ? AppStrings.noTitle : response.information.title
-    case "schedule":
-      return response.schedule.title.isEmpty ? AppStrings.noTitle : response.schedule.title
-    default:
-      return AppStrings.noTitle
-    }
+    memo.displayTitle
   }
   
   private func getSummaryText(from apiResponse: APIResponse) -> String {
     switch apiResponse.mostPossibleCategory.lowercased() {
     case "information":
-      return apiResponse.information.title
+      return apiResponse.information.title.nilIfBlank
+        ?? apiResponse.information.summary.nilIfBlank
+        ?? AppStrings.noTitle
     case "schedule":
-      return apiResponse.schedule.title
+      return apiResponse.schedule.preferredTitle ?? AppStrings.noTitle
     default:
       return apiResponse.information.summary.isEmpty
       ? apiResponse.information.title : apiResponse.information.summary

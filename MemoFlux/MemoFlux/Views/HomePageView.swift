@@ -153,8 +153,8 @@ struct HomePageView: View {
           memoItem.tags = Array(newTags)
           
           // 如果有标题，更新标题
-          if !response.schedule.title.isEmpty {
-            memoItem.title = response.schedule.title
+          if let preferredTitle = response.preferredDisplayTitle {
+            memoItem.title = preferredTitle
           }
           
           // 保存更新

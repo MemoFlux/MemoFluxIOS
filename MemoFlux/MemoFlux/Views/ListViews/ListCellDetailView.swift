@@ -305,24 +305,7 @@ struct ListCellDetailView: View {
   
   // MARK: - 获取显示标题
   private func getDisplayTitle() -> String {
-    // 如果有标题，直接使用
-    if !item.title.isEmpty {
-      return item.title
-    }
-    
-    // 如果没有标题但有API响应，使用最可能类别的标题
-    guard let response = item.apiResponse else {
-      return ""
-    }
-    
-    switch response.mostPossibleCategory.lowercased() {
-    case "information":
-      return response.information.title
-    case "schedule":
-      return response.schedule.title
-    default:
-      return ""
-    }
+    item.displayTitle == AppStrings.noTitle ? "" : item.displayTitle
   }
   
   // MARK: - 设置默认数据类型

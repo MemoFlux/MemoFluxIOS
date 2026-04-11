@@ -100,6 +100,21 @@ struct AppStrings {
   static var inputTextPlaceholder: String { LanguageManager.shared.localized(zh: "在这里输入文字或点击下方按钮", en: "Enter text here or click buttons below") }
   static var uploadImage: String { LanguageManager.shared.localized(zh: "上传图片", en: "Upload Image") }
   static var useAIParsing: String { LanguageManager.shared.localized(zh: "使用AI解析", en: "Use AI Parsing") }
+  static var modelSelection: String { LanguageManager.shared.localized(zh: "模型选择", en: "Model Selection") }
+  static var currentModel: String { LanguageManager.shared.localized(zh: "当前模型", en: "Current Model") }
+  static var builtInModels: String { LanguageManager.shared.localized(zh: "内置模型", en: "Built-in Models") }
+  static var customModels: String { LanguageManager.shared.localized(zh: "自定义模型", en: "Custom Models") }
+  static var createCustomModel: String { LanguageManager.shared.localized(zh: "创建自定义模型", en: "Create Custom Model") }
+  static var customModelHint: String { LanguageManager.shared.localized(zh: "可从不同模型供应商创建自定义模型，API Key 会安全保存在本机。", en: "Create custom models from different providers. API keys are stored locally on device.") }
+  static var modelBasicInfo: String { LanguageManager.shared.localized(zh: "模型信息", en: "Model Info") }
+  static var modelName: String { LanguageManager.shared.localized(zh: "模型名称", en: "Model Name") }
+  static var modelID: String { LanguageManager.shared.localized(zh: "模型 ID", en: "Model ID") }
+  static var providerSelection: String { LanguageManager.shared.localized(zh: "模型供应商", en: "Provider") }
+  static var provider: String { LanguageManager.shared.localized(zh: "供应商", en: "Provider") }
+  static var connectionConfig: String { LanguageManager.shared.localized(zh: "连接配置", en: "Connection") }
+  static var baseURL: String { LanguageManager.shared.localized(zh: "Base URL", en: "Base URL") }
+  static var apiKey: String { LanguageManager.shared.localized(zh: "API Key", en: "API Key") }
+  static var providerInterfaceHint: String { LanguageManager.shared.localized(zh: "当前支持 OpenAI 兼容的 Chat Completions 接口，不同供应商会自动适配默认 Base URL。", en: "Currently supports OpenAI-compatible Chat Completions. Different providers automatically adapt their default base URLs.") }
   static var takePhoto: String { LanguageManager.shared.localized(zh: "拍照", en: "Take Photo") }
   static var chooseFromAlbum: String { LanguageManager.shared.localized(zh: "从相册选择", en: "Choose from Album") }
   static var smartAnalysisResults: String { LanguageManager.shared.localized(zh: "智能解析结果", en: "Smart Analysis Results") }

@@ -9,11 +9,13 @@ import PhotosUI
 import SwiftUI
 import Vision
 import Translation
+import NaturalLanguage
 
 struct AddMemoItemView: View {
   @Environment(\.dismiss) private var dismiss
   @Environment(\.modelContext) private var modelContext
   @ObservedObject private var languageManager = LanguageManager.shared
+  @ObservedObject private var modelStore = AIModelStore.shared
   
   @State private var showingImagePicker = false
   @State private var showingCamera = false
@@ -56,7 +58,7 @@ struct AddMemoItemView: View {
             inputText: $inputText,
             inputTitle: $inputTitle,
             isTextEditorFocused: _isTextEditorFocused,
-            useAIParsing: $useAIParsing
+            selectedModelName: modelStore.selectedModel.name
           )
           .padding(.bottom, 5)
           
@@ -367,7 +369,10 @@ struct AddMemoItemView: View {
         do {
           let response = try await NetworkManager.shared.generateFromImageBase64(
             image: image,
-            tags: TagManager.shared.getAllTagNames(from: modelContext)
+            supplementaryText: inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+              ? nil : inputText,
+            tags: TagManager.shared.getAllTagNames(from: modelContext),
+            model: modelStore.selectedModel
           )
           
           await MainActor.run {
@@ -397,7 +402,8 @@ struct AddMemoItemView: View {
         do {
           let response = try await NetworkManager.shared.generateFromText(
             content,
-            tags: TagManager.shared.getAllTagNames(from: modelContext)
+            tags: TagManager.shared.getAllTagNames(from: modelContext),
+            model: modelStore.selectedModel
           )
           
           await MainActor.run {
@@ -421,7 +427,15 @@ struct AddMemoItemView: View {
   // MARK: - 翻译逻辑
   private func triggerTranslation() {
     if #available(iOS 18.0, *) {
-      guard let _ = apiResponse else { return }
+      guard let response = apiResponse else { return }
+      
+      guard shouldTranslate(response) else {
+        translationConfig = nil
+        isTranslating = false
+        print("🌐 Skip translation: AI response is already in English")
+        return
+      }
+      
       translationConfig = TranslationSession.Configuration(target: Locale.Language(identifier: "en"))
     }
   }
@@ -448,10 +462,51 @@ struct AddMemoItemView: View {
         self.isTranslating = false
       }
     } catch {
+      if String(describing: error).contains("unsupportedLanguagePairing") {
+        await MainActor.run {
+          self.translationConfig = nil
+          self.isTranslating = false
+        }
+        print("🌐 Skip translation: unsupported language pairing")
+        return
+      }
+      
       print("翻译失败: \(error)")
       await MainActor.run { isTranslating = false }
     }
   }
+  
+  private func shouldTranslate(_ response: APIResponse) -> Bool {
+    let sourceStrings = response.allTranslatableStrings
+      .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+      .filter { !$0.isEmpty }
+    
+    guard !sourceStrings.isEmpty else { return false }
+    
+    let combinedText = sourceStrings.joined(separator: "\n")
+    let recognizer = NLLanguageRecognizer()
+    recognizer.processString(combinedText)
+    
+    if recognizer.dominantLanguage == .english {
+      return false
+    }
+    
+    return !isLikelyEnglishText(combinedText)
+  }
+  
+  private func isLikelyEnglishText(_ text: String) -> Bool {
+    let letters = text.unicodeScalars.filter { CharacterSet.letters.contains($0) }
+    guard !letters.isEmpty else { return false }
+    
+    let nonASCII = letters.filter { !$0.isASCII }
+    if nonASCII.isEmpty {
+      return true
+    }
+    
+    let nonASCIIRatio = Double(nonASCII.count) / Double(letters.count)
+    return nonASCIIRatio < 0.15
+  }
+  
 }
 
 // MARK: - 辅助组件

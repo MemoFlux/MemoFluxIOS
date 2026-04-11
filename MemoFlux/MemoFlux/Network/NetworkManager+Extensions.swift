@@ -19,9 +19,10 @@ extension NetworkManager {
   @available(iOS 15.0, *)
   func generateFromText(
     _ text: String,
-    tags: [String]
+    tags: [String],
+    model: AIModelProfile = AIModelStore.shared.selectedModel
   ) async throws -> APIResponse {
-    return try await requestAIResponse(content: text, tags: tags, isImage: false)
+    return try await requestAIResponse(content: text, tags: tags, isImage: false, model: model)
   }
 
   /// 从图片识别文本生成AI响应（异步版本）
@@ -32,10 +33,11 @@ extension NetworkManager {
   @available(iOS 15.0, *)
   func generateFromImage(
     recognizedText: String,
-    tags: [String]
+    tags: [String],
+    model: AIModelProfile = AIModelStore.shared.selectedModel
   ) async throws -> APIResponse {
     // 发送识别出的文本内容，isImage 设置为 false
-    return try await requestAIResponse(content: recognizedText, tags: tags, isImage: false)
+    return try await requestAIResponse(content: recognizedText, tags: tags, isImage: false, model: model)
   }
 
   /// 从图片Base64编码生成AI响应（异步版本）
@@ -47,34 +49,99 @@ extension NetworkManager {
   @available(iOS 15.0, *)
   func generateFromImageBase64(
     image: UIImage,
-    config: ImageProcessor.CompressionConfig = .highQuality,
-    tags: [String]
+    supplementaryText: String? = nil,
+    config: ImageProcessor.CompressionConfig = .default,
+    tags: [String],
+    model: AIModelProfile = AIModelStore.shared.selectedModel
   ) async throws -> APIResponse {
-    // 异步处理图片压缩和编码
-    return try await withCheckedThrowingContinuation { continuation in
-      ImageProcessor.shared.compressAndEncodeToBase64Async(image: image, config: config) {
-        base64String in
-        guard let base64String = base64String else {
+    let retryConfigs = deduplicatedConfigs(startingWith: config)
+    var lastError: Error?
+    
+    for (index, currentConfig) in retryConfigs.enumerated() {
+      do {
+        let base64String = try await compressImageToBase64(image: image, config: currentConfig)
+        print(
+          "🖼️ Ark image attempt \(index + 1)/\(retryConfigs.count) " +
+          "size=\(Int(currentConfig.maxWidth))x\(Int(currentConfig.maxHeight)) " +
+          "quality=\(currentConfig.compressionQuality) " +
+          "base64Chars=\(base64String.count)"
+        )
+        
+        return try await ArkChatClient.shared.analyzeContent(
+          text: supplementaryText,
+          imageBase64: base64String,
+          serviceConfiguration: model.serviceConfiguration,
+          tags: tags
+        )
+      } catch {
+        lastError = error
+        
+        guard isTimeoutError(error), index < retryConfigs.count - 1 else {
+          throw error
+        }
+        
+        print("⏳ Ark image attempt timed out, retrying with smaller image…")
+      }
+    }
+    
+    throw lastError ?? NetworkError.networkError(
+      NSError(
+        domain: "ImageProcessing",
+        code: -1,
+        userInfo: [NSLocalizedDescriptionKey: "图片处理失败"]
+      ))
+  }
+  
+  private func compressImageToBase64(
+    image: UIImage,
+    config: ImageProcessor.CompressionConfig
+  ) async throws -> String {
+    try await withCheckedThrowingContinuation { continuation in
+      ImageProcessor.shared.compressAndEncodeToBase64Async(image: image, config: config) { base64String in
+        guard let base64String else {
           continuation.resume(throwing: NetworkError.networkError(
             NSError(
-              domain: "ImageProcessing", code: -1, userInfo: [NSLocalizedDescriptionKey: "图片处理失败"]
+              domain: "ImageProcessing",
+              code: -1,
+              userInfo: [NSLocalizedDescriptionKey: "图片处理失败"]
             )))
           return
         }
-
-        // 发送Base64编码的图片数据
-        Task {
-          do {
-            let response = try await self.requestAIResponse(
-              content: base64String, tags: tags, isImage: true
-            )
-            continuation.resume(returning: response)
-          } catch {
-            continuation.resume(throwing: error)
-          }
-        }
+        
+        continuation.resume(returning: base64String)
       }
     }
+  }
+  
+  private func deduplicatedConfigs(
+    startingWith initialConfig: ImageProcessor.CompressionConfig
+  ) -> [ImageProcessor.CompressionConfig] {
+    let configs = [
+      initialConfig,
+      .lowQuality,
+      .arkOptimized,
+      .arkFallback
+    ]
+    
+    var seen = Set<String>()
+    return configs.filter { config in
+      let key = "\(config.maxWidth)x\(config.maxHeight)-\(config.compressionQuality)"
+      return seen.insert(key).inserted
+    }
+  }
+  
+  private func isTimeoutError(_ error: Error) -> Bool {
+    if let urlError = error as? URLError {
+      return urlError.code == .timedOut
+    }
+    
+    if let networkError = error as? NetworkError,
+       case .networkError(let wrappedError) = networkError {
+      return isTimeoutError(wrappedError)
+    }
+    
+    let nsError = error as NSError
+    return nsError.domain == NSURLErrorDomain && nsError.code == URLError.timedOut.rawValue
   }
   
   // MARK: - SwiftData 集成
@@ -157,8 +224,8 @@ extension NetworkManager {
         memoItem.syncTagsToTagModel(in: modelContext)
 
         // 更新标题
-        if memoItem.title.isEmpty && !response.schedule.title.isEmpty {
-          memoItem.title = response.schedule.title
+        if memoItem.title.isEmpty, let preferredTitle = response.preferredDisplayTitle {
+          memoItem.title = preferredTitle
         }
 
         do {
