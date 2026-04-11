@@ -253,7 +253,7 @@ struct TextEditorViewPreview: View {
       inputText: $inputText,
       inputTitle: $inputTitle,
       isTextEditorFocused: _isTextEditorFocused,
-      selectedModelName: "Doubao Seed 1.6"
+      selectedModelName: "Bailian Qwen-VL-Plus"
     )
     .padding()
   }

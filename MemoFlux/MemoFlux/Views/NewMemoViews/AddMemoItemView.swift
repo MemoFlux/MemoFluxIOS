@@ -367,12 +367,9 @@ struct AddMemoItemView: View {
       
       Task {
         do {
-          let response = try await NetworkManager.shared.generateFromImageBase64(
+          let response = try await NetworkManager.shared.requestBailianImageResponse(
             image: image,
-            supplementaryText: inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-              ? nil : inputText,
-            tags: TagManager.shared.getAllTagNames(from: modelContext),
-            model: modelStore.selectedModel
+            tags: TagManager.shared.getAllTagNames(from: modelContext)
           )
           
           await MainActor.run {

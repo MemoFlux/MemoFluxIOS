@@ -67,7 +67,7 @@ enum AIModelProvider: String, CaseIterable, Codable, Identifiable {
   var displayName: String {
     switch self {
     case .doubaoArk:
-      return LanguageManager.shared.localized(zh: "火山方舟 / 豆包", en: "Volcengine Ark / Doubao")
+      return LanguageManager.shared.localized(zh: "阿里百炼 / 通义千问", en: "Alibaba Bailian / Qwen")
     case .gemini:
       return LanguageManager.shared.localized(zh: "Google Gemini", en: "Google Gemini")
     case .openAICompatible:
@@ -78,7 +78,7 @@ enum AIModelProvider: String, CaseIterable, Codable, Identifiable {
   var shortDisplayName: String {
     switch self {
     case .doubaoArk:
-      return LanguageManager.shared.localized(zh: "豆包", en: "Doubao")
+      return LanguageManager.shared.localized(zh: "百炼", en: "Bailian")
     case .gemini:
       return "Gemini"
     case .openAICompatible:
@@ -93,7 +93,7 @@ enum AIModelProvider: String, CaseIterable, Codable, Identifiable {
   var defaultBaseURL: String? {
     switch self {
     case .doubaoArk:
-      return SecureConfig.arkBaseURL
+      return SecureConfig.bailianBaseURL
     case .gemini:
       return SecureConfig.geminiBaseURL
     case .openAICompatible:
@@ -118,9 +118,9 @@ struct AIModelProfile: Codable, Identifiable, Equatable {
     [
       AIModelProfile(
         id: builtInDoubaoID,
-        name: LanguageManager.shared.localized(zh: "豆包 Seed 1.6", en: "Doubao Seed 1.6"),
+        name: LanguageManager.shared.localized(zh: "百炼 Qwen-VL-Plus", en: "Bailian Qwen-VL-Plus"),
         provider: .doubaoArk,
-        modelIdentifier: SecureConfig.arkModelId ?? "doubao-seed-1-6-vision-250815",
+        modelIdentifier: SecureConfig.bailianVisionModelId ?? "qwen-vl-plus",
         baseURLOverride: nil,
         isBuiltIn: true,
         createdAt: .distantPast
@@ -164,7 +164,7 @@ struct AIModelProfile: Codable, Identifiable, Equatable {
     if isBuiltIn {
       switch id {
       case Self.builtInDoubaoID:
-        return SecureConfig.arkAPIKey
+        return SecureConfig.bailianAPIKey
       case Self.builtInGeminiID:
         return SecureConfig.geminiAPIKey
       default:

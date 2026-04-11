@@ -2,6 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>BAILIAN_API_KEY</key>
+	<string>sk-887813d6b5634268978986fa9e0f2af0</string>
+	<key>BAILIAN_BASE_URL</key>
+	<string>https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions</string>
+	<key>BAILIAN_VISION_MODEL_ID</key>
+	<string>qwen-vl-plus</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
